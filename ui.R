@@ -1,4 +1,3 @@
-
 #TITLE:----
 ##Experimentation with LSTM----
 ##networks for time series----
@@ -6,7 +5,7 @@
 #ABOUT:----
 # App to carry out simple experiments of the use of LSTM networks in
 # time series forecasting. It allows users to solve univariate and
-# multivariate regression problems by testing different set of 
+# multivariate regression problems by testing different set of
 # features, and comparing the effectiveness of the obtained results.
 #REQUIREMENT:----
 # Install the libraries specified in the LIBRARIES section before
@@ -25,11 +24,6 @@
 # - GitHub: https://github.com/davidrsch
 # - Stackoverflow: https://stackoverflow.com/users/12660035/
 # - ORCid:  https://orcid.org/0000-0002-0927-9795
-#SUPPORT:----
-# Buy me a coffe with:
-# - Bitcoin: https://drive.google.com/uc?export=view&id=1qxCy-QLbhG8t_KakHSU24af0Z_CjzKBq
-# - Ethereum: https://drive.google.com/uc?export=view&id=1cDTplii0HMth8ys6NSQjfLwL70i2TnC4
-# - TetherUS: https://drive.google.com/uc?export=view&id=1U2vwzXhIWBMGT0LGw7RUPt9MxPG3iIBf
 
 #LIBRARIES----
 library(shiny)
@@ -65,24 +59,24 @@ library(zip)
 
 #UI CODE----
 ui <- fluidPage(
-  
   useShinyjs(),
-  
+
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "stylesheet.css")
   ),
-  
+
   ##App container----
   div(
     ###Title----
     div(
-      id="titlediv",
+      id = "titlediv",
       titlePanel(
-        title = h1("Experimentation with LSTM networks for Time series forecasting",
-                 style = "text-align: center; border: 1px solid black; padding:10px 0 10px 0"),
+        title = h1(
+          "Experimentation with LSTM networks for Time series forecasting",
+          style = "text-align: center; border: 1px solid black; padding:10px 0 10px 0"
+        ),
         windowTitle = "LSTMexperimentation"
       )
-     
     ),
     ###App Main Panel----
     div(
@@ -95,7 +89,8 @@ ui <- fluidPage(
             title = "Wellcome",
             source(
               file = "www/Panels/1_Wellcome/Wellcome.R",
-              encoding = 'UTF-8')$value,
+              encoding = 'UTF-8'
+            )$value,
             value = "WELLCOME_TABPANEL"
           ),
           #####02-Upload Data Panel----
@@ -121,4 +116,3 @@ ui <- fluidPage(
     )
   )
 )
-
