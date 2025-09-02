@@ -23,8 +23,8 @@ immutabledict==4.2.1
 importlib_resources==6.5.2
 ipython==8.27.0
 ipython_pygments_lexers==1.1.1
-jax==0.7.1
-jaxlib==0.7.1
+jax==0.4.33
+jaxlib==0.4.33
 jedi==0.19.2
 keras==3.11.3
 libclang==18.1.1
