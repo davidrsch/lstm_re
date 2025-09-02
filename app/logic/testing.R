@@ -4,7 +4,6 @@ box::use(
   Metrics[mae, mse, rmse],
   scales[rescale],
   stats[diffinv, predict],
-  utils[head, str],
 )
 
 #' @export
@@ -125,7 +124,7 @@ gettingmetrics <- function(actual, predicted) {
 creatingplotpreddf <- function(threddata, xdata, colnames) {
   for (col in seq_along(colnames)) {
     for (date in seq_along(xdata)) {
-      data3d <- as.data.frame(as.matrix(threddata[,, 1]))
+      data3d <- as.data.frame(as.matrix(threddata[, , 1]))
       rowcolar <- which(data3d == xdata[date], arr.ind = TRUE)
       rowcolar <- as.data.frame(rowcolar)
       rowcolar <- arrange(rowcolar, row)

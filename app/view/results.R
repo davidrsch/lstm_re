@@ -4,7 +4,7 @@ box::use(
   english[ordinal],
   htmlwidgets[onRender],
   jsonlite[fromJSON, toJSON, write_json],
-  keras3[compile, fit, clear_session, save_model],
+  keras3[clear_session, compile, fit, save_model],
   plotly[config, plot_ly, plotlyOutput, renderPlotly],
   rmarkdown[render],
   shiny.fluent[CommandBar, Pivot, PivotItem, ProgressIndicator, Stack],
@@ -15,16 +15,15 @@ box::use(
   shinyjs[html, runjs],
   shinyWidgets[updatePickerInput],
   utils[type.convert],
-  utils[head, str],
 )
 
 box::use(
-  app / logic / callbacks[creatingcallback, updatingpg],
+  app / logic / callbacks[creatingcallback],
   app / logic / models[createmodel],
   app / logic / testing[creatingplotpreddf, gettingmetrics, predictwkeras],
   app / logic / time_series[createscts, createtrfts, createts],
   app / logic / ui_helpers[html_table, pastevec],
-  app / logic / vectors[threedvectfunc, whichequalvec],
+  app / logic / vectors[threedvectfunc],
 )
 
 #' @export
@@ -286,7 +285,7 @@ server <- function(id, sf) {
                   tstv <- ts
                 }
                 vector <- threedvectfunc(
-                  tstv[,, drop = FALSE],
+                  tstv[, , drop = FALSE],
                   steps,
                   c(1, dim(tstv)[1])
                 )
@@ -474,7 +473,7 @@ server <- function(id, sf) {
                     output_with_date_x,
                     as.is = TRUE
                   )
-                  date2d <- unique(as.matrix(output_with_date[,, 1]))
+                  date2d <- unique(as.matrix(output_with_date[, , 1]))
                   mmmpred <- creatingplotpreddf(
                     threddata = output_with_date,
                     xdata = date2d,
