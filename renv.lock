@@ -8,6 +8,11 @@
       }
     ]
   },
+  "Python": {
+    "Version": "3.11.9",
+    "Type": "virtualenv",
+    "Name": "./renv/python/virtualenvs/renv-python-3.11"
+  },
   "Packages": {
     "DT": {
       "Package": "DT",
@@ -1492,6 +1497,28 @@
       "Maintainer": "Dirk Eddelbuettel <edd@debian.org>",
       "Repository": "RSPM"
     },
+    "dotty": {
+      "Package": "dotty",
+      "Version": "0.1.0",
+      "Source": "Repository",
+      "Type": "Package",
+      "Title": "The Unpacking Dot Operator",
+      "Authors@R": "c( person( \"Kevin\", \"Ushey\", email = \"kevinushey@gmail.com\", role = c(\"aut\", \"cre\"), comment = c(ORCID = \"0000-0003-2880-7407\") ) )",
+      "Description": "Provides a `.` object which can be used for unpacking assignments. For example, `.[rows, columns] <- dim(cars)` could be used to pull the number of rows and number of columns from `dim(cars)` into individual variables `rows` and `columns` in a single step.",
+      "License": "MIT + file LICENSE",
+      "Encoding": "UTF-8",
+      "RoxygenNote": "7.3.2",
+      "Suggests": [
+        "codetools",
+        "testthat (>= 3.0.0)"
+      ],
+      "Config/testthat/edition": "3",
+      "URL": "https://kevinushey.github.io/dotty/",
+      "NeedsCompilation": "no",
+      "Author": "Kevin Ushey [aut, cre] (<https://orcid.org/0000-0003-2880-7407>)",
+      "Maintainer": "Kevin Ushey <kevinushey@gmail.com>",
+      "Repository": "CRAN"
+    },
     "dplyr": {
       "Package": "dplyr",
       "Version": "1.1.4",
@@ -2456,32 +2483,33 @@
       "Author": "Jeroen Ooms [aut, cre] (<https://orcid.org/0000-0002-4035-0289>), Duncan Temple Lang [ctb], Lloyd Hilaiel [cph] (author of bundled libyajl)",
       "Repository": "CRAN"
     },
-    "keras": {
-      "Package": "keras",
-      "Version": "2.16.0",
+    "keras3": {
+      "Package": "keras3",
+      "Version": "1.4.0",
       "Source": "Repository",
       "Type": "Package",
       "Title": "R Interface to 'Keras'",
-      "Authors@R": "c( person(\"Tomasz\", \"Kalinowski\", role = c(\"ctb\", \"cph\", \"cre\"), email = \"tomasz@posit.co\"), person(\"Daniel\", \"Falbel\", role = c(\"ctb\", \"cph\"), email = \"daniel@rstudio.com\"), person(\"JJ\", \"Allaire\", role = c(\"aut\", \"cph\")), person(\"François\", \"Chollet\", role = c(\"aut\", \"cph\")), person(\"RStudio\", role = c(\"ctb\", \"cph\", \"fnd\")), person(\"Google\", role = c(\"ctb\", \"cph\", \"fnd\")), person(\"Yuan\", \"Tang\", role = c(\"ctb\", \"cph\"), email = \"terrytangyuan@gmail.com\", comment = c(ORCID = \"0000-0001-5243-233X\")), person(\"Wouter\", \"Van Der Bijl\", role = c(\"ctb\", \"cph\")), person(\"Martin\", \"Studer\", role = c(\"ctb\", \"cph\")), person(\"Sigrid\", \"Keydana\", role = c(\"ctb\")) )",
-      "Description": "Interface to 'Keras' <https://keras.io>, a high-level neural networks 'API'. 'Keras' was developed with a focus on enabling fast experimentation, supports both convolution based networks and recurrent networks (as well as combinations of the two), and runs seamlessly on both 'CPU' and 'GPU' devices.",
+      "Authors@R": "c( person(\"Tomasz\", \"Kalinowski\", role = c(\"aut\", \"cph\", \"cre\"), email = \"tomasz@posit.co\"), person(\"Daniel\", \"Falbel\", role = c(\"ctb\", \"cph\"), email = \"daniel@posit.co\"), person(\"JJ\", \"Allaire\", role = c(\"aut\", \"cph\")), person(\"François\", \"Chollet\", role = c(\"aut\", \"cph\")), person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\")), person(\"Google\", role = c(\"cph\", \"fnd\")), person(\"Yuan\", \"Tang\", role = c(\"ctb\", \"cph\"), email = \"terrytangyuan@gmail.com\", comment = c(ORCID = \"0000-0001-5243-233X\")), person(\"Wouter\", \"Van Der Bijl\", role = c(\"ctb\", \"cph\")), person(\"Martin\", \"Studer\", role = c(\"ctb\", \"cph\")), person(\"Sigrid\", \"Keydana\", role = c(\"ctb\")) )",
+      "Description": "Interface to 'Keras' <https://keras.io>, a high-level neural networks API. 'Keras' was developed with a focus on enabling fast experimentation, supports both convolution based networks and recurrent networks (as well as combinations of the two), and runs seamlessly on both CPU and GPU devices.",
       "Encoding": "UTF-8",
       "License": "MIT + file LICENSE",
-      "URL": "https://tensorflow.rstudio.com/, https://github.com/rstudio/keras3/tree/r2",
+      "URL": "https://keras3.posit.co/, https://github.com/rstudio/keras3",
       "BugReports": "https://github.com/rstudio/keras3/issues",
       "Depends": [
-        "R (>= 3.6)"
+        "R (>= 4.0)"
       ],
       "Imports": [
         "generics (>= 0.0.1)",
-        "reticulate (>= 1.31)",
-        "tensorflow (>= 2.13.0.9000)",
-        "tfruns (>= 1.0)",
+        "reticulate (>= 1.42.0)",
+        "tensorflow (>= 2.16.0)",
+        "tfruns (>= 1.5.2)",
         "magrittr",
         "zeallot",
+        "fastmap",
         "glue",
-        "methods",
-        "R6",
-        "rlang"
+        "cli",
+        "rlang",
+        "dotty"
       ],
       "Suggests": [
         "ggplot2",
@@ -2492,12 +2520,16 @@
         "tfdatasets",
         "withr",
         "png",
+        "jsonlite",
+        "purrr",
+        "rstudioapi",
+        "R6",
         "jpeg"
       ],
       "RoxygenNote": "7.3.2",
       "VignetteBuilder": "knitr",
       "NeedsCompilation": "no",
-      "Author": "Tomasz Kalinowski [ctb, cph, cre], Daniel Falbel [ctb, cph], JJ Allaire [aut, cph], François Chollet [aut, cph], RStudio [ctb, cph, fnd], Google [ctb, cph, fnd], Yuan Tang [ctb, cph] (ORCID: <https://orcid.org/0000-0001-5243-233X>), Wouter Van Der Bijl [ctb, cph], Martin Studer [ctb, cph], Sigrid Keydana [ctb]",
+      "Author": "Tomasz Kalinowski [aut, cph, cre], Daniel Falbel [ctb, cph], JJ Allaire [aut, cph], François Chollet [aut, cph], Posit Software, PBC [cph, fnd], Google [cph, fnd], Yuan Tang [ctb, cph] (ORCID: <https://orcid.org/0000-0001-5243-233X>), Wouter Van Der Bijl [ctb, cph], Martin Studer [ctb, cph], Sigrid Keydana [ctb]",
       "Maintainer": "Tomasz Kalinowski <tomasz@posit.co>",
       "Repository": "CRAN"
     },
