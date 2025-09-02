@@ -5,105 +5,110 @@ output: html_document
 ---
 
 ```{r, echo = F, message=FALSE}
-library(shiny)
-library(shinyWidgets)
-library(jsonlite)
+box::use(
+  jsonlite[fromJSON],
+  shiny[actionButton, div, HTML, icon, mainPanel, sidebarLayout, sidebarPanel],
+  shiny[wellPanel],
+  shinyWidgets[materialSwitch, pickerInput, pickerOptions],
+)
 
-
-modelchart <- fromJSON('www/modelcharact.json')
-modelchartT <- fromJSON(modelchart)
-structurechoices <- unique(modelchartT$Structure)
-neuronschoices <- unique(modelchartT$Neurons)
-inputschoices <- unique(modelchartT$Inputs)
-scalechoices <- unique(modelchartT$Scale)
-transchoices <- unique(modelchartT$Transformation)
-setchoices <- unique(modelchartT$Set)
-modelchoices <- unique(modelchartT$Model)
-modelslosesdir <- fromJSON('www/modelsloss.json')
+modelchart <- fromJSON("www/modelcharact.json")
+modelchart_t <- fromJSON(modelchart)
+structurechoices <- unique(modelchart_t$Structure)
+neuronschoices <- unique(modelchart_t$Neurons)
+inputschoices <- unique(modelchart_t$Inputs)
+scalechoices <- unique(modelchart_t$Scale)
+transchoices <- unique(modelchart_t$Transformation)
+setchoices <- unique(modelchart_t$Set)
+modelchoices <- unique(modelchart_t$Model)
+modelslosesdir <- fromJSON("www/modelsloss.json")
 modelsloses <- fromJSON(modelslosesdir)
-optimalmodel <- which(modelsloses['RMSE',] == min(modelsloses['RMSE',]))
-optimalmodel <- names(modelsloses[,optimalmodel,drop = F])
-optimalmodel <- gsub("model","",optimalmodel)
-predtrueval <- fromJSON('www/realvalues.json') 
+optimalmodel <- which(modelsloses["RMSE", ] == min(modelsloses["RMSE", ]))
+optimalmodel <- names(modelsloses[, optimalmodel, drop = FALSE])
+optimalmodel <- gsub("model", "", optimalmodel)
+predtrueval <- fromJSON("www/realvalues.json")
 
-HTML("
-     <style>
-     .author,.title{
-        display: none;
-     }
-     .main-container{
-        max-width: 100%;
-        margin-left:auto;
-        margin-right:auto;
-        margin-top:1%;
-     }
-     #pickmlcontain div{
-        margin:auto;
-     }
-     .cursor-default{
-        cursor: default;
-     }
-     #pickmlcontain > div.form-group{
-        margin-right: 0;
-     }
-     #infoicon{
-       cursor: pointer;
-     }
-     #containinginfot tr{
-       border: thin solid black;
-     }
-     #containinginfot th{
-       border: thin solid black;
-       padding: 3px; 
-     }
-     #containinginfot td{
-       border: thin solid black;
-       padding: 3px;
-       text-align: center;
-     }
-     #lossestable table{
+HTML(
+  "
+  <style>
+    .author,.title{
+      display: none;
+    }
+    .main-container{
+      max-width: 100%;
+      margin-left:auto;
+      margin-right:auto;
+      margin-top:1%;
+    }
+    #pickmlcontain div{
+      margin:auto;
+    }
+    .cursor-default{
+      cursor: default;
+    }
+    #pickmlcontain > div.form-group{
+      margin-right: 0;
+    }
+    #infoicon{
+      cursor: pointer;
+    }
+    #containinginfot tr{
+      border: thin solid black;
+    }
+    #containinginfot th{
+      border: thin solid black;
+      padding: 3px; 
+    }
+    #containinginfot td{
+      border: thin solid black;
+      padding: 3px;
+      text-align: center;
+    }
+    #lossestable table{
       height: 100%;
       width: 100%;
-     }
-     #lossestable tr{
+    }
+    #lossestable tr{
       border: thin solid black;
-     }
-     #lossestable th{
+    }
+    #lossestable th{
       border: thin solid black;
       padding: 4px;
-     }
-     #lossestable td{
+    }
+    #lossestable td{
       border: thin solid black;
       padding: 4px;
       text-align: center;
-     }
-     #lossestable th:hover{
+    }
+    #lossestable th:hover{
       cursor: pointer;
       background-color: lightgrey;
-     }
-     #collapseSB:hover{
+    }
+    #collapseSB:hover{
       cursor: pointer;
-     }
-     </style>
-     <script src='www/plotly-latest.min.js'></script>
-     ")
+    }
+    </style>
+    <script src='www/plotly-latest.min.js'></script>
+  "
+)
 
 #Panel
 sidebarLayout(
   sidebarPanel(
     div(
-      id = 'SBchild',
+      id = "SBchild",
       div(
-        icon('caret-square-o-left', style = "font-size: 28px;", id = "collapseSB"),
+        icon("caret-square-o-left", style = "font-size: 28px;", id = "collapseSB"),
         style = "margin-bottom: 2%; float:right;"
       ),
       style = "display: flow-root;"
     ),
     div(
-      id = 'emptydiv',
-      style = "height:0;"),
+      id = "emptydiv",
+      style = "height:0;"
+    ),
     div(
-      id = 'containingfilters',
+      id = "containingfilters",
       div(tags$b("Filters:")),
       div(style = "height:1%"),
       pickerInput(
@@ -111,45 +116,52 @@ sidebarLayout(
         label = "Sets",
         choices = setchoices,
         selected = setchoices,
-        multiple = T,
+        multiple = TRUE,
         options = pickerOptions(
           style = "btn-default",
           size = 3,
-          `live-search` = T)),
+          `live-search` = TRUE
+        )
+      ),
       pickerInput(
         inputId = "transfpick",
         label = "Transformations",
         choices = transchoices,
         selected = transchoices,
-        multiple = T,
+        multiple = TRUE,
         options = pickerOptions(
           style = "btn-default"
-          )),
+        )
+      ),
       pickerInput(
         inputId = "scalespick",
         label = "Scales",
         choices = scalechoices,
         selected = scalechoices,
-        multiple = T,
+        multiple = TRUE,
         options = pickerOptions(
           style = "btn-default"
-          )),
+        )
+      ),
       pickerInput(
         inputId = "inputspick",
         label = "Inputs",
         choices = inputschoices,
         selected = inputschoices,
-        multiple = T,
+        multiple = TRUE,
         options = pickerOptions(
           style = "btn-default",
           size = 3,
-          `live-search` = T)),
+          `live-search` = TRUE
+        )
+      ),
       div(
-        style="border: thin solid black; padding: 5%;",
+        style = "border: thin solid black; padding: 5%;",
         materialSwitch(
           inputId = "structorneu",
           label = tags$b("Structure or Neurons"),
-          status = "primary"),
+          status = "primary"
+        ),
         div(
           style = "display: flex; justify-content: space-between;",
           pickerInput(
@@ -157,37 +169,43 @@ sidebarLayout(
             label = "Structure",
             choices = structurechoices,
             selected = structurechoices,
-            multiple = T,
+            multiple = TRUE,
             options = pickerOptions(
               style = "btn-default",
               size = 3,
-              `live-search` = T),
-            width = "48%"),
+              `live-search` = TRUE
+            ),
+            width = "48%"
+          ),
           pickerInput(
             inputId = "neuronspick",
             label = "Neurons",
             choices = neuronschoices,
             selected = neuronschoices,
-            multiple = T,
+            multiple = TRUE,
             options = pickerOptions(
               style = "btn-default",
               size = 3,
-              `live-search` = T),
-            width = "48%")
+              `live-search` = TRUE
+            ),
+            width = "48%"
           )
-        ),
+        )
+      ),
       div(style = "height:1em"),
       pickerInput(
         inputId = "modelpick",
         label = "Models",
         choices = modelchoices,
         selected = modelchoices,
-        multiple = T,
+        multiple = TRUE,
         options = pickerOptions(
           style = "btn-default",
           size = 3,
-          `live-search` = T))
-      ),
+          `live-search` = TRUE
+        )
+      )
+    ),
     style = "border: thin solid black; background-color:white; border-radius: 0"
   ),
   mainPanel(
@@ -204,12 +222,19 @@ sidebarLayout(
             options = pickerOptions(
               style = "btn-default",
               size = 3,
-              `live-search` = T)),
+              `live-search` = TRUE
+            )
+          ),
           div(
             id = "infoicon",
-            icon('info'),
-            style = 'margin-left: 0; border: thin solid black; padding: 0.10% 1.25% 0.10% 1.25%;border-radius: 49%;'),
-          style = "text-align:center;display: flex;"),
+            icon("info"),
+            style = paste0(
+              "margin-left: 0; border: thin solid black; padding: 0.10% 1.25%",
+              " 0.10% 1.25%;border-radius: 49%;"
+            )
+          ),
+          style = "text-align:center;display: flex;"
+        ),
         div(
           id = "moduleinfo",
           div(
@@ -224,7 +249,7 @@ sidebarLayout(
                    background-color: white;
                    padding: 2%;
                    display: none"
-          )
+        )
       ),
       div(
         style = "height:10px"
@@ -238,7 +263,7 @@ sidebarLayout(
           id = "trainingplot",
           style = "width: 35%; resize:both"
         ),
-        style ="height:280px;display: flex;justify-content: space-between;"
+        style = "height:280px;display: flex;justify-content: space-between;"
       ),
       div(
         style = "height:10px"
@@ -251,7 +276,8 @@ sidebarLayout(
               actionButton(
                 inputId = "leftbut",
                 label = "",
-                icon = icon("chevron-left")),
+                icon = icon("chevron-left")
+              ),
               style = "width: 10%; margin: auto; text-align: center;"
             ),
             div(
@@ -262,7 +288,8 @@ sidebarLayout(
               actionButton(
                 inputId = "rightbut",
                 label = "",
-                icon = icon("chevron-right")),
+                icon = icon("chevron-right")
+              ),
               style = "width: 10%; margin: auto; text-align: center;"
             ),
             style = "width: 80%; display: flex; flex-wrap: nowrap"
@@ -273,21 +300,24 @@ sidebarLayout(
               actionButton(
                 inputId = "totable",
                 label = "",
-                icon = icon("table")),
+                icon = icon("table")
+              ),
               div(style = "height: 10%"),
               pickerInput(
                 inputId = "errorpick",
                 label = "Error",
-                choices = c("MSE","RMSE","MAE"),
+                choices = c("MSE", "RMSE", "MAE"),
                 selected = "RMSE",
                 options = pickerOptions(
                   style = "btn-default",
-                  size = 3)
-                ),
-              style = 'width: 50%;'
+                  size = 3
+                )
+              ),
+              style = "width: 50%;"
             ),
             div(
-              HTML("
+              HTML(
+                "
             <label for = 'rangemodel' class = 'form-label' style = 'height: 10%'>Model:</label>
             <div style = 'height: 90%; display: flex; flex-wrap: nowrap'>
               <div style = 'width: 50%'>
@@ -299,9 +329,12 @@ sidebarLayout(
                  <div><b>min:</b></div>
                  <div><b id = 'minvalue'>1</b></div>
               </div>
-              <input id = 'rangemodel' type = 'range' min = '1' max = '10' step = '1' style = '-webkit-appearance: slider-vertical; height: 100%; width: 50%' orient = 'vertical'></input>
+              <input id = 'rangemodel' type = 'range' min = '1' max = '10' step = '1' style =",
+                " '-webkit-appearance: slider-vertical; height: 100%; width: 50%' orient = ",
+                "'vertical'></input>
             </div>
-                 ")
+                "
+              )
             ),
             style = "width: 20%; display: flex; flex-wrap: nowrap"
           ),
@@ -318,16 +351,18 @@ sidebarLayout(
               style = "height: 30%;"
             ),
             actionButton(
-                inputId = "tochart",
-                label = "",
-                icon = icon("chart-bar")),
+              inputId = "tochart",
+              label = "",
+              icon = icon("chart-bar")
+            ),
             div(
               style = "height: 10%;"
             ),
             actionButton(
-                inputId = "transpondtable",
-                label = "",
-                icon = icon('sync')),
+              inputId = "transpondtable",
+              label = "",
+              icon = icon("sync")
+            ),
             style = "width: 5%; display: flex; flex-direction: column;"
           ),
           style = "height:280px"
@@ -339,8 +374,9 @@ sidebarLayout(
 )
 
 #Disable neuronspick as default
-HTML(paste0(
-  "
+HTML(
+  paste0(
+    "
 <script>
   function disableneu(){
     
@@ -362,7 +398,7 @@ HTML(paste0(
     x.stlye.display = 'block';
   };
   
-  var ERRORS = ",modelslosesdir,";
+  var ERRORS = ", modelslosesdir, ";
   var ARROWS = 0;
   
   function mybarplotlossfunc(){
@@ -427,7 +463,8 @@ HTML(paste0(
         dragmode: true
     };
     var config = {
-      modeBarButtonsToRemove:['zoom2d','pan2d','select2d','lasso2d','zoomIn2d','zoomOut2d','autoScale2d','resetScale2d'],
+      modeBarButtonsToRemove:['zoom2d','pan2d','select2d','lasso2d','zoomIn2d",
+    "','zoomOut2d','autoScale2d','resetScale2d'],
       responsive:true
     }
     
@@ -456,8 +493,10 @@ HTML(paste0(
     cursorel.classList.remove('cursor-crosshair');
     
   });
-</script>"
-))
+</script>
+    "
+  )
+)
 
 #To do on structure or neurons change
 tags$script(
@@ -477,8 +516,11 @@ tags$script(
 )
 
 #Action when filters clicked
-HTML(paste0("<script>
-var datamodel = ",modelchart,";
+HTML(
+  paste0(
+    "
+    <script>
+var datamodel = ", modelchart, ";
 
 function getCol(data, col){
    var column = [];
@@ -542,7 +584,9 @@ function filterdata(data, set, trans, scale, inps, stn, struct, neur){
 
 $('#setpick').on('change', function(){
   var StrucOrNeu = document.getElementById('structorneu');
-  var filtereddata = filterdata(datamodel, $('#setpick').val(), $('#transfpick').val(), $('#scalespick').val(), $('#inputspick').val(), StrucOrNeu.checked, $('#structurepick').val(), $('#neuronspick').val())
+  var filtereddata = filterdata(datamodel, $('#setpick').val(), $('#transfpic",
+    "k').val(), $('#scalespick').val(), $('#inputspick').val(), StrucOrNeu.ch",
+    "ecked, $('#structurepick').val(), $('#neuronspick').val())
   var Modelcolumn = getCol(filtereddata,'Model');
   var uniquemodelcol = [...new Set(Modelcolumn)];
   $('#modelpick').selectpicker('val',uniquemodelcol);
@@ -550,7 +594,9 @@ $('#setpick').on('change', function(){
 
 $('#transfpick').on('change', function(){
   var StrucOrNeu = document.getElementById('structorneu');
-  var filtereddata = filterdata(datamodel, $('#setpick').val(), $('#transfpick').val(), $('#scalespick').val(), $('#inputspick').val(), StrucOrNeu.checked, $('#structurepick').val(), $('#neuronspick').val())
+  var filtereddata = filterdata(datamodel, $('#setpick').val(), $('#transfpic",
+    "k').val(), $('#scalespick').val(), $('#inputspick').val(), StrucOrNeu.chec",
+    "ked, $('#structurepick').val(), $('#neuronspick').val())
   var Modelcolumn = getCol(filtereddata,'Model');
   var uniquemodelcol = [...new Set(Modelcolumn)];
   $('#modelpick').selectpicker('val',uniquemodelcol);
@@ -558,7 +604,9 @@ $('#transfpick').on('change', function(){
 
 $('#scalespick').on('change', function(){
   var StrucOrNeu = document.getElementById('structorneu');
-  var filtereddata = filterdata(datamodel, $('#setpick').val(), $('#transfpick').val(), $('#scalespick').val(), $('#inputspick').val(), StrucOrNeu.checked, $('#structurepick').val(), $('#neuronspick').val())
+  var filtereddata = filterdata(datamodel, $('#setpick').val(), $('#transfpic",
+    "k').val(), $('#scalespick').val(), $('#inputspick').val(), StrucOrNeu.chec",
+    "ked, $('#structurepick').val(), $('#neuronspick').val())
   var Modelcolumn = getCol(filtereddata,'Model');
   var uniquemodelcol = [...new Set(Modelcolumn)];
   $('#modelpick').selectpicker('val',uniquemodelcol);
@@ -566,7 +614,9 @@ $('#scalespick').on('change', function(){
 
 $('#inputspick').on('change', function(){
   var StrucOrNeu = document.getElementById('structorneu');
-  var filtereddata = filterdata(datamodel, $('#setpick').val(), $('#transfpick').val(), $('#scalespick').val(), $('#inputspick').val(), StrucOrNeu.checked, $('#structurepick').val(), $('#neuronspick').val())
+  var filtereddata = filterdata(datamodel, $('#setpick').val(), $('#transfpic",
+    "k').val(), $('#scalespick').val(), $('#inputspick').val(), StrucOrNeu.chec",
+    "ked, $('#structurepick').val(), $('#neuronspick').val())
   var Modelcolumn = getCol(filtereddata,'Model');
   var uniquemodelcol = [...new Set(Modelcolumn)];
   $('#modelpick').selectpicker('val',uniquemodelcol);
@@ -574,7 +624,9 @@ $('#inputspick').on('change', function(){
 
 $('#structurepick').on('change', function(){
   var StrucOrNeu = document.getElementById('structorneu');
-  var filtereddata = filterdata(datamodel, $('#setpick').val(), $('#transfpick').val(), $('#scalespick').val(), $('#inputspick').val(), StrucOrNeu.checked, $('#structurepick').val(), $('#neuronspick').val())
+  var filtereddata = filterdata(datamodel, $('#setpick').val(), $('#transfpic",
+    "k').val(), $('#scalespick').val(), $('#inputspick').val(), StrucOrNeu.chec",
+    "ked, $('#structurepick').val(), $('#neuronspick').val())
   var Modelcolumn = getCol(filtereddata,'Model');
   var uniquemodelcol = [...new Set(Modelcolumn)];
   $('#modelpick').selectpicker('val',uniquemodelcol);
@@ -586,7 +638,9 @@ $('#structurepick').on('change', function(){
 
 $('#neuronspick').on('change', function(){
   var StrucOrNeu = document.getElementById('structorneu');
-  var filtereddata = filterdata(datamodel, $('#setpick').val(), $('#transfpick').val(), $('#scalespick').val(), $('#inputspick').val(), StrucOrNeu.checked, $('#structurepick').val(), $('#neuronspick').val())
+  var filtereddata = filterdata(datamodel, $('#setpick').val(), $('#transfpic",
+    "k').val(), $('#scalespick').val(), $('#inputspick').val(), StrucOrNeu.chec",
+    "ked, $('#structurepick').val(), $('#neuronspick').val())
   var Modelcolumn = getCol(filtereddata,'Model');
   var uniquemodelcol = [...new Set(Modelcolumn)];
   $('#modelpick').selectpicker('val',uniquemodelcol);
@@ -595,10 +649,15 @@ $('#neuronspick').on('change', function(){
   $('#structurepick').selectpicker('val',uniquestrucol);
   
 });
-            </script>"))
+            </script>
+    "
+  )
+)
 
 #On model change update bestmodel plots
-HTML(paste0("
+HTML(
+  paste0(
+    "
 <script>
 
 function getMin(data, value, val){
@@ -616,11 +675,19 @@ function getMin(data, value, val){
 $('#modelpick').on('changed.bs.select',function(){
   $('#plotmodelpick').empty();
   var newchoices = $('#modelpick').val();
-  var losses = ",modelslosesdir,";
+  var losses = ",
+    modelslosesdir,
+    ";
   
   for(var i =0; i < newchoices.length; i++){
       
-      $('#plotmodelpick').append('<option value=",'"',"'",'+newchoices[i]+',"'",'"',">'+newchoices[i]+'</option>');
+      $('#plotmodelpick').append('<option value=",
+    "\"",
+    "'",
+    "+newchoices[i]+",
+    "'",
+    "\"",
+    ">'+newchoices[i]+'</option>');
       
       if(i == 1){
         var minval = getMin(losses, newchoices[0],newchoices[1])
@@ -634,11 +701,15 @@ $('#modelpick').on('changed.bs.select',function(){
   $('#plotmodelpick').selectpicker('refresh');
   
 })
-</script>"))
+</script>
+    "
+  )
+)
 
 #On windows resize
 HTML(
-  paste0("
+  paste0(
+    "
 <script>
   let observer = new MutationObserver(function(mutations){
      window.dispatchEvent(new Event('resize'));
@@ -663,11 +734,15 @@ HTML(
      cursorel.classList.add('cursor-default');
      cursorel.classList.remove('cursor-crosshair');
   };
-</script>"))
+</script>
+    "
+  )
+)
 
 #On model plots change
 HTML(
-  paste0("
+  paste0(
+    "
 <script>
   function include(url,id,fn){
      var e = document.createElement('script');
@@ -724,17 +799,21 @@ HTML(
     };
           
     var config = {
-        modeBarButtonsToRemove:['zoom2d','pan2d','select2d','lasso2d','zoomIn2d','zoomOut2d','autoScale2d','resetScale2d'],
+        modeBarButtonsToRemove:['zoom2d','pan2d','select2d','lasso2d','zoomIn",
+    "2d','zoomOut2d','autoScale2d','resetScale2d'],
         responsive: true
     }
           
     Plotly.plot(training, datalossplot, layoutlossplot, config);
-    var cursorel = document.querySelector('#trainingplot .plotly .main-svg  .draglayer');
+    var cursorel = document.querySelector('#trainingplot .plotly .main-svg  .",
+    "draglayer');
     cursorel.classList.add('cursor-default');
     cursorel.classList.remove('cursor-crosshair');
   }
   
-  var predtrueval = ",predtrueval,";
+  var predtrueval = ",
+    predtrueval,
+    ";
   
   function plotingfirstrue(plot, x, y, name){
      var datatrueval = [{
@@ -782,7 +861,8 @@ HTML(
                   };
                   
                   var config = {
-                  modeBarButtonsToRemove:['zoom2d','pan2d','select2d','lasso2d','zoomIn2d','zoomOut2d','autoScale2d','resetScale2d'],
+                  modeBarButtonsToRemove:['zoom2d','pan2d','select2d','lasso2",
+    "d','zoomIn2d','zoomOut2d','autoScale2d','resetScale2d'],
                   responsive:true
                   }
                   
@@ -814,7 +894,8 @@ function tracesminmax(Date, data, colnames, col, predictionplot){
   }];
   Plotly.addTraces(predictionplot,newtrace);
   if(col == (colnames.length -1)){
-    var cursorel = document.querySelector('#predictionsplot .plotly .main-svg  .draglayer');
+    var cursorel = document.querySelector('#predictionsplot .plotly .main-svg",
+    "  .draglayer');
     cursorel.classList.add('cursor-default');
     cursorel.classList.remove('cursor-crosshair'); 
   }
@@ -905,8 +986,9 @@ $(window).on('load',function(){
   })
   
 </script>
-  "
-))
+    "
+  )
+)
 
 #Bar graph reactivity
 HTML(paste0("
@@ -1015,7 +1097,7 @@ $('#rangemodel').on('change', function(){
 </script>
             "))
 
-#Info icon 
+#Info icon
 HTML(paste0("
 <script>
   
@@ -1096,7 +1178,9 @@ HTML(paste0("
 </script>"))
 
 #Create table
-HTML(paste0("
+HTML(
+  paste0(
+    "
 <script>
 
 var TRANSPOND = 1;
@@ -1191,7 +1275,8 @@ function sortTable(n){
      }
      if(shouldSwitch){
        for(r = 0; r< rows.length; r++){
-          rows[r].cells[i].parentNode.insertBefore(rows[r].cells[i + 1],rows[r].cells[i]);
+          rows[r].cells[i].parentNode.insertBefore(rows[r].cells[i + 1],rows[",
+    "r].cells[i]);
        switching = true;
        switchcount = true;
        }
@@ -1214,14 +1299,16 @@ function resultstable(){
       var model = 'model'+ pickedmodels[models];
       var ismodel = model in errors;
       if(ismodel == true){
-        obj = {Models : model, MSE: ERRORS[0][model], RMSE: ERRORS[1][model], MAE: ERRORS[2][model]};
+        obj = {Models : model, MSE: ERRORS[0][model], RMSE: ERRORS[1][model],",
+    " MAE: ERRORS[2][model]};
         modelslosses.push(obj);
       }else{};
     };
     modelslosses = modelslosses.map(Object.values);
     modelslosses.unshift(['Models','MSE','RMSE','MAE']);
     if(TRANSPOND == 1){
-      modelslosses = modelslosses[0].map((col,i) => modelslosses.map(row => row[i]));
+      modelslosses = modelslosses[0].map((col,i) => modelslosses.map(row => r",
+    "ow[i]));
     }else{};
     
     var amountr = modelslosses.length;
@@ -1235,7 +1322,8 @@ function resultstable(){
        for(var cols = 0; cols < amountc; cols++){
           
           if(cols == 0){
-            table = table + '<th onclick = \"sortTable('+rows+')\">'+modelslosses[rows][cols]+'</th>';
+            table = table + '<th onclick = \"sortTable('+rows+')\">'+modelslo",
+    "sses[rows][cols]+'</th>';
           }else{
             table = table + '<td>'+modelslosses[rows][cols]+'</td>';
           };
@@ -1250,7 +1338,8 @@ function resultstable(){
        if(rows == 0){
          for(var cols = 0; cols < amountc; cols++){
           
-          table = table + '<th onclick = \"sortTable('+cols+')\">'+modelslosses[rows][cols]+'</th>';
+          table = table + '<th onclick = \"sortTable('+cols+')\">'+modelsloss",
+    "es[rows][cols]+'</th>';
           
          };
        }else{
@@ -1295,10 +1384,14 @@ $('#modelpick').on('changed.bs.select',function(){
 })
 
 </script>
-            "))
+    "
+  )
+)
 
 #On collaps button
-HTML(paste0("
+HTML(
+  paste0(
+    "
 <script>
 var COLLAPSE = 0
 $('#collapseSB').on('click',function(){
@@ -1306,24 +1399,34 @@ $('#collapseSB').on('click',function(){
     var actheight = document.getElementById('containingfilters').offsetHeight;
     document.getElementById('containingfilters').style.display = 'none';
     document.getElementById('emptydiv').style.height = actheight+'px';
-    document.getElementById('SBchild').parentElement.parentElement.style.width = '10%';
-    document.getElementById('pickmlcontain').parentElement.parentElement.parentElement.style.width = '89%';
+    document.getElementById('SBchild').parentElement.parentElement.style.widt",
+    "h = '10%';
+    document.getElementById('pickmlcontain').parentElement.parentElement.pare",
+    "ntElement.style.width = '89%';
     Plotly.redraw('trainingplot');
-    document.getElementById('collapseSB').classList.add('fa-caret-square-o-right');
-    document.getElementById('collapseSB').classList.remove('fa-caret-square-o-left');
+    document.getElementById('collapseSB').classList.add('fa-caret-square-o-ri",
+    "ght');
+    document.getElementById('collapseSB').classList.remove('fa-caret-square-o",
+    "-left');
     COLLAPSE =  1
   }else{
     document.getElementById('containingfilters').style.display = 'block';
     document.getElementById('emptydiv').style.height = '0px';
-    document.getElementById('SBchild').parentElement.parentElement.style.width = '33%';
-    document.getElementById('pickmlcontain').parentElement.parentElement.parentElement.style.width = '66%';
+    document.getElementById('SBchild').parentElement.parentElement.style.widt",
+    "h = '33%';
+    document.getElementById('pickmlcontain').parentElement.parentElement.pare",
+    "ntElement.style.width = '66%';
     Plotly.redraw('trainingplot');
-    document.getElementById('collapseSB').classList.add('fa-caret-square-o-left');
-    document.getElementById('collapseSB').classList.remove('fa-caret-square-o-right');
+    document.getElementById('collapseSB').classList.add('fa-caret-square-o-le",
+    "ft');
+    document.getElementById('collapseSB').classList.remove('fa-caret-square-o",
+    "-right');
     COLLAPSE = 0
   }
   
 });
 </script>
-            "))
+    "
+  )
+)
 ```
