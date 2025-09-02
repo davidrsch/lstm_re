@@ -1,0 +1,21 @@
+---
+title: "Models"
+format:
+  html:
+    embed-resources: true
+---
+
+### What should be the structure of the model?
+
+In this app the structure of the ANN models are based on the [answer given by Daniele Grattarola](https://stackoverflow.com/a/56355722/12660035) to the stackoverflow question [In Keras, how to get 3D input and 3D output for LSTM layers](https://stackoverflow.com/questions/56255643/in-keras-how-to-get-3d-input-and-3d-output-for-lstm-layers) that stablishes the structure as follow:
+
+*   LSTM layers.
+*   Dense layer, the amount of neruons will be equal to the result of multiplying **temporal horizon** by **the number of output time series**.
+*   Reshape layer, where the target shape will be a 2D vector (**temporal horizon** * **the number of output time series**).
+
+With the goal to stablish how the structure of an ANN model affects its effectiveness the user most select the amount of LSTM layer and the amounts of neurons to test.
+
+The models will be compiled in the same way as those shown in the aforementioned works [Time series forecasting - with deep learning](https://rpubs.com/zkajdan/279967) and [How to use timesteps in LSTM networks for time series forecasting](https://machinelearningmastery.com/use-timesteps-lstm-networks-time-series-forecasting/) using:
+
+1.  The [Adam: A Method for Stochastic Optimization](https://arxiv.org/abs/1412.6980v8) optimizer.
+2.  The MSE loss function(MeanSquaredError of [Regression losses](https://keras.io/api/losses/regression_losses/)).

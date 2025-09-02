@@ -1,0 +1,222 @@
+.card {
+  padding: 28px;
+  margin-bottom: 14px;
+}
+
+[data-testid="upload_file"] {
+  display:none;
+}
+
+/*dropdowns style*/
+/*dropdown button*/
+.sw-dropdown > .btn-default {
+	background: white;
+	color: black;
+	border-color:black;
+	border-radius:0;
+	width: 80%;
+}
+
+.sw-dropdown > .btn-default:hover{
+	background: white;
+	color: blue;
+	border-color:white;
+}
+
+/*dropdown menu*/
+.sw-dropdown-content{
+  width: 80%;
+  border-radius: 0;
+  margin:0 10% 0 10%;
+  border:1px solid black;
+}
+
+/*buttons default*/
+.btn-default{
+  background: white;
+	color: black;
+	border-color:black;
+	border-radius:0;
+}
+
+.btn-default:hover{
+  background: white;
+	color: blue;
+	border-color:white;
+}
+
+/*dropdown grid style*/
+#input_output_grid {
+  width: 100%;
+}
+
+#sw-content-input_output_grid{
+  min-width: 100%;
+  width: auto;
+  margin:0;
+}
+
+#sw-content-input_output_grid > .sw-dropdown-in{
+  display: block;
+  padding-right: 0;
+}
+
+/*grid styles*/
+[data-testid="io_gridtable"] .htCore{
+  text-align:center;
+}
+     
+[data-testid="io_gridtable"] .handsontable thead th .relative{
+  background-color:white;
+}
+      
+[data-testid="io_gridtable"] .handsontable thead th{
+  border:none;
+}
+      
+[data-testid="io_gridtable"] .handsontable td {
+  border:none;
+}
+      
+[data-testid="io_gridtable"] .handsontable tr:first-child td{
+  border-top:1px solid black;
+}
+      
+[data-testid="io_gridtable"] .handsontable tr:last-child td{
+  border-bottom:1px solid black;
+}
+    
+[data-testid="io_gridtable"] .ht_clone_left th {
+  border-color:white;
+  background-color: white;
+}
+    
+[data-testid="io_gridtable"] .ht_clone_left tbody tr:first-child th{
+  border-top:1px solid black;
+}
+      
+[data-testid="io_gridtable"] .ht_clone_left tbody tr:last-child th{
+  border-bottom:1px solid black;
+}
+
+/*Style of summary table*/
+#summary {
+  overflow: auto;
+}
+
+/*Glides styles*/
+ul .glide_slides {
+  margin-bottom: auto;
+}
+
+.btn-primary{
+  border-radius: 0;
+  color: #fff;
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-danger{
+  border-radius: 0;
+  color: #fff;
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+/*Select amount to use dropdown settings*/
+#sw-content-selectamounttouse{
+  min-width: 100%;
+  width: auto;
+}
+
+/*Select date range style*/
+#sw-content-selectamounttouse .sw-dropdown-in{
+  width: auto;
+}
+
+*#sw-content-selectamounttouse .sw-dropdown-in > div {
+  justify-content: space-between;
+  display: flex;
+}
+
+/*Style of start test tables*/
+#traindatestable tr th{
+   padding: 0;
+}
+
+/*Style of training vectors options dropdown */
+#sw-content-tv_opt_dd .sw-dropdown-in{
+  height: 280px;
+  overflow: auto;
+} 
+
+/*Style of models options dropdown*/
+#sw-content-models_opt_dd .sw-dropdown-in{
+  height: 230px;
+  overflow:auto;
+}
+
+/*Style of training options dropdown*/
+#sw-content-training_opt_dd .sw-dropdown-in{
+  height: 244px;
+  overflow:auto;
+}
+
+/*Tabpanel disable style*/
+#Main_tabsetpanel > li > a.disabled{
+  cursor: not-allowed;
+  opacity: .65;
+  box-shadow: none;
+}
+
+/*Progress bar style changes*/
+.progress-group > .progress {
+  height: 18px;
+  margin-bottom: 1px;
+  border-radius: 0;
+  position: absolute;
+  width: 100%;
+  margin-top: -19px;
+}
+
+.progress-bar{
+  font-size: 12px;
+}
+
+.progress-group{
+  position:relative;
+  color:white;
+  margin-bottom: 2px;
+}
+
+.progress-text{
+  z-index: 1;
+  position: relative;
+  left: 3px;
+}
+
+.js-plotly-plot .plotly .cursor-crosshair {
+    cursor: default!important;
+}
+/*Dragable div style changes*/
+#Thirddiv .draggable{
+  z-index: 1;
+  background-color: white;
+  border: thin solid black;
+  padding: 2%;
+  box-shadow: lightgrey 5px 5px;
+}
+/*Span classes*/
+.spanNOT{
+  cursor:not-allowed;
+}
+
+/*collapse drag icon*/
+#collapseDragDiv{
+  margin: 0;
+  padding: 0;
+  border: transparent;
+}
+#collapseDragDiv:hover{
+  cursor:pointer;
+}
