@@ -1,0 +1,27 @@
+---
+title: "Training"
+format:
+  html:
+    embed-resources: true
+---
+
+### Batch size
+
+As explained in [Difference between a batch and an epoch in a neural network](https://machinelearningmastery.com/difference-between-a-batch-and-an-epoch/), batch size is the amount of sample to pass through the model before updating the internal parameters. There are three types of bach sizes:
+
+1.  **Batch Gradient Descent.** Batch Size equal to Size of Training Set.
+2.  **Stochastic Gradient Descent.** Batch Size equal to 1.
+3.  **Mini-Batch Gradient Descent.** Batch Size bigger than 1 and less than Training Set. (Between the most popular mini-batch gradient descent sizes are: 32, 64 and 128)
+
+### Epoch?
+
+As explained in [Difference between a batch and an epoch in a neural network](https://machinelearningmastery.com/difference-between-a-batch-and-an-epoch/), the defined amount of epoch is the number of times in which the learning algorithm will be executed in the totality of the training data.
+
+### Reproductivity?
+
+As explained in [How to Get Reproducible Results with Keras](https://machinelearningmastery.com/reproducible-results-neural-networks-keras/), there are two solutions to adress reproductivity of an ANN model:
+
+1.  Repeat experiment: it is recomended to repeat the experiment over thirty times and use statistics to summarize the performance of the models.
+2.  Seed the random number generator: seting a starting point for generating random numbers helps to reduce the intrinsic randomness in the fitting process of an ANN.
+
+In this app the solution based on seting a random number is used by default to avoid long waiting time, but the user can choose to not use this solution and run the experiment as many times as wanted.

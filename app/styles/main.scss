@@ -1,0 +1,63 @@
+.card {
+  padding: 28px;
+  margin-bottom: 14px;
+}
+
+[data-testid="upload_file"] {
+  display: none;
+}
+
+/* buttons default */
+.btn-default {
+  background: white;
+  color: black;
+  border-color: black;
+  border-radius: 0;
+}
+
+.btn-default:hover {
+  background: white;
+  color: blue;
+  border-color: white;
+}
+
+/* gridtable styles */
+
+/* stylelint-disable selector-class-pattern */
+[data-testid="io_gridtable"] .htCore {
+  text-align: center;
+}
+
+[data-testid="io_gridtable"] .handsontable thead th .relative {
+  background-color: white;
+}
+
+[data-testid="io_gridtable"] .ht_clone_left th {
+  border-color: white;
+  background-color: white;
+}
+
+[data-testid="io_gridtable"] .handsontable thead th {
+  border: none;
+}
+
+[data-testid="io_gridtable"] .handsontable td {
+  border: none;
+}
+
+[data-testid="io_gridtable"] .handsontable tr:first-child td {
+  border-top: 1px solid black;
+}
+
+[data-testid="io_gridtable"] .handsontable tr:last-child td {
+  border-bottom: 1px solid black;
+}
+
+[data-testid="io_gridtable"] .ht_clone_left tbody tr:first-child th {
+  border-top: 1px solid black;
+}
+
+[data-testid="io_gridtable"] .ht_clone_left tbody tr:last-child th {
+  border-bottom: 1px solid black;
+}
+/* stylelint-enable selector-class-pattern */
