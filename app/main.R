@@ -5,7 +5,7 @@ box::use(
 )
 
 box::use(
-  app / view / results,
+  app / view / results_display,
   app / view / selecting_features,
   app / view / upload_data,
   app / view / welcome,
@@ -26,7 +26,7 @@ ui <- function(id) {
       ),
       PivotItem(
         headerText = "Results",
-        results$ui(ns("results"))
+        results_display$ui(ns("results"))
       )
     )
   )
@@ -67,6 +67,6 @@ server <- function(id) {
 
     upload_data$server("upload_data", shared_data)
     selecting_features$server("selecting_features", shared_data)
-    results$server("results", shared_data)
+    results_display$server("results", shared_data)
   })
 }
