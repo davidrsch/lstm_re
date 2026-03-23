@@ -18,7 +18,7 @@ ui <- function(id) {
         "",
         div(
           tags$p(
-            "Power by",
+            "Powered by",
             style = "font-size: 1.5em; color:black; margin: .5em 0 .3em 0;
                  text-align:center"
           ),
@@ -38,9 +38,9 @@ ui <- function(id) {
           div(
             tags$p(
               "App to carry out simple experiments of the use of LSTM networks in",
-              " time series forecasting. It allows users to solves univariate and",
+              " time series forecasting. It allows users to solve univariate and",
               " multivariate regression problems by testing different set of features",
-              " and comparing the effectiviness of the obtained results."
+              " and comparing the effectiveness of the obtained results."
             ),
             tags$p("Features that allows configurations are:"),
             tags$ul(

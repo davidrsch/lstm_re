@@ -7,7 +7,7 @@ box::use(
 )
 
 #' @export
-from3dto2d <- function(vec3d) {
+array_3d_to_2d <- function(vec3d) {
   for (i in seq_len(dim(vec3d)[1])) {
     x1 <- adrop(vec3d[i, , , drop = FALSE], drop = 1)
     if (i == 1) {
@@ -20,9 +20,9 @@ from3dto2d <- function(vec3d) {
 }
 
 #' @export
-diffinv3d <- function(data3d, difference, lastknow3d) {
-  data2d <- from3dto2d(data3d)
-  lastknow2d <- from3dto2d(lastknow3d)
+diff_inverse_3d <- function(data3d, difference, lastknow3d) {
+  data2d <- array_3d_to_2d(data3d)
+  lastknow2d <- array_3d_to_2d(lastknow3d)
   datastepspersample <- dim(data2d)[1] / dim(data3d)[1]
   lastknowsteppersample <- dim(lastknow2d)[1] / dim(lastknow3d)[1]
   for (sample in seq_len(dim(data3d)[1])) {
@@ -53,7 +53,7 @@ diffinv3d <- function(data3d, difference, lastknow3d) {
 }
 
 #' @export
-predictwkeras <- function(
+predict_with_keras <- function(
   model,
   inputs,
   outputs,
@@ -88,13 +88,13 @@ predictwkeras <- function(
       predictions <- predictions
     } else {
       if (transformation == "First transformation") {
-        predictions <- diffinv3d(
+        predictions <- diff_inverse_3d(
           data3d = predictions,
           difference = transf_ts[[dim(transf_ts)[2]]][1],
           lastknow3d = lastvaluesout[samples, , , drop = FALSE]
         )
       } else {
-        predictions <- diffinv3d(
+        predictions <- diff_inverse_3d(
           data3d = predictions,
           difference = transf_ts[[dim(transf_ts)[2]]][1],
           lastknow3d = lastvaluesout[samples, , , drop = FALSE]
@@ -112,7 +112,7 @@ predictwkeras <- function(
 }
 
 #' @export
-gettingmetrics <- function(actual, predicted) {
+get_metrics <- function(actual, predicted) {
   obtained_mse <- mse(actual, predicted)
   obtained_rmse <- rmse(actual, predicted)
   obtained_mae <- mae(actual, predicted)
@@ -121,10 +121,10 @@ gettingmetrics <- function(actual, predicted) {
 }
 
 #' @export
-creatingplotpreddf <- function(threddata, xdata, colnames) {
+create_plot_pred_df <- function(threddata, xdata, colnames) {
   for (col in seq_along(colnames)) {
     for (date in seq_along(xdata)) {
-      data3d <- as.data.frame(as.matrix(threddata[, , 1]))
+      data3d <- as.data.frame(as.matrix(threddata[,, 1]))
       rowcolar <- which(data3d == xdata[date], arr.ind = TRUE)
       rowcolar <- as.data.frame(rowcolar)
       rowcolar <- arrange(rowcolar, row)

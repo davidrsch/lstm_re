@@ -5,7 +5,7 @@ box::use(
 )
 
 #' @export
-plotedafunc <- function(data) {
+plot_eda <- function(data) {
   p <- ggpairs(
     data,
     title = "Exploratory Data Analysis",
@@ -38,6 +38,6 @@ plotedafunc <- function(data) {
 }
 
 #' @export
-databasesum <- function(data) {
+database_summary <- function(data) {
   stat.desc(data)
 }

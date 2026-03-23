@@ -95,7 +95,7 @@ server <- function(id, sf) {
     })
 
     observeEvent(input$setseed, {
-      sf$setseed <- input$setseed
+      sf$set_seed <- input$setseed
       if (input$setseed == TRUE) {
         enable("seed")
       } else {

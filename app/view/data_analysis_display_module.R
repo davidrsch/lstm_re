@@ -6,7 +6,7 @@ box::use(
 )
 
 box::use(
-  app / logic / eda[databasesum, plotedafunc],
+  app / logic / eda[database_summary, plot_eda],
   app / logic / make_card[make_card],
   app / logic / plotting[sets_vars_plots],
 )
@@ -81,19 +81,19 @@ server <- function(id, database) {
 
     output$eda <- renderPlot({
       req(database$EDA)
-      plotedafunc(database$EDA)
+      plot_eda(database$EDA)
     })
 
     output$summary <- renderDataTable({
       req(database$EDA)
-      databasesum(database$EDA)
+      database_summary(database$EDA)
     })
 
     output$plotselectedvariables <- renderUI({
-      req(database$selectedtrains)
-      req(nrow(database$selectedtrains) > 0)
+      req(database$selected_trains)
+      req(nrow(database$selected_trains) > 0)
       sets_vars_plots(
-        database$selectedtrains,
+        database$selected_trains,
         database$EDA,
         database$x_data,
         database$test_start_date,

@@ -84,14 +84,14 @@ server <- function(id, sf) {
           type = "error"
         )
       } else {
-        if (is.null(sf$LSTMamnts)) {
-          sf$LSTMamnts <- add_lstm_amount_val
-          sf$stdLSTMamnts <- add_lstm_amount_val
+        if (is.null(sf$lstm_amounts)) {
+          sf$lstm_amounts <- add_lstm_amount_val
+          sf$std_lstm_amounts <- add_lstm_amount_val
         } else {
-          if (!is.element(add_lstm_amount_val, sf$LSTMamnts)) {
-            sf$LSTMamnts <- c(sf$LSTMamnts, add_lstm_amount_val)
-            sf$LSTMamnts <- sort(sf$LSTMamnts)
-            sf$stdLSTMamnts <- c(sf$stdLSTMamnts, add_lstm_amount_val)
+          if (!is.element(add_lstm_amount_val, sf$lstm_amounts)) {
+            sf$lstm_amounts <- c(sf$lstm_amounts, add_lstm_amount_val)
+            sf$lstm_amounts <- sort(sf$lstm_amounts)
+            sf$std_lstm_amounts <- c(sf$std_lstm_amounts, add_lstm_amount_val)
           }
         }
       }
@@ -102,13 +102,13 @@ server <- function(id, sf) {
         session$ns("selectLSTMsoptions"),
         label = "Select the amounts of LSTM",
         multiSelect = TRUE,
-        value = sf$stdLSTMamnts,
-        options = lapply(sf$LSTMamnts, function(x) list(key = x, text = x))
+        value = sf$std_lstm_amounts,
+        options = lapply(sf$lstm_amounts, function(x) list(key = x, text = x))
       )
     })
 
     observeEvent(input$selectLSTMsoptions, {
-      sf$stdLSTMamnts <- input$selectLSTMsoptions
+      sf$std_lstm_amounts <- input$selectLSTMsoptions
     })
 
     output$addneuronsamount_ui <- renderUI({
@@ -140,14 +140,14 @@ server <- function(id, sf) {
           type = "error"
         )
       } else {
-        if (is.null(sf$neuronsamnts)) {
-          sf$neuronsamnts <- addneuronsamount_val
-          sf$stdneuronsamnts <- addneuronsamount_val
+        if (is.null(sf$neuron_amounts)) {
+          sf$neuron_amounts <- addneuronsamount_val
+          sf$std_neuron_amounts <- addneuronsamount_val
         } else {
-          if (!is.element(addneuronsamount_val, sf$neuronsamnts)) {
-            sf$neuronsamnts <- c(sf$neuronsamnts, addneuronsamount_val)
-            sf$neuronsamnts <- sort(sf$neuronsamnts)
-            sf$stdneuronsamnts <- c(sf$stdneuronsamnts, addneuronsamount_val)
+          if (!is.element(addneuronsamount_val, sf$neuron_amounts)) {
+            sf$neuron_amounts <- c(sf$neuron_amounts, addneuronsamount_val)
+            sf$neuron_amounts <- sort(sf$neuron_amounts)
+            sf$std_neuron_amounts <- c(sf$std_neuron_amounts, addneuronsamount_val)
           }
         }
       }
@@ -158,13 +158,13 @@ server <- function(id, sf) {
         session$ns("selectneuronsoptions"),
         label = "Select the amounts of neurons",
         multiSelect = TRUE,
-        value = sf$stdneuronsamnts,
-        options = lapply(sf$neuronsamnts, function(x) list(key = x, text = x))
+        value = sf$std_neuron_amounts,
+        options = lapply(sf$neuron_amounts, function(x) list(key = x, text = x))
       )
     })
 
     observeEvent(input$selectneuronsoptions, {
-      sf$stdneuronsamnts <- input$selectneuronsoptions
+      sf$std_neuron_amounts <- input$selectneuronsoptions
     })
   })
 }

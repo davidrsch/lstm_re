@@ -25,7 +25,7 @@ startalert <- tagList(
 )
 
 #' @export
-findmodels <- function(lstm, neurons) {
+find_models <- function(lstm, neurons) {
   for (i in seq_along(lstm)) {
     if (i == 1) {
       df <- expand.grid(rep(list(neurons), lstm[i]))
@@ -36,13 +36,12 @@ findmodels <- function(lstm, neurons) {
       colsnames <- lapply(1:lstm[i], function(x) paste0(x, "_LSTM"))
       names(df2) <- colsnames
       df <- bind_rows(df, df2)
-    }
   }
   df
 }
 
 #' @export
-selectmodelstobuild <- function(ns, train, ts, sc, vec, lstm, neu) {
+select_models_to_build <- function(ns, train, ts, sc, vec, lstm, neu) {
   amountoftrain <- dim(train)[1]
   if (dim(train)[1] == 1) {
     setors <- "set"
@@ -64,7 +63,7 @@ selectmodelstobuild <- function(ns, train, ts, sc, vec, lstm, neu) {
   } else {
     inputors <- "amounts"
   }
-  models <- findmodels(lstm = lstm, neurons = neu)
+  models <- find_models(lstm = lstm, neurons = neu)
   if (dim(models)[1] == 1) {
     modelors <- "model"
   } else {
@@ -160,7 +159,7 @@ substright <- function(x, n) {
 }
 
 #' @export
-pastevec <- function(vect) {
+paste_vec <- function(vect) {
   for (i in seq_along(vect)) {
     if (i == 1) {
       x <- vect[i]

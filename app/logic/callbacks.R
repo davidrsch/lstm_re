@@ -6,7 +6,7 @@ box::use(
 
 
 #' @export
-updatingpg <- function(session, pgbid, amount, item) {
+update_progress <- function(session, pgbid, amount, item) {
   progress <- (item + 1) / amount
   runjs(
     paste0(
@@ -21,7 +21,7 @@ updatingpg <- function(session, pgbid, amount, item) {
 
 
 #' @export
-updatelayoutfunc <- function(x, valuesofx, plotid) {
+update_layout <- function(x, valuesofx, plotid) {
   runjs(paste0(
     "
         var graphDiv = document.getElementById(\"",
@@ -71,7 +71,7 @@ updatelayoutfunc <- function(x, valuesofx, plotid) {
 }
 
 #' @export
-addtracesfunction <- function(x, loss, plotid) {
+add_traces <- function(x, loss, plotid) {
   runjs(paste0(
     "
         var graphDiv = document.getElementById(\"",
@@ -104,7 +104,7 @@ addtracesfunction <- function(x, loss, plotid) {
 }
 
 #' @export
-extendtraces <- function(loss, epoch, plotid) {
+extend_traces <- function(loss, epoch, plotid) {
   runjs(paste0(
     "
         var graphDiv = document.getElementById(\"",
@@ -117,7 +117,7 @@ extendtraces <- function(loss, epoch, plotid) {
 }
 
 #' @export
-eliminatetraces <- function(plotid) {
+delete_traces <- function(plotid) {
   runjs(paste0(
     "
   var graphDiv = document.getElementById(\"",
@@ -128,7 +128,14 @@ eliminatetraces <- function(plotid) {
 }
 
 #' @export
-onepochend <- function(nmodel, directory, plotid, amountofepoch, epoch, logs) {
+on_epoch_end <- function(
+  nmodel,
+  directory,
+  plotid,
+  amountofepoch,
+  epoch,
+  logs
+) {
   logs <- lapply(logs, as.numeric)
   plotx <- 1:amountofepoch
   if (plotx[length(plotx)] > 10) {
@@ -145,22 +152,22 @@ onepochend <- function(nmodel, directory, plotid, amountofepoch, epoch, logs) {
 
   if (!file.exists(loss_file)) {
     if (nmodel != 1) {
-      eliminatetraces(plotid)
+      delete_traces(plotid)
     }
-    updatelayoutfunc(plotx, xticksvalues, plotid)
+    update_layout(plotx, xticksvalues, plotid)
     loss <- logs$loss
-    addtracesfunction(plotx, loss, plotid)
+    add_traces(plotx, loss, plotid)
     write_json(loss, loss_file)
   } else {
     loss <- fromJSON(loss_file)
     loss <- c(loss, logs$loss)
-    extendtraces(loss, epoch, plotid)
+    extend_traces(loss, epoch, plotid)
     write_json(loss, loss_file)
   }
 }
 
 #' @export
-creatingcallback <- function(
+create_callback <- function(
   nmodel,
   session,
   directory,
@@ -172,7 +179,7 @@ creatingcallback <- function(
 ) {
   cd <- callback_lambda(
     on_batch_begin = function(batch, logs) {
-      updatingpg(
+      update_progress(
         session = session,
         pgbid = batchpbid,
         amount = batchamount,
@@ -180,7 +187,7 @@ creatingcallback <- function(
       )
     },
     on_epoch_begin = function(epoch, logs) {
-      updatingpg(
+      update_progress(
         session = session,
         pgbid = epochpbid,
         amount = epochamount,
@@ -188,7 +195,7 @@ creatingcallback <- function(
       )
     },
     on_epoch_end = function(epoch, logs) {
-      onepochend(
+      on_epoch_end(
         nmodel = nmodel,
         directory = directory,
         plotid = plotid,

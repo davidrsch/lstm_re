@@ -133,8 +133,8 @@ server <- function(id, shared_data) {
     # 07-EDA ----
     observeEvent(input$io_gridtable, {
       if (any(hot_to_r(input$io_gridtable) == 1)) {
-        if (shared_data$showEDA < 2) {
-          shared_data$showEDA <- shared_data$showEDA + 1
+        if (shared_data$show_eda < 2) {
+          shared_data$show_eda <- shared_data$show_eda + 1
         }
         # Update shared_data$grid with the latest state from the handsontable
         shared_data$grid <- hot_to_r(input$io_gridtable)
@@ -145,7 +145,7 @@ server <- function(id, shared_data) {
         data <- shared_data$df[variables]
         if (!identical(data, shared_data$previousEDA)) {
           shared_data$EDA <- data
-          if (shared_data$showEDA == 1) {
+          if (shared_data$show_eda == 1) {
             # select eda pivot
           }
         }

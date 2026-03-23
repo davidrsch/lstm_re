@@ -109,13 +109,13 @@ server <- function(id, sf) {
           type = "error"
         )
       } else {
-        if (is.null(sf$inputamnts)) {
-          sf$inputamnts <- add_in_option_val
-          sf$stdinputamnts <- add_in_option_val
+        if (is.null(sf$input_amounts)) {
+          sf$input_amounts <- add_in_option_val
+          sf$std_input_amounts <- add_in_option_val
         } else {
-          if (!is.element(add_in_option_val, sf$inputamnts)) {
-            sf$inputamnts <- c(sf$inputamnts, add_in_option_val)
-            sf$stdinputamnts <- c(sf$stdinputamnts, add_in_option_val)
+          if (!is.element(add_in_option_val, sf$input_amounts)) {
+            sf$input_amounts <- c(sf$input_amounts, add_in_option_val)
+            sf$std_input_amounts <- c(sf$std_input_amounts, add_in_option_val)
           }
         }
       }
@@ -126,13 +126,13 @@ server <- function(id, sf) {
         session$ns("selectinputoptions"),
         label = "Select the amounts of inputs",
         multiSelect = TRUE,
-        value = sf$stdinputamnts,
-        options = lapply(sf$inputamnts, function(x) list(key = x, text = x))
+        value = sf$std_input_amounts,
+        options = lapply(sf$input_amounts, function(x) list(key = x, text = x))
       )
     })
 
     observeEvent(input$selectinputoptions, {
-      sf$stdinputamnts <- input$selectinputoptions
+      sf$std_input_amounts <- input$selectinputoptions
     })
   })
 }

@@ -18,12 +18,12 @@ box::use(
 )
 
 box::use(
-  app / logic / callbacks[creatingcallback],
-  app / logic / models[createmodel],
-  app / logic / testing[creatingplotpreddf, gettingmetrics, predictwkeras],
-  app / logic / time_series[createscts, createtrfts, createts],
-  app / logic / ui_helpers[html_table, pastevec],
-  app / logic / vectors[threedvectfunc],
+  app / logic / callbacks[create_callback],
+  app / logic / models[create_model],
+  app / logic / testing[create_plot_pred_df, get_metrics, predict_with_keras],
+  app / logic / time_series[create_scaled_ts, create_transformed_ts, create_ts],
+  app / logic / ui_helpers[html_table, paste_vec],
+  app / logic / vectors[create_3d_vector],
 )
 
 #' @export
@@ -103,11 +103,11 @@ server <- function(id, sf) {
         r$tab <- r$tab + 1
       }
 
-      amountofts <- dim(sf$selectedtrains)[1] *
+      amountofts <- dim(sf$selected_trains)[1] *
         length(sf$transf) *
         length(sf$scales)
-      amountofvec <- amountofts * length(sf$inputamnts)
-      amountofmodels <- amountofvec * dim(sf$modelstable)[1]
+      amountofvec <- amountofts * length(sf$input_amounts)
+      amountofmodels <- amountofvec * dim(sf$models_table)[1]
 
       tabname <- paste0(
         " ",
@@ -223,22 +223,22 @@ server <- function(id, sf) {
         dir.create(exp_dashdirect)
         dir.create(exp_dashdata)
         dir.create(loss_directory)
-        amountofts <- dim(sf$selectedtrains)[1]
+        amountofts <- dim(sf$selected_trains)[1]
         amountoftf <- length(sf$transf)
         amountofsc <- length(sf$scales)
-        amountofinps <- length(sf$inputamnts)
-        print(sf$inputamnts)
-        amountofmodels <- dim(sf$modelstable)[1]
+        amountofinps <- length(sf$input_amounts)
+        print(sf$input_amounts)
+        amountofmodels <- dim(sf$models_table)[1]
         amountoftotalmodels <- amountofts *
           amountoftf *
           amountofsc *
           amountofinps *
           amountofmodels
         modelbuilding <- 0
-        if (sf$setseed == TRUE) {
+        if (sf$set_seed == TRUE) {
           set.seed(sf$seed)
         }
-        if (is.null(sf$selectedtrains) || dim(sf$selectedtrains)[1] == 0) {
+        if (is.null(sf$selected_trains) || dim(sf$selected_trains)[1] == 0) {
           shinyalert(
             "Error",
             "Please select training data in the 'Select amount of data to use' section.",
@@ -248,33 +248,33 @@ server <- function(id, sf) {
         }
 
         for (i in 1:amountofts) {
-          ts <- createts(
+          ts <- create_ts(
             sf$x_data,
             sf$EDA,
-            sf$selectedtrains,
+            sf$selected_trains,
             i,
             sf$test_end_date
           )
           if (is.null(ts)) {
-            next # Skip to the next iteration if createts returned NULL
+            next # Skip to the next iteration if create_ts returned NULL
           }
-          set <- sf$selectedtrains[i, 1]
+          set <- sf$selected_trains[i, 1]
           for (tf in 1:amountoftf) {
-            transfts <- createtrfts(
+            transfts <- create_transformed_ts(
               ts = ts,
               trf = sf$transf,
               ntrf = tf
             )
             trf <- sf$transf[tf]
             for (sc in 1:amountofsc) {
-              scts <- createscts(
+              scts <- create_scaled_ts(
                 transfts,
                 sf$scales,
                 sc
               )
               sca <- sf$scales[sc]
               for (input in 1:amountofinps) {
-                steps <- as.numeric(sf$inputamnts[input]) +
+                steps <- as.numeric(sf$input_amounts[input]) +
                   as.numeric(sf$temporalhorizon)
                 if (trf == "Second transformation") {
                   tstv <- ts[, -1, drop = FALSE]
@@ -284,8 +284,8 @@ server <- function(id, sf) {
                 } else {
                   tstv <- ts
                 }
-                vector <- threedvectfunc(
-                  tstv[, , drop = FALSE],
+                vector <- create_3d_vector(
+                  tstv[,, drop = FALSE],
                   steps,
                   c(1, dim(tstv)[1])
                 )
@@ -305,7 +305,7 @@ server <- function(id, sf) {
                   1,
                   drop = FALSE
                 ]
-                vector <- threedvectfunc(
+                vector <- create_3d_vector(
                   scts[, -1, drop = FALSE],
                   steps,
                   c(1, dim(scts)[1])
@@ -331,7 +331,7 @@ server <- function(id, sf) {
                   filter(Outputs == 1) |>
                   pull(Variables)
                 date3dtest <- date3dtest[,
-                  (as.numeric(sf$inputamnts[input]) + 1):dim(testvector)[2],
+                  (as.numeric(sf$input_amounts[input]) + 1):dim(testvector)[2],
                   ,
                   drop = FALSE
                 ]
@@ -351,7 +351,7 @@ server <- function(id, sf) {
                     modelbuilding
                   )
                   dir.create(dashdatamodelpath)
-                  struct <- sf$modelstable[m, , drop = FALSE] |>
+                  struct <- sf$models_table[m, , drop = FALSE] |>
                     select_if(~ !any(is.na(.)))
                   struct <- struct |>
                     mutate_if(is.factor, as.character)
@@ -366,23 +366,23 @@ server <- function(id, sf) {
                     Set = set,
                     Transformation = trf,
                     Scale = sca,
-                    Inputs = sf$inputamnts[input],
-                    Structure = pastevec(as.character(struct))
+                    Inputs = sf$input_amounts[input],
+                    Structure = paste_vec(as.character(struct))
                   )
                   htmlmodelfeat <- html_table(modelfeatutable)
                   html(
                     paste0(r$tabname, "htmlmodelfeatT"),
                     htmlmodelfeat
                   )
-                  model <- createmodel(
+                  model <- create_model(
                     structure = struct,
                     inputvec = trainvector[,
-                      1:as.numeric(sf$inputamnts[input]),
+                      1:as.numeric(sf$input_amounts[input]),
                       inp,
                       drop = FALSE
                     ],
                     outputvec = trainvector[,
-                      (as.numeric(sf$inputamnts[input]) + 1):dim(
+                      (as.numeric(sf$input_amounts[input]) + 1):dim(
                         trainvector
                       )[2],
                       out,
@@ -392,12 +392,12 @@ server <- function(id, sf) {
                   model |> compile(loss = "mse", optimizer = "adam")
                   samples <- dim(
                     trainvector[,
-                      1:as.numeric(sf$inputamnts[input]),
+                      1:as.numeric(sf$input_amounts[input]),
                       inp,
                       drop = FALSE
                     ]
                   )[1]
-                  cd <- creatingcallback(
+                  cd <- create_callback(
                     nmodel = modelbuilding,
                     session = session,
                     directory = loss_directory,
@@ -410,12 +410,12 @@ server <- function(id, sf) {
                   model |>
                     fit(
                       trainvector[,
-                        1:as.numeric(sf$inputamnts[input]),
+                        1:as.numeric(sf$input_amounts[input]),
                         inp,
                         drop = FALSE
                       ],
                       trainvector[,
-                        (as.numeric(sf$inputamnts[input]) + 1):dim(
+                        (as.numeric(sf$input_amounts[input]) + 1):dim(
                           trainvector
                         )[2],
                         out,
@@ -428,7 +428,7 @@ server <- function(id, sf) {
                       verbose = 0
                     )
                   last_values_out_for_pred <- truetestvector[,
-                    1:as.numeric(sf$inputamnts[input]),
+                    1:as.numeric(sf$input_amounts[input]),
                     out,
                     drop = FALSE
                   ]
@@ -436,15 +436,15 @@ server <- function(id, sf) {
                     last_values_out_for_pred
                   )
 
-                  predictions <- predictwkeras(
+                  predictions <- predict_with_keras(
                     model = model,
                     inputs = testvector[,
-                      1:as.numeric(sf$inputamnts[input]),
+                      1:as.numeric(sf$input_amounts[input]),
                       inp,
                       drop = FALSE
                     ],
                     outputs = testvector[,
-                      (as.numeric(sf$inputamnts[input]) + 1):dim(testvector)[
+                      (as.numeric(sf$input_amounts[input]) + 1):dim(testvector)[
                         2
                       ],
                       out,
@@ -473,8 +473,8 @@ server <- function(id, sf) {
                     output_with_date_x,
                     as.is = TRUE
                   )
-                  date2d <- unique(as.matrix(output_with_date[, , 1]))
-                  mmmpred <- creatingplotpreddf(
+                  date2d <- unique(as.matrix(output_with_date[,, 1]))
+                  mmmpred <- create_plot_pred_df(
                     threddata = output_with_date,
                     xdata = date2d,
                     colnames = out
@@ -497,11 +497,11 @@ server <- function(id, sf) {
                   )
                   write(trainloss, paste0(dashdatamodelpath, "/loss.js"))
                   actual_values_for_metrics <- truetestvector[,
-                    (as.numeric(sf$inputamnts[input]) + 1):dim(testvector)[2],
+                    (as.numeric(sf$input_amounts[input]) + 1):dim(testvector)[2],
                     out,
                     drop = FALSE
                   ]
-                  m_loss <- gettingmetrics(
+                  m_loss <- get_metrics(
                     as.numeric(actual_values_for_metrics),
                     as.numeric(predictions)
                   )

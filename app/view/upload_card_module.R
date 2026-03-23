@@ -25,7 +25,7 @@ ui <- function(id) {
   div(
     make_card(
       tagList(
-        "Upload shared_data",
+        "Upload data",
         DefaultButton.shinyInput(
           ns("toggle_upload_card"),
           iconProps = list(iconName = "ChevronUp"),
@@ -173,7 +173,12 @@ server <- function(id, shared_data) {
     })
 
     observeEvent(
-      list(input$upload_file, input$header, input$delimiter, input$decimal_point),
+      list(
+        input$upload_file,
+        input$header,
+        input$delimiter,
+        input$decimal_point
+      ),
       {
         req(input$upload_file)
         ext <- file_ext(input$upload_file$name)

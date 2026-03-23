@@ -4,6 +4,7 @@ box::use(
 )
 
 box::use(
+  app / logic / constants[scales, transformations],
   app / logic / make_card[make_card],
 )
 
@@ -46,17 +47,7 @@ server <- function(id, shared_data) {
       Dropdown.shinyInput(
         ns("selectimeseries"),
         label = "Time series to use",
-        options = list(
-          list(key = "Original", text = "Original"),
-          list(
-            key = "First transformation",
-            text = "First transformation"
-          ),
-          list(
-            key = "Second transformation",
-            text = "Second transformation"
-          )
-        ),
+        options = transformations,
         value = if (is.null(shared_data$transf)) {
           list("Original", "First transformation", "Second transformation")
         } else {
@@ -70,11 +61,7 @@ server <- function(id, shared_data) {
       Dropdown.shinyInput(
         ns("selectimeseriescales"),
         label = "Scales to use",
-        options = list(
-          list(key = "Exact", text = "Exact"),
-          list(key = "From 0 to 1", text = "From 0 to 1"),
-          list(key = "From -1 to 1", text = "From -1 to 1")
-        ),
+        options = scales,
         value = if (is.null(shared_data$scales)) {
           list("Exact", "From 0 to 1", "From -1 to 1")
         } else {

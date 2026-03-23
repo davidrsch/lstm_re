@@ -4,7 +4,7 @@ box::use(
 )
 
 #' @export
-threedvectfunc <- function(data, steps, datasample) {
+create_3d_vector <- function(data, steps, datasample) {
   if (is.data.frame(data) || is.matrix(data)) {
     for (column in seq_len(dim(data)[2])) {
       rollingwin <- runner(
@@ -30,7 +30,7 @@ threedvectfunc <- function(data, steps, datasample) {
 }
 
 #' @export
-whichequalvec <- function(vec, equalto) {
+which_equal_vec <- function(vec, equalto) {
   for (i in seq_along(equalto)) {
     if (i == 1) {
       x <- which(vec == equalto[i])

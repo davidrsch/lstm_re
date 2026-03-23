@@ -174,7 +174,7 @@ server <- function(id, database) {
       } else {
         choices <- x_data[1:(which(x_data == end) - 1)]
       }
-      database$starttrainlevels <- choices # Update starttrainlevels here
+      database$start_train_levels <- choices # Update starttrainlevels here
 
       if (
         is.null(start) ||
@@ -200,7 +200,7 @@ server <- function(id, database) {
       end <- input$selectteststart
       start <- input$selecttrainstart
       choices <- x_data[1:(which(x_data == end) - 1)]
-      database$starttrainlevels <- choices
+      database$start_train_levels <- choices
       if (
         is.null(start) ||
           !is.element(start, x_data) ||
@@ -234,35 +234,35 @@ server <- function(id, database) {
         )
       } else {
         stns <- input$selecttrainstart
-        if (dim(database$selectedtrains)[1] == 0) {
-          database$selectedtrains <- data.frame(`Train start dates` = stns)
-          if (database$showGraphs < 2) {
-            database$showGraphs <- database$showGraphs + 1
+        if (dim(database$selected_trains)[1] == 0) {
+          database$selected_trains <- data.frame(`Train start dates` = stns)
+          if (database$show_graphs < 2) {
+            database$show_graphs <- database$show_graphs + 1
           }
-          if (database$showGraphs == 1) {
+          if (database$show_graphs == 1) {
             # select graph pivot
           }
         } else {
-          if (!is.element(stns, database$selectedtrains[, 1])) {
-            database$selectedtrains <- rbind(
-              database$selectedtrains,
+          if (!is.element(stns, database$selected_trains[, 1])) {
+            database$selected_trains <- rbind(
+              database$selected_trains,
               data.frame(`Train start dates` = stns)
             )
-            database$selectedtrains <- database$selectedtrains |>
+            database$selected_trains <- database$selected_trains |>
               arrange(factor(
                 Train.start.dates,
-                levels = database$starttrainlevels
+                levels = database$start_train_levels
               ))
           }
         }
         indxofstn <- which(is.element(
           database$x_data,
-          database$selectedtrains$Train.start.dates
+          database$selected_trains$Train.start.dates
         ))
         indxofstt <- which(database$x_data == input$selectteststart)
         if (any(indxofstn > indxofstt)) {
           whichisbig <- which(indxofstn > indxofstt)
-          database$selectedtrains <- database$selectedtrains |>
+          database$selected_trains <- database$selected_trains |>
             slice(-whichisbig)
         }
       }
@@ -270,14 +270,14 @@ server <- function(id, database) {
 
     output$traindatestable <- renderDataTable({
       datatable(
-        database$selectedtrains,
-        options = list(dom = "t", pageLength = dim(database$selectedtrains)[1])
+        database$selected_trains,
+        options = list(dom = "t", pageLength = dim(database$selected_trains)[1])
       )
     })
 
     observeEvent(input$eliminatetrainsd, {
       rwstr <- input$traindatestable_rows_selected
-      database$selectedtrains <- database$selectedtrains |> slice(-rwstr)
+      database$selected_trains <- database$selected_trains |> slice(-rwstr)
     })
   })
 }

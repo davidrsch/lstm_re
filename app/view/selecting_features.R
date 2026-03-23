@@ -12,7 +12,7 @@ box::use(
 
 
 box::use(
-  app / logic / ui_helpers[findmodels, selectmodelstobuild],
+  app / logic / ui_helpers[find_models, select_models_to_build],
   app / view / feature_selection_guide_module,
   app / view / models_options_card_module,
   app / view / training_options_card_module,
@@ -267,9 +267,9 @@ server <- function(id, shared_data) {
         is.null(shared_data$transf) ||
           is.null(shared_data$scales) ||
           is.na(shared_data$temporalhorizon) ||
-          is.null(shared_data$stdinputamnts) ||
-          is.null(shared_data$stdLSTMamnts) ||
-          is.null(shared_data$stdneuronsamnts) ||
+          is.null(shared_data$std_input_amounts) ||
+          is.null(shared_data$std_lstm_amounts) ||
+          is.null(shared_data$std_neuron_amounts) ||
           is.na(shared_data$epoch)
       ) {
         shinyalert(html = TRUE, text = startalert, type = "error")
@@ -281,7 +281,7 @@ server <- function(id, shared_data) {
             type = "error"
           )
         } else {
-          if (shared_data$setseed == TRUE && is.na(shared_data$seed)) {
+          if (shared_data$set_seed == TRUE && is.na(shared_data$seed)) {
             shinyalert(
               "Error",
               "If a seed is going to be used a seed most be specified",
@@ -289,9 +289,9 @@ server <- function(id, shared_data) {
             )
           } else {
             modal_visible(TRUE)
-            shared_data$modelstable <- findmodels(
-              shared_data$stdLSTMamnts,
-              shared_data$stdneuronsamnts
+            shared_data$models_table <- find_models(
+              shared_data$std_lstm_amounts,
+              shared_data$std_neuron_amounts
             )
           }
         }
@@ -303,23 +303,23 @@ server <- function(id, shared_data) {
         Modal(
           isOpen = modal_visible(),
           isBlocking = FALSE,
-          selectmodelstobuild(
+          select_models_to_build(
             ns = ns,
-            train = shared_data$selectedtrains,
+            train = shared_data$selected_trains,
             ts = shared_data$transf,
             sc = shared_data$scales,
-            vec = shared_data$stdinputamnts,
-            lstm = shared_data$stdLSTMamnts,
-            neu = shared_data$stdneuronsamnts
+            vec = shared_data$std_input_amounts,
+            lstm = shared_data$std_lstm_amounts,
+            neu = shared_data$std_neuron_amounts
           )
         )
       }
     })
 
     output$modelestable <- renderDataTable({
-      req(shared_data$modelstable)
+      req(shared_data$models_table)
       datatable(
-        shared_data$modelstable,
+        shared_data$models_table,
         options = list(
           dom = "t",
           ordering = FALSE,
@@ -346,8 +346,8 @@ server <- function(id, shared_data) {
     })
 
     observeEvent(input$eliminatemodel, {
-      req(shared_data$modelstable, input$modelestable_rows_selected)
-      shared_data$modelstable <- shared_data$modelstable[
+      req(shared_data$models_table, input$modelestable_rows_selected)
+      shared_data$models_table <- shared_data$models_table[
         -as.numeric(input$modelestable_rows_selected),
       ]
     })

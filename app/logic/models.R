@@ -3,7 +3,7 @@ box::use(
 )
 
 #' @export
-createmodel <- function(structure, inputvec, outputvec) {
+create_model <- function(structure, inputvec, outputvec) {
   if (dim(structure)[2] == 1) {
     model <- keras_model_sequential() |>
       layer_lstm(
