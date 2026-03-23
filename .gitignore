@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 rsconnect
+
+# Shiny session-hash cache directories
+app/static/[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]*/

@@ -1,5 +1,5 @@
 box::use(
-  jsonlite[fromJSON, toJSON, write_json],
+  jsonlite[toJSON],
   keras3[callback_lambda],
   shinyjs[runjs],
 )
@@ -130,7 +130,7 @@ delete_traces <- function(plotid) {
 #' @export
 on_epoch_end <- function(
   nmodel,
-  directory,
+  loss_store,
   plotid,
   amountofepoch,
   epoch,
@@ -148,21 +148,17 @@ on_epoch_end <- function(
     xticksvalues <- plotx
   }
 
-  loss_file <- paste0(directory, "loss.json")
-
-  if (!file.exists(loss_file)) {
+  if (is.null(loss_store$loss)) {
     if (nmodel != 1) {
       delete_traces(plotid)
     }
     update_layout(plotx, xticksvalues, plotid)
     loss <- logs$loss
     add_traces(plotx, loss, plotid)
-    write_json(loss, loss_file)
+    loss_store$loss <- loss
   } else {
-    loss <- fromJSON(loss_file)
-    loss <- c(loss, logs$loss)
-    extend_traces(loss, epoch, plotid)
-    write_json(loss, loss_file)
+    loss_store$loss <- c(loss_store$loss, logs$loss)
+    extend_traces(loss_store$loss, epoch, plotid)
   }
 }
 
@@ -170,14 +166,14 @@ on_epoch_end <- function(
 create_callback <- function(
   nmodel,
   session,
-  directory,
+  loss_store,
   plotid,
   batchpbid,
   batchamount,
   epochpbid,
   epochamount
 ) {
-  cd <- callback_lambda(
+  callback_lambda(
     on_batch_begin = function(batch, logs) {
       update_progress(
         session = session,
@@ -197,7 +193,7 @@ create_callback <- function(
     on_epoch_end = function(epoch, logs) {
       on_epoch_end(
         nmodel = nmodel,
-        directory = directory,
+        loss_store = loss_store,
         plotid = plotid,
         amountofepoch = epochamount,
         epoch = epoch,
@@ -205,5 +201,4 @@ create_callback <- function(
       )
     }
   )
-  cd
 }

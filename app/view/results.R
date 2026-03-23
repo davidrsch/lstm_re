@@ -3,7 +3,7 @@ box::use(
   dplyr[across, filter, mutate, mutate_if, pull, select, select_if, where],
   english[ordinal],
   htmlwidgets[onRender],
-  jsonlite[fromJSON, toJSON, write_json],
+  jsonlite[toJSON, write_json],
   keras3[clear_session, compile, fit, save_model],
   plotly[config, plot_ly, plotlyOutput, renderPlotly],
   rmarkdown[render],
@@ -217,12 +217,10 @@ server <- function(id, sf) {
         exp_models <- paste0(exp_directory, "/models")
         exp_dashdirect <- paste0(exp_directory, "/dashboard")
         exp_dashdata <- paste0(exp_dashdirect, "/www")
-        loss_directory <- paste0(r$path_of_directorio, "/plotdata/")
         dir.create(exp_directory)
         dir.create(exp_models)
         dir.create(exp_dashdirect)
         dir.create(exp_dashdata)
-        dir.create(loss_directory)
         amountofts <- dim(sf$selected_trains)[1]
         amountoftf <- length(sf$transf)
         amountofsc <- length(sf$scales)
@@ -337,10 +335,8 @@ server <- function(id, sf) {
                 ]
                 for (m in 1:amountofmodels) {
                   modelbuilding <- modelbuilding + 1
-                  loss_file_path <- paste0(loss_directory, "loss.json")
-                  if (file.exists(loss_file_path)) {
-                    file.remove(loss_file_path)
-                  }
+                  loss_store <- new.env(parent = emptyenv())
+                  loss_store$loss <- NULL
                   r$progress[[r$tabname]]$model <- modelbuilding /
                     amountoftotalmodels
                   savemodelpath <- paste0(exp_models, "/model_", modelbuilding)
@@ -400,7 +396,7 @@ server <- function(id, sf) {
                   cd <- create_callback(
                     nmodel = modelbuilding,
                     session = session,
-                    directory = loss_directory,
+                    loss_store = loss_store,
                     plotid = ns(paste0(r$tabname, "liveplot")),
                     batchpbid = ns(paste0(r$tabname, "_batch_update")),
                     batchamount = samples,
@@ -486,10 +482,7 @@ server <- function(id, sf) {
                     paste0(dashdatamodelpath, "/mmmpred.js"),
                     useBytes = TRUE
                   )
-                  trainloss <- fromJSON(paste0(
-                    loss_directory,
-                    "/loss.json"
-                  ))
+                  trainloss <- loss_store$loss
                   trainloss <- paste0(
                     "var modellosses = [\"",
                     trainloss,
@@ -497,7 +490,9 @@ server <- function(id, sf) {
                   )
                   write(trainloss, paste0(dashdatamodelpath, "/loss.js"))
                   actual_values_for_metrics <- truetestvector[,
-                    (as.numeric(sf$input_amounts[input]) + 1):dim(testvector)[2],
+                    (as.numeric(sf$input_amounts[input]) + 1):dim(testvector)[
+                      2
+                    ],
                     out,
                     drop = FALSE
                   ]
