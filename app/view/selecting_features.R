@@ -2,11 +2,9 @@ box::use(
   DT[datatable, renderDataTable],
   shiny.fluent[DefaultButton.shinyInput, PrimaryButton.shinyInput, Stack],
   shiny.fluent[Modal, reactOutput, renderReact],
-  shiny.fluent[updateDefaultButton.shinyInput],
   shiny[div, moduleServer, NS, observeEvent, reactiveVal, reactiveValues],
   shiny[req],
   shinyalert[shinyalert],
-  shinyjs[hide, toggle],
   stats[runif],
 )
 
@@ -75,192 +73,25 @@ server <- function(id, shared_data) {
 
     ts_transformations_card_module$server(
       "ts_transformations_card",
-      shared_data
+      shared_data,
+      visibility
     )
-    training_vectors_card_module$server("training_vectors_card", shared_data)
-    models_options_card_module$server("models_options_card", shared_data)
-    training_options_card_module$server("training_options_card", shared_data)
+    training_vectors_card_module$server(
+      "training_vectors_card",
+      shared_data,
+      visibility
+    )
+    models_options_card_module$server(
+      "models_options_card",
+      shared_data,
+      visibility
+    )
+    training_options_card_module$server(
+      "training_options_card",
+      shared_data,
+      visibility
+    )
     feature_selection_guide_module$server("feature_selection_guide")
-
-    observeEvent(input$`ts_transformations_card-toggle_card`, {
-      visibility$ts_transformations <- !visibility$ts_transformations
-      toggle(id = "ts_transformations_card-card_content")
-      updateDefaultButton.shinyInput(
-        session,
-        "ts_transformations_card-toggle_card",
-        iconProps = list(
-          iconName = ifelse(
-            visibility$ts_transformations,
-            "ChevronUp",
-            "ChevronDown"
-          )
-        )
-      )
-      if (visibility$ts_transformations) {
-        if (visibility$training_vectors) {
-          visibility$training_vectors <- FALSE
-          hide(id = "training_vectors_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "training_vectors_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-        if (visibility$models_options) {
-          visibility$models_options <- FALSE
-          hide(id = "models_options_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "models_options_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-        if (visibility$training_options) {
-          visibility$training_options <- FALSE
-          hide(id = "training_options_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "training_options_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      }
-    })
-
-    observeEvent(input$`training_vectors_card-toggle_card`, {
-      visibility$training_vectors <- !visibility$training_vectors
-      toggle(id = "training_vectors_card-card_content")
-      updateDefaultButton.shinyInput(
-        session,
-        "training_vectors_card-toggle_card",
-        iconProps = list(
-          iconName = ifelse(
-            visibility$training_vectors,
-            "ChevronUp",
-            "ChevronDown"
-          )
-        )
-      )
-      if (visibility$training_vectors) {
-        if (visibility$ts_transformations) {
-          visibility$ts_transformations <- FALSE
-          hide(id = "ts_transformations_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "ts_transformations_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-        if (visibility$models_options) {
-          visibility$models_options <- FALSE
-          hide(id = "models_options_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "models_options_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-        if (visibility$training_options) {
-          visibility$training_options <- FALSE
-          hide(id = "training_options_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "training_options_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      }
-    })
-
-    observeEvent(input$`models_options_card-toggle_card`, {
-      visibility$models_options <- !visibility$models_options
-      toggle(id = "models_options_card-card_content")
-      updateDefaultButton.shinyInput(
-        session,
-        "models_options_card-toggle_card",
-        iconProps = list(
-          iconName = ifelse(
-            visibility$models_options,
-            "ChevronUp",
-            "ChevronDown"
-          )
-        )
-      )
-      if (visibility$models_options) {
-        if (visibility$ts_transformations) {
-          visibility$ts_transformations <- FALSE
-          hide(id = "ts_transformations_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "ts_transformations_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-        if (visibility$training_vectors) {
-          visibility$training_vectors <- FALSE
-          hide(id = "training_vectors_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "training_vectors_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-        if (visibility$training_options) {
-          visibility$training_options <- FALSE
-          hide(id = "training_options_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "training_options_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      }
-    })
-
-    observeEvent(input$`training_options_card-toggle_card`, {
-      visibility$training_options <- !visibility$training_options
-      toggle(id = "training_options_card-card_content")
-      updateDefaultButton.shinyInput(
-        session,
-        "training_options_card-toggle_card",
-        iconProps = list(
-          iconName = ifelse(
-            visibility$training_options,
-            "ChevronUp",
-            "ChevronDown"
-          )
-        )
-      )
-      if (visibility$training_options) {
-        if (visibility$ts_transformations) {
-          visibility$ts_transformations <- FALSE
-          hide(id = "ts_transformations_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "ts_transformations_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-        if (visibility$training_vectors) {
-          visibility$training_vectors <- FALSE
-          hide(id = "training_vectors_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "training_vectors_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-        if (visibility$models_options) {
-          visibility$models_options <- FALSE
-          hide(id = "models_options_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "models_options_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      }
-    })
 
     observeEvent(input$startexperimentation, {
       if (

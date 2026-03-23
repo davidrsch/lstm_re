@@ -1,9 +1,9 @@
 box::use(
   shiny.fluent[Checkbox.shinyInput, DefaultButton.shinyInput, Stack],
-  shiny.fluent[TextField.shinyInput],
+  shiny.fluent[TextField.shinyInput, updateDefaultButton.shinyInput],
   shiny[div, moduleServer, NS, observeEvent, renderUI, tagList, uiOutput],
   shinyalert[shinyalert],
-  shinyjs[disable, enable, hidden],
+  shinyjs[disable, enable, hidden, hide, toggle],
 )
 
 box::use(
@@ -48,8 +48,74 @@ ui <- function(id) {
 }
 
 #' @export
-server <- function(id, sf) {
+server <- function(id, sf, visibility) {
   moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+
+    observeEvent(input$toggle_card, {
+      visibility$training_options <- !visibility$training_options
+      toggle(id = ns("card_content"))
+      updateDefaultButton.shinyInput(
+        session,
+        "toggle_card",
+        iconProps = list(
+          iconName = if (visibility$training_options) {
+            "ChevronUp"
+          } else {
+            "ChevronDown"
+          }
+        )
+      )
+    })
+
+    observeEvent(
+      visibility$ts_transformations,
+      {
+        if (visibility$ts_transformations && visibility$training_options) {
+          visibility$training_options <- FALSE
+          hide(id = ns("card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
+
+    observeEvent(
+      visibility$training_vectors,
+      {
+        if (visibility$training_vectors && visibility$training_options) {
+          visibility$training_options <- FALSE
+          hide(id = ns("card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
+
+    observeEvent(
+      visibility$models_options,
+      {
+        if (visibility$models_options && visibility$training_options) {
+          visibility$training_options <- FALSE
+          hide(id = ns("card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
+
     output$selectepochamount_ui <- renderUI({
       TextField.shinyInput(
         session$ns("selectepochamount"),

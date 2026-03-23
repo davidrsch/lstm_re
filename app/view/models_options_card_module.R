@@ -1,9 +1,9 @@
 box::use(
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack],
-  shiny.fluent[TextField.shinyInput],
+  shiny.fluent[TextField.shinyInput, updateDefaultButton.shinyInput],
   shiny[div, moduleServer, NS, observeEvent, renderUI, tagList, uiOutput],
   shinyalert[shinyalert],
-  shinyjs[hidden],
+  shinyjs[hidden, hide, toggle],
 )
 
 box::use(
@@ -53,8 +53,74 @@ ui <- function(id) {
 }
 
 #' @export
-server <- function(id, sf) {
+server <- function(id, sf, visibility) {
   moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+
+    observeEvent(input$toggle_card, {
+      visibility$models_options <- !visibility$models_options
+      toggle(id = ns("card_content"))
+      updateDefaultButton.shinyInput(
+        session,
+        "toggle_card",
+        iconProps = list(
+          iconName = if (visibility$models_options) {
+            "ChevronUp"
+          } else {
+            "ChevronDown"
+          }
+        )
+      )
+    })
+
+    observeEvent(
+      visibility$ts_transformations,
+      {
+        if (visibility$ts_transformations && visibility$models_options) {
+          visibility$models_options <- FALSE
+          hide(id = ns("card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
+
+    observeEvent(
+      visibility$training_vectors,
+      {
+        if (visibility$training_vectors && visibility$models_options) {
+          visibility$models_options <- FALSE
+          hide(id = ns("card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
+
+    observeEvent(
+      visibility$training_options,
+      {
+        if (visibility$training_options && visibility$models_options) {
+          visibility$models_options <- FALSE
+          hide(id = ns("card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
+
     output$addLSTMamount_ui <- renderUI({
       TextField.shinyInput(
         session$ns("addLSTMamount"),
@@ -147,7 +213,10 @@ server <- function(id, sf) {
           if (!is.element(addneuronsamount_val, sf$neuron_amounts)) {
             sf$neuron_amounts <- c(sf$neuron_amounts, addneuronsamount_val)
             sf$neuron_amounts <- sort(sf$neuron_amounts)
-            sf$std_neuron_amounts <- c(sf$std_neuron_amounts, addneuronsamount_val)
+            sf$std_neuron_amounts <- c(
+              sf$std_neuron_amounts,
+              addneuronsamount_val
+            )
           }
         }
       }

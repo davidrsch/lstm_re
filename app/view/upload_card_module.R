@@ -7,7 +7,8 @@ box::use(
   shiny[div, fileInput, moduleServer, NS, observeEvent, req],
   shiny[tagAppendAttributes, tagList],
   shinyalert[shinyalert],
-  shinyjs[click, hidden],
+  shinyjs[click, hidden, hide, toggle],
+  shiny.fluent[updateDefaultButton.shinyInput],
   stats[na.omit],
   stringr[str_split_i],
   tools[file_ext],
@@ -92,6 +93,59 @@ ui <- function(id) {
 server <- function(id, shared_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+
+    observeEvent(input$toggle_upload_card, {
+      shared_data$upload_card_visible <- !shared_data$upload_card_visible
+      toggle(id = ns("upload_card_content"))
+      updateDefaultButton.shinyInput(
+        session,
+        "toggle_upload_card",
+        iconProps = list(
+          iconName = if (shared_data$upload_card_visible) {
+            "ChevronUp"
+          } else {
+            "ChevronDown"
+          }
+        )
+      )
+    })
+
+    observeEvent(
+      shared_data$variables_card_visible,
+      {
+        if (
+          shared_data$variables_card_visible && shared_data$upload_card_visible
+        ) {
+          shared_data$upload_card_visible <- FALSE
+          hide(id = ns("upload_card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_upload_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
+
+    observeEvent(
+      shared_data$data_amount_card_visible,
+      {
+        if (
+          shared_data$data_amount_card_visible &&
+            shared_data$upload_card_visible
+        ) {
+          shared_data$upload_card_visible <- FALSE
+          hide(id = ns("upload_card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_upload_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
 
     observeEvent(
       session,

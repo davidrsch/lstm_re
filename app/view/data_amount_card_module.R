@@ -6,7 +6,8 @@ box::use(
   shiny[div, moduleServer, NS, observeEvent, renderUI, req, tagList],
   shiny[uiOutput],
   shinyalert[shinyalert],
-  shinyjs[hidden],
+  shinyjs[hidden, hide, toggle],
+  shiny.fluent[updateDefaultButton.shinyInput],
 )
 
 box::use(
@@ -85,6 +86,56 @@ ui <- function(id) {
 server <- function(id, database) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+
+    observeEvent(input$toggle_data_amount_card, {
+      database$data_amount_card_visible <- !database$data_amount_card_visible
+      toggle(id = ns("data_amount_card_content"))
+      updateDefaultButton.shinyInput(
+        session,
+        "toggle_data_amount_card",
+        iconProps = list(
+          iconName = if (database$data_amount_card_visible) {
+            "ChevronUp"
+          } else {
+            "ChevronDown"
+          }
+        )
+      )
+    })
+
+    observeEvent(
+      database$upload_card_visible,
+      {
+        if (database$upload_card_visible && database$data_amount_card_visible) {
+          database$data_amount_card_visible <- FALSE
+          hide(id = ns("data_amount_card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_data_amount_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
+
+    observeEvent(
+      database$variables_card_visible,
+      {
+        if (
+          database$variables_card_visible && database$data_amount_card_visible
+        ) {
+          database$data_amount_card_visible <- FALSE
+          hide(id = ns("data_amount_card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_data_amount_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
 
     # 08-Select dates-periods----
     observeEvent(list(database$df, database$selected_date_variable), {

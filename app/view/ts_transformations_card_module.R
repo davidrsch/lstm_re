@@ -1,6 +1,8 @@
 box::use(
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack],
+  shiny.fluent[updateDefaultButton.shinyInput],
   shiny[div, moduleServer, NS, observeEvent, renderUI, tagList, uiOutput],
+  shinyjs[hide, toggle],
 )
 
 box::use(
@@ -39,9 +41,73 @@ ui <- function(id) {
 }
 
 #' @export
-server <- function(id, shared_data) {
+server <- function(id, shared_data, visibility) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+
+    observeEvent(input$toggle_card, {
+      visibility$ts_transformations <- !visibility$ts_transformations
+      toggle(id = ns("card_content"))
+      updateDefaultButton.shinyInput(
+        session,
+        "toggle_card",
+        iconProps = list(
+          iconName = if (visibility$ts_transformations) {
+            "ChevronUp"
+          } else {
+            "ChevronDown"
+          }
+        )
+      )
+    })
+
+    observeEvent(
+      visibility$training_vectors,
+      {
+        if (visibility$training_vectors && visibility$ts_transformations) {
+          visibility$ts_transformations <- FALSE
+          hide(id = ns("card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
+
+    observeEvent(
+      visibility$models_options,
+      {
+        if (visibility$models_options && visibility$ts_transformations) {
+          visibility$ts_transformations <- FALSE
+          hide(id = ns("card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
+
+    observeEvent(
+      visibility$training_options,
+      {
+        if (visibility$training_options && visibility$ts_transformations) {
+          visibility$ts_transformations <- FALSE
+          hide(id = ns("card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
 
     output$selectimeseries_ui <- renderUI({
       Dropdown.shinyInput(
