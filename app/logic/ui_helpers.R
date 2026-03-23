@@ -1,6 +1,7 @@
 box::use(
   dplyr[bind_rows],
   DT[DTOutput],
+  purrr[map_dfr],
   shiny.fluent[DefaultButton.shinyInput, PrimaryButton.shinyInput],
   shiny[div, p, tagList, tags, uiOutput],
 )
@@ -26,18 +27,11 @@ startalert <- tagList(
 
 #' @export
 find_models <- function(lstm, neurons) {
-  for (i in seq_along(lstm)) {
-    if (i == 1) {
-      df <- expand.grid(rep(list(neurons), lstm[i]))
-      colsnames <- lapply(1:lstm[i], function(x) paste0(x, "_LSTM"))
-      names(df) <- colsnames
-    } else {
-      df2 <- expand.grid(rep(list(neurons), lstm[i]))
-      colsnames <- lapply(1:lstm[i], function(x) paste0(x, "_LSTM"))
-      names(df2) <- colsnames
-      df <- bind_rows(df, df2)
-  }
-  df
+  map_dfr(lstm, function(n_lstm) {
+    df <- expand.grid(rep(list(neurons), n_lstm))
+    names(df) <- lapply(seq_len(n_lstm), function(i) paste0(i, "_LSTM"))
+    df
+  })
 }
 
 #' @export
@@ -160,14 +154,7 @@ substright <- function(x, n) {
 
 #' @export
 paste_vec <- function(vect) {
-  for (i in seq_along(vect)) {
-    if (i == 1) {
-      x <- vect[i]
-    } else {
-      x <- paste(x, vect[i])
-    }
-  }
-  x
+  paste(vect, collapse = " ")
 }
 
 #' @export

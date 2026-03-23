@@ -1,4 +1,5 @@
 box::use(
+  purrr[detect_index, map, map_int],
   scales[rescale],
   tseries[adf.test, pp.test],
 )
@@ -28,23 +29,18 @@ create_ts <- function(date, variables, sttrain, ntrain, endtt) {
 #' @export
 first_diff <- function(ts) {
   df <- ts[, -1, drop = FALSE]
-  for (variables in seq_len(dim(df)[2])) {
-    for (i in seq_len(dim(df)[1])) {
-      valuedif <- diff(df[[variables]], differences = i)
+
+  find_diff_order <- function(x) {
+    order <- detect_index(seq_len(length(x)), function(i) {
+      valuedif <- diff(x, differences = i)
       adf <- adf.test(valuedif, alternative = "stationary")
       pp <- pp.test(valuedif, alternative = "stationary")
-      if (adf$p.value <= 0.05 && pp$p.value <= 0.05) {
-        valuedif <- i
-        break
-      } else {}
-    }
-    if (variables == 1) {
-      diffvalue <- valuedif
-    } else {
-      diffvalue <- c(diffvalue, valuedif)
-    }
+      adf$p.value <= 0.05 && pp$p.value <= 0.05
+    })
+    if (order == 0L) length(x) else order
   }
-  diffvalue <- max(diffvalue)
+
+  diffvalue <- max(map_int(df, find_diff_order))
   diffdf <- data.frame(diff(as.matrix(df), differences = diffvalue))
   names(diffdf) <- names(ts)[-1]
   valstrm <- 1:diffvalue
@@ -79,16 +75,12 @@ create_transformed_ts <- function(ts, trf, ntrf) {
 
 #' @export
 rescale_df <- function(x, to) {
-  for (variable in seq_len(dim(x)[2])) {
-    df <- rescale(x[[variable]], to, from = c(min(x), max(x)))
-    if (variable == 1) {
-      datfra <- data.frame(df)
-    } else {
-      datfra <- cbind(datfra, df)
-    }
-  }
-  colnames(datfra) <- names(x)
-  datfra
+  global_from <- c(min(x), max(x))
+  result <- as.data.frame(map(x, function(col) {
+    rescale(col, to = to, from = global_from)
+  }))
+  colnames(result) <- names(x)
+  result
 }
 
 #' @export
