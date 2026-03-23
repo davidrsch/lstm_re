@@ -42,5 +42,7 @@ server <- function(id, shared_data) {
     variables_card_module$server("variables_card", shared_data)
     data_amount_card_module$server("data_amount_card", shared_data)
     data_analysis_display_module$server("data_analysis_display", shared_data)
+
+    shared_data
   })
 }

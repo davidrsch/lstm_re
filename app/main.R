@@ -65,8 +65,11 @@ server <- function(id) {
       seed = NULL
     )
 
-    upload_data$server("upload_data", shared_data)
-    selecting_features$server("selecting_features", shared_data)
-    results_display$server("results", shared_data)
+    upload_data_out <- upload_data$server("upload_data", shared_data)
+    selecting_features_out <- selecting_features$server(
+      "selecting_features",
+      upload_data_out
+    )
+    results_display$server("results", selecting_features_out)
   })
 }
