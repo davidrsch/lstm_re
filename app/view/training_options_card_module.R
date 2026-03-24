@@ -1,7 +1,16 @@
 box::use(
   shiny.fluent[Checkbox.shinyInput, DefaultButton.shinyInput, Stack],
   shiny.fluent[TextField.shinyInput, updateDefaultButton.shinyInput],
-  shiny[div, moduleServer, NS, observeEvent, reactiveVal, renderUI, tagList, uiOutput],
+  shiny[
+    div,
+    moduleServer,
+    NS,
+    observeEvent,
+    reactiveVal,
+    renderUI,
+    tagList,
+    uiOutput
+  ],
   shinyjs[disable, enable, hidden, hide, toggle],
 )
 
