@@ -150,7 +150,7 @@ on_epoch_end <- function(
   logs
 ) {
   logs <- lapply(logs, as.numeric)
-  plotx <- 1:amountofepoch
+  plotx <- seq_len(amountofepoch)
   if (plotx[length(plotx)] > 10) {
     xticksvalues <- seq(
       1,

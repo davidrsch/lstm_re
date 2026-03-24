@@ -1,12 +1,12 @@
 box::use(
     abind[abind],
-    dplyr[across, filter, mutate, mutate_if, pull, select, select_if, where],
+    dplyr[across, filter, mutate, pull, select, where],
     english[ordinal],
     jsonlite[toJSON, write_json],
     keras3[clear_session, compile, fit, save_model],
     rmarkdown[render],
     shiny.fluent[CommandBar, Pivot, PivotItem, Stack],
-    shiny[div, moduleServer, NS, observe, observeEvent, reactiveVal],
+    shiny[div, moduleServer, NS, observeEvent, reactiveVal],
     shiny[reactiveValues, renderUI, req, uiOutput],
     shinyjs[html, runjs],
     shinyWidgets[updatePickerInput],
@@ -195,7 +195,7 @@ server <- function(id, shared_data) {
                                     tstv <- ts
                                 }
                                 vector <- create_3d_vector(
-                                    tstv[, , drop = FALSE],
+                                    tstv[,, drop = FALSE],
                                     steps,
                                     c(1, dim(tstv)[1])
                                 )
@@ -288,11 +288,17 @@ server <- function(id, shared_data) {
                                         ,
                                         drop = FALSE
                                     ] |>
-                                        select_if(~ !any(is.na(.)))
+                                        select(where(~ !any(is.na(.))))
                                     struct <- struct |>
-                                        mutate_if(is.factor, as.character)
+                                        mutate(across(
+                                            where(is.factor),
+                                            as.character
+                                        ))
                                     amountofneurons <- struct |>
-                                        mutate_if(is.character, as.numeric) |>
+                                        mutate(across(
+                                            where(is.character),
+                                            as.numeric
+                                        )) |>
                                         mutate(
                                             Neurons = rowSums(across(where(
                                                 is.numeric
@@ -454,13 +460,15 @@ server <- function(id, shared_data) {
                                         output_with_date_x,
                                         as.is = TRUE
                                     )
-                                    date2d <- unique(as.matrix(output_with_date[, , 1]))
+                                    date2d <- unique(as.matrix(output_with_date[,,
+                                        1
+                                    ]))
                                     mmmpred <- create_plot_pred_df(
                                         threddata = output_with_date,
                                         xdata = date2d,
                                         colnames = out
                                     )
-                                    mmmpred <- toJSON(toJSON(mmmpred))
+                                    mmmpred <- toJSON(mmmpred)
                                     mmmpred <- paste0(
                                         "var modelpred = ",
                                         mmmpred,
