@@ -178,7 +178,7 @@ server <- function(id, shared_data) {
       ignoreInit = TRUE
     )
 
-    session$onFlushed(once = TRUE, fun = function() {
+    session$onFlushed(function() {
       updateCheckbox.shinyInput(
         session,
         "header",
@@ -194,7 +194,7 @@ server <- function(id, shared_data) {
         "decimal_point",
         value = shared_data$decimal_point
       )
-    })
+    }, once = TRUE)
     observeEvent(input$file, {
       click("upload_file")
     })
