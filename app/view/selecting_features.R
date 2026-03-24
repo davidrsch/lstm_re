@@ -118,6 +118,14 @@ server <- function(id, shared_data) {
 
     observeEvent(input$startexperimentation, {
       if (
+        is.null(shared_data$selected_trains) ||
+          nrow(shared_data$selected_trains) == 0
+      ) {
+        error_message(
+          "Please select training data in the 'Select amount of data to use' section."
+        )
+        error_visible(TRUE)
+      } else if (
         is.null(shared_data$transf) ||
           is.null(shared_data$scales) ||
           is.na(shared_data$temporalhorizon) ||

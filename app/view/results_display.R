@@ -8,7 +8,6 @@ box::use(
     shiny.fluent[CommandBar, Pivot, PivotItem, Stack],
     shiny[div, moduleServer, NS, observe, observeEvent, reactiveVal],
     shiny[reactiveValues, renderUI, req, uiOutput],
-    shinyalert[shinyalert],
     shinyjs[html, runjs],
     shinyWidgets[updatePickerInput],
     utils[type.convert],
@@ -151,17 +150,6 @@ server <- function(id, shared_data) {
                 if (shared_data$set_seed == TRUE) {
                     set.seed(shared_data$seed)
                 }
-                if (
-                    is.null(shared_data$selected_trains) ||
-                        dim(shared_data$selected_trains)[1] == 0
-                ) {
-                    shinyalert(
-                        "Error",
-                        "Please select training data in the 'Select amount of data to use' section.",
-                        type = "error"
-                    )
-                    return()
-                }
 
                 for (i in seq_len(amountofts)) {
                     ts <- create_ts(
@@ -207,7 +195,7 @@ server <- function(id, shared_data) {
                                     tstv <- ts
                                 }
                                 vector <- create_3d_vector(
-                                    tstv[,, drop = FALSE],
+                                    tstv[, , drop = FALSE],
                                     steps,
                                     c(1, dim(tstv)[1])
                                 )
@@ -269,7 +257,7 @@ server <- function(id, shared_data) {
                                     ,
                                     drop = FALSE
                                 ]
-                                for (m in 1:amountofmodels) {
+                                for (m in seq_len(amountofmodels)) {
                                     modelbuilding <- modelbuilding + 1
                                     loss_store <- new.env(parent = emptyenv())
                                     loss_store$loss <- NULL
@@ -466,9 +454,7 @@ server <- function(id, shared_data) {
                                         output_with_date_x,
                                         as.is = TRUE
                                     )
-                                    date2d <- unique(as.matrix(output_with_date[,,
-                                        1
-                                    ]))
+                                    date2d <- unique(as.matrix(output_with_date[, , 1]))
                                     mmmpred <- create_plot_pred_df(
                                         threddata = output_with_date,
                                         xdata = date2d,
