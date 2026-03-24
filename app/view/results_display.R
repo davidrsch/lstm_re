@@ -461,7 +461,7 @@ server <- function(id, shared_data) {
                     output_with_date_x,
                     as.is = TRUE
                   )
-                  date2d <- unique(as.matrix(output_with_date[,, 1]))
+                  date2d <- unique(as.matrix(output_with_date[, , 1]))
                   mmmpred <- create_plot_pred_df(
                     threddata = output_with_date,
                     xdata = date2d,
