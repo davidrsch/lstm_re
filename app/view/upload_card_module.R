@@ -265,7 +265,11 @@ server <- function(id, shared_data) {
         input$decimal_point
       ),
       {
-        req(input$upload_file)
+        req(
+          input$upload_file,
+          input$delimiter,
+          input$decimal_point
+        )
         ext <- file_ext(input$upload_file$name)
         if (ext %in% c("txt", "csv", "tsv", "fwf")) {
           shared_data$df <- read_delim(
