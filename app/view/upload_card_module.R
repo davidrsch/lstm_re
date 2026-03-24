@@ -25,7 +25,7 @@ box::use(
     tagList,
     uiOutput
   ],
-  shinyjs[click, hidden, hide, toggle],
+  shinyjs[click, delay, hidden, hide, toggle],
   stats[na.omit],
   stringr[str_split_i],
   tools[file_ext],
@@ -179,26 +179,23 @@ server <- function(id, shared_data) {
       ignoreInit = TRUE
     )
 
-    session$onFlushed(
-      function() {
-        updateCheckbox.shinyInput(
-          session,
-          "header",
-          value = isolate(shared_data$header)
-        )
-        updateTextField.shinyInput(
-          session,
-          "delimiter",
-          value = isolate(shared_data$delimiter)
-        )
-        updateTextField.shinyInput(
-          session,
-          "decimal_point",
-          value = isolate(shared_data$decimal_point)
-        )
-      },
-      once = TRUE
-    )
+    delay(0, {
+      updateCheckbox.shinyInput(
+        session,
+        "header",
+        value = isolate(shared_data$header)
+      )
+      updateTextField.shinyInput(
+        session,
+        "delimiter",
+        value = isolate(shared_data$delimiter)
+      )
+      updateTextField.shinyInput(
+        session,
+        "decimal_point",
+        value = isolate(shared_data$decimal_point)
+      )
+    })
     observeEvent(input$file, {
       click("upload_file")
     })
