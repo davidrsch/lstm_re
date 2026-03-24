@@ -24,7 +24,7 @@ make_card <- function(
       style = style,
       Stack(
         tokens = list(childrenGap = 10),
-        Text(variant = "xLarge", title, block = TRUE),
+        Text(children = title, variant = "xLarge", block = TRUE),
         content
       )
     )
