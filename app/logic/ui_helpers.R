@@ -1,5 +1,4 @@
 box::use(
-  dplyr[bind_rows],
   DT[DTOutput],
   purrr[map_dfr],
   shiny.fluent[

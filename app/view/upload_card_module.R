@@ -19,12 +19,9 @@ box::use(
     NS,
     observeEvent,
     reactiveVal,
-    renderUI,
-    req,
-    tagAppendAttributes,
-    tagList,
-    uiOutput
+    renderUI
   ],
+  shiny[req, tagAppendAttributes, tagList, uiOutput],
   shinyjs[click, delay, hidden, hide, toggle],
   stats[na.omit],
   stringr[str_split_i],

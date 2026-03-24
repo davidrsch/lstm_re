@@ -3,11 +3,10 @@ box::use(
   rhandsontable[hot_col, hot_to_r, renderRHandsontable, rhandsontable],
   rhandsontable[rHandsontableOutput],
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack, Text],
-  shiny.fluent[PrimaryButton.shinyInput],
+  shiny.fluent[PrimaryButton.shinyInput, updateDefaultButton.shinyInput],
   shiny[div, moduleServer, NS],
   shiny[observeEvent, renderUI, req, tagList, uiOutput],
   shinyjs[hidden, hide, toggle],
-  shiny.fluent[updateDefaultButton.shinyInput],
 )
 
 box::use(

@@ -1,8 +1,9 @@
 box::use(
   dplyr[arrange, slice],
   DT[datatable, DTOutput, renderDataTable],
+  rlang[`%||%`],
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack, Text],
-  shiny.fluent[PrimaryButton.shinyInput],
+  shiny.fluent[PrimaryButton.shinyInput, updateDefaultButton.shinyInput],
   shiny[
     div,
     moduleServer,
@@ -15,13 +16,11 @@ box::use(
   ],
   shiny[uiOutput],
   shinyjs[hidden, hide, toggle],
-  shiny.fluent[updateDefaultButton.shinyInput],
 )
 
 box::use(
   app / logic / make_card[make_card],
   app / view / make_modal,
-  rlang[`%||%`],
 )
 
 #' @export
@@ -242,7 +241,8 @@ server <- function(id, shared_data) {
     })
 
     output$selecttrainstart_dropdown <- renderUI({
-      # This renderUI will react to input$selectteststart, shared_data$x_data, input$selecttrainstart
+      # This renderUI will react to input$selectteststart, shared_data$x_data,
+      # input$selecttrainstart
       x_data <- shared_data$x_data
       end <- input$selectteststart
       start <- input$selecttrainstart # This is the current value of the dropdown
