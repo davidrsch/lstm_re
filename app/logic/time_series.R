@@ -4,6 +4,8 @@ box::use(
   tseries[adf.test, pp.test],
 )
 
+# Slices the combined date-variables data frame to the window defined by the
+# selected training start date (sttrain[ntrain]) and the test end date (endtt).
 #' @export
 create_ts <- function(date, variables, sttrain, ntrain, endtt) {
   df <- cbind(date, variables)
@@ -26,6 +28,9 @@ create_ts <- function(date, variables, sttrain, ntrain, endtt) {
   df <- df[start:end, ]
 }
 
+# Applies the minimum order of first differencing needed to make each series
+# stationary (ADF and PP tests, p <= 0.05). Returns the differenced data frame
+# with a trailing difv column recording the applied difference order.
 #' @export
 first_diff <- function(ts) {
   df <- ts[, -1, drop = FALSE]
@@ -50,6 +55,8 @@ first_diff <- function(ts) {
   diffdf
 }
 
+# Applies a log transform followed by first differencing. Useful for series
+# with exponential trends.
 #' @export
 second_diff <- function(ts) {
   logts <- log(ts[, -1, drop = FALSE])
@@ -59,12 +66,14 @@ second_diff <- function(ts) {
   logdf
 }
 
+# Dispatches to the correct transformation function based on the key trf[ntrf].
+# Keys: "original" (no change), "first" (first_diff), "second" (second_diff).
 #' @export
 create_transformed_ts <- function(ts, trf, ntrf) {
-  if (trf[ntrf] == "Original") {
+  if (trf[ntrf] == "original") {
     x <- ts
   } else {
-    if (trf[ntrf] == "First transformation") {
+    if (trf[ntrf] == "first") {
       x <- first_diff(ts)
     } else {
       x <- second_diff(ts)
@@ -73,6 +82,8 @@ create_transformed_ts <- function(ts, trf, ntrf) {
   x
 }
 
+# Rescales all numeric columns of x to the interval [to[1], to[2]) using a
+# single global min/max derived from the entire data frame.
 #' @export
 rescale_df <- function(x, to) {
   global_from <- c(min(x), max(x))
@@ -83,16 +94,19 @@ rescale_df <- function(x, to) {
   result
 }
 
+# Applies the chosen scale transformation by key: "exact" (no scaling),
+# "zero_one" ([0, 1]), "minus_plus" ([-1, 1]). Also strips the difv
+# bookkeeping column before scaling.
 #' @export
 create_scaled_ts <- function(ts, sc, nsc) {
-  if (sc[nsc] == "Exact") {
+  if (sc[nsc] == "exact") {
     if (any(names(ts) == "difv")) {
       x <- ts[, -grep("difv", names(ts)), drop = FALSE]
     } else {
       x <- ts
     }
   } else {
-    if (sc[nsc] == "From 0 to 1") {
+    if (sc[nsc] == "zero_one") {
       if (any(names(ts) == "difv")) {
         y <- ts[, -grep("difv", names(ts)), drop = FALSE]
       } else {

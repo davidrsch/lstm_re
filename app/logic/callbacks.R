@@ -5,6 +5,8 @@ box::use(
 )
 
 
+# Fires a JavaScript Shiny.setInputValue event to update a Fluent ProgressIndicator
+# to the fraction (item + 1) / amount.
 #' @export
 update_progress <- function(session, pgbid, amount, item) {
   progress <- (item + 1) / amount
@@ -20,6 +22,8 @@ update_progress <- function(session, pgbid, amount, item) {
 }
 
 
+# Applies a Plotly relayout to set axis titles, tick values, legend position,
+# and removes the mode bar on the training loss chart.
 #' @export
 update_layout <- function(x, valuesofx, plotid) {
   runjs(paste0(
@@ -70,6 +74,8 @@ update_layout <- function(x, valuesofx, plotid) {
   ))
 }
 
+# Adds a new scatter-line trace to the Plotly loss chart with the full x/loss
+# vectors for the current model.
 #' @export
 add_traces <- function(x, loss, plotid) {
   runjs(paste0(
@@ -103,6 +109,8 @@ add_traces <- function(x, loss, plotid) {
   ))
 }
 
+# Extends the last trace on the Plotly loss chart by appending the most recent
+# loss value, enabling live epoch-by-epoch updates.
 #' @export
 extend_traces <- function(loss, epoch, plotid) {
   runjs(paste0(
@@ -116,6 +124,8 @@ extend_traces <- function(loss, epoch, plotid) {
   ))
 }
 
+# Removes the last trace from the Plotly loss chart. Called before drawing the
+# first epoch of each new model to clear the previous model's trace.
 #' @export
 delete_traces <- function(plotid) {
   runjs(paste0(
@@ -127,6 +137,9 @@ delete_traces <- function(plotid) {
   ))
 }
 
+# Handles the Keras on_epoch_end event: initialises the chart layout on the
+# first epoch, adds a fresh trace for each new model, and extends the trace
+# on subsequent epochs.
 #' @export
 on_epoch_end <- function(
   nmodel,
@@ -162,6 +175,8 @@ on_epoch_end <- function(
   }
 }
 
+# Builds a Keras callback_lambda that reports batch and epoch progress to
+# Shiny progress bars and delegates loss-plot updates to on_epoch_end.
 #' @export
 create_callback <- function(
   nmodel,

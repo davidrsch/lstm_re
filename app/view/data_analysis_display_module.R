@@ -55,7 +55,7 @@ ui <- function(id) {
 }
 
 #' @export
-server <- function(id, database) {
+server <- function(id, shared_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -67,7 +67,7 @@ server <- function(id, database) {
 
     # 05-Imported file table----
     output$files <- renderDataTable(
-      database$df,
+      shared_data$df,
       options = list(
         searching = FALSE,
         scrollX = TRUE,
@@ -80,24 +80,24 @@ server <- function(id, database) {
     )
 
     output$eda <- renderPlot({
-      req(database$EDA)
-      plot_eda(database$EDA)
+      req(shared_data$EDA)
+      plot_eda(shared_data$EDA)
     })
 
     output$summary <- renderDataTable({
-      req(database$EDA)
-      database_summary(database$EDA)
+      req(shared_data$EDA)
+      database_summary(shared_data$EDA)
     })
 
     output$plotselectedvariables <- renderUI({
-      req(database$selected_trains)
-      req(nrow(database$selected_trains) > 0)
+      req(shared_data$selected_trains)
+      req(nrow(shared_data$selected_trains) > 0)
       sets_vars_plots(
-        database$selected_trains,
-        database$EDA,
-        database$x_data,
-        database$test_start_date,
-        database$test_end_date
+        shared_data$selected_trains,
+        shared_data$EDA,
+        shared_data$x_data,
+        shared_data$test_start_date,
+        shared_data$test_end_date
       )
     })
   })

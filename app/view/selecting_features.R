@@ -3,8 +3,7 @@ box::use(
   shiny.fluent[DefaultButton.shinyInput, PrimaryButton.shinyInput, Stack],
   shiny.fluent[Modal, reactOutput, renderReact],
   shiny[div, moduleServer, NS, observeEvent, reactiveVal, reactiveValues],
-  shiny[req],
-  shinyalert[shinyalert],
+  shiny[renderUI, req, uiOutput],
   stats[runif],
 )
 
@@ -12,6 +11,7 @@ box::use(
 box::use(
   app / logic / ui_helpers[find_models, select_models_to_build],
   app / view / feature_selection_guide_module,
+  app / view / make_modal,
   app / view / models_options_card_module,
   app / view / training_options_card_module,
   app / view / training_vectors_card_module,
@@ -27,6 +27,7 @@ ui <- function(id) {
       style = "display: flex; flex-wrap: wrap;",
       div(
         class = "ms-Grid-col ms-sm4",
+        make_modal$ui(ns("error_modal")),
         ts_transformations_card_module$ui(ns("ts_transformations_card")),
         training_vectors_card_module$ui(ns("training_vectors_card")),
         models_options_card_module$ui(ns("models_options_card")),
@@ -54,6 +55,18 @@ server <- function(id, shared_data) {
     ns <- session$ns
 
     modal_visible <- reactiveVal(FALSE)
+
+    error_visible <- reactiveVal(FALSE)
+    error_message <- reactiveVal("")
+    output$error_content <- renderUI(div(error_message()))
+    make_modal$server(
+      "error_modal",
+      name = "error_modal",
+      is_open = error_visible,
+      title = "Error",
+      content = uiOutput(ns("error_content")),
+      status = "error"
+    )
 
     startalert <- paste0(
       "Please make sure that you have selected a time series, a scale, a ",
@@ -103,21 +116,20 @@ server <- function(id, shared_data) {
           is.null(shared_data$std_neuron_amounts) ||
           is.na(shared_data$epoch)
       ) {
-        shinyalert(html = TRUE, text = startalert, type = "error")
+        error_message(startalert)
+        error_visible(TRUE)
       } else {
         if (shared_data$epoch < 1 || !is.integer(shared_data$epoch)) {
-          shinyalert(
-            "Error",
-            "Wrong epoch format, most be an integer number bigger than 0",
-            type = "error"
+          error_message(
+            "Wrong epoch format, must be an integer number bigger than 0"
           )
+          error_visible(TRUE)
         } else {
           if (shared_data$set_seed == TRUE && is.na(shared_data$seed)) {
-            shinyalert(
-              "Error",
-              "If a seed is going to be used a seed most be specified",
-              type = "error"
+            error_message(
+              "If a seed is going to be used, a seed must be specified"
             )
+            error_visible(TRUE)
           } else {
             modal_visible(TRUE)
             shared_data$models_table <- find_models(

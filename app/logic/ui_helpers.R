@@ -6,6 +6,8 @@ box::use(
   shiny[div, p, tagList, tags, uiOutput],
 )
 
+# Bulleted HTML checklist shown when the user tries to start training without
+# filling in all required fields.
 #' @export
 startalert <- tagList(
   div(
@@ -25,6 +27,8 @@ startalert <- tagList(
   )
 )
 
+# Generates the full Cartesian product of neuron amounts across all LSTM layer
+# counts and returns it as a tidy data frame, one column per layer.
 #' @export
 find_models <- function(lstm, neurons) {
   map_dfr(lstm, function(n_lstm) {
@@ -34,6 +38,9 @@ find_models <- function(lstm, neurons) {
   })
 }
 
+# Builds the modal content for the experiment confirmation screen, summarising
+# the selected training sets, transformations, scales, input amounts, and the
+# full model grid with DT table and OK/Cancel/Eliminate buttons.
 #' @export
 select_models_to_build <- function(ns, train, ts, sc, vec, lstm, neu) {
   amountoftrain <- dim(train)[1]
@@ -147,16 +154,20 @@ select_models_to_build <- function(ns, train, ts, sc, vec, lstm, neu) {
   text
 }
 
+# Extracts the rightmost n characters from string x.
 #' @export
 substright <- function(x, n) {
   substr(x, nchar(x) - n + 1, nchar(x))
 }
 
+# Collapses a character vector into a single space-separated string.
 #' @export
 paste_vec <- function(vect) {
   paste(vect, collapse = " ")
 }
 
+# Converts a data frame to an inline HTML table string with basic black-border
+# styling. Used to embed tabular content in JavaScript-driven UI elements.
 #' @export
 html_table <- function(df) {
   x <- "<div>

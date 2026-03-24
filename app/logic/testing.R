@@ -7,6 +7,8 @@ box::use(
   stats[diffinv, predict],
 )
 
+# Collapses a 3-D array (samples × steps × features) into a 2-D matrix by
+# concatenating sample slices along the row dimension.
 #' @export
 array_3d_to_2d <- function(vec3d) {
   seq_len(dim(vec3d)[1]) |>
@@ -14,6 +16,8 @@ array_3d_to_2d <- function(vec3d) {
     reduce(function(acc, x) abind(acc, x, along = 1))
 }
 
+# Inverts applied differencing on a 3-D prediction array using the last known
+# values from the input tensor. Returns only the forward-predicted steps.
 #' @export
 diff_inverse_3d <- function(data3d, difference, lastknow3d) {
   data2d <- array_3d_to_2d(data3d)
@@ -47,6 +51,9 @@ diff_inverse_3d <- function(data3d, difference, lastknow3d) {
   invertedarray[, stepstoselect, , drop = FALSE]
 }
 
+# Runs LSTM predictions for every sample, then reverses any scaling and
+# transformation (differencing/log) applied during pre-processing to recover
+# predictions in original units.
 #' @export
 predict_with_keras <- function(
   model,
@@ -61,26 +68,26 @@ predict_with_keras <- function(
   seq_len(dim(inputs)[1]) |>
     map(function(samples) {
       predictions <- predict(model, inputs[samples, , , drop = FALSE])
-      if (scale == "From 0 to 1") {
+      if (scale == "zero_one") {
         predictions <- rescale(
           predictions,
           to = c(min(transf_ts[, -1]), max(transf_ts[, -1])),
           from = c(0, 1)
         )
-      } else if (scale == "From -1 to 1") {
+      } else if (scale == "minus_plus") {
         predictions <- rescale(
           predictions,
           to = c(min(transf_ts[, -1]), max(transf_ts[, -1])),
           from = c(-1, 1)
         )
       }
-      if (transformation == "First transformation") {
+      if (transformation == "first") {
         predictions <- diff_inverse_3d(
           data3d = predictions,
           difference = transf_ts[[dim(transf_ts)[2]]][1],
           lastknow3d = lastvaluesout[samples, , , drop = FALSE]
         )
-      } else if (transformation == "Second transformation") {
+      } else if (transformation == "second") {
         predictions <- diff_inverse_3d(
           data3d = predictions,
           difference = transf_ts[[dim(transf_ts)[2]]][1],
@@ -93,6 +100,8 @@ predict_with_keras <- function(
     reduce(function(acc, x) abind(acc, x, along = 1))
 }
 
+# Returns a length-3 numeric vector of MSE, RMSE, and MAE for the given
+# actual/predicted pair.
 #' @export
 get_metrics <- function(actual, predicted) {
   obtained_mse <- mse(actual, predicted)
@@ -102,6 +111,9 @@ get_metrics <- function(actual, predicted) {
   x
 }
 
+# Aggregates 3-D prediction arrays into a data frame of per-date min, mean,
+# and max prediction values across all samples, one set of columns per output
+# variable.
 #' @export
 create_plot_pred_df <- function(threddata, xdata, colnames) {
   date_slice <- as.data.frame(as.matrix(threddata[,, 1]))

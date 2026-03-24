@@ -2,60 +2,75 @@ box::use(
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack],
   shiny.fluent[TextField.shinyInput, updateDefaultButton.shinyInput],
   shiny[div, moduleServer, NS, observeEvent, renderUI, tagList, uiOutput],
-  shinyalert[shinyalert],
   shinyjs[hidden, hide, toggle],
 )
 
 box::use(
   app / logic / make_card[make_card],
+  app / view / make_modal,
 )
 
 #' @export
 ui <- function(id) {
   ns <- NS(id)
-  make_card(
-    title = tagList(
-      "Models options",
-      DefaultButton.shinyInput(
-        ns("toggle_card"),
-        iconProps = list(iconName = "ChevronDown"),
-        style = "float: right; width: 0.7em",
-        styles = list(
-          root = list(
-            "min-width" = "32px"
+  tagList(
+    make_modal$ui(ns("error_modal")),
+    make_card(
+      title = tagList(
+        "Models options",
+        DefaultButton.shinyInput(
+          ns("toggle_card"),
+          iconProps = list(iconName = "ChevronDown"),
+          style = "float: right; width: 0.7em",
+          styles = list(
+            root = list(
+              "min-width" = "32px"
+            )
           )
         )
-      )
-    ),
-    hidden(
-      div(
-        id = ns("card_content"),
-        Stack(
-          tokens = list(childrenGap = 10),
-          uiOutput(ns("addLSTMamount_ui")),
-          DefaultButton.shinyInput(
-            ns("acceptLSTMamountbutton"),
-            "Add amount"
-          ),
-          uiOutput(ns("selectLSTMsoptions_ui")),
-          uiOutput(ns("addneuronsamount_ui")),
-          DefaultButton.shinyInput(
-            ns("acceptneuronamountbutton"),
-            "Add amount"
-          ),
-          uiOutput(ns("selectneuronsoptions_ui"))
+      ),
+      hidden(
+        div(
+          id = ns("card_content"),
+          Stack(
+            tokens = list(childrenGap = 10),
+            uiOutput(ns("addLSTMamount_ui")),
+            DefaultButton.shinyInput(
+              ns("acceptLSTMamountbutton"),
+              text = "Add amount"
+            ),
+            uiOutput(ns("selectLSTMsoptions_ui")),
+            uiOutput(ns("addneuronsamount_ui")),
+            DefaultButton.shinyInput(
+              ns("acceptneuronamountbutton"),
+              text = "Add amount"
+            ),
+            uiOutput(ns("selectneuronsoptions_ui"))
+          )
         )
-      )
-    ),
-    style = "background-color: white;",
-    is_contained = TRUE
+      ),
+      style = "background-color: white;",
+      is_contained = TRUE
+    )
   )
 }
 
 #' @export
-server <- function(id, sf, visibility) {
+server <- function(id, shared_data, visibility) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+
+    error_visible <- reactiveVal(FALSE)
+    error_message <- reactiveVal("")
+    output$error_content <- renderUI(div(error_message()))
+    make_modal$server(
+      "error_modal",
+      name = "error_modal",
+      is_open = error_visible,
+      title = "Error",
+      content = uiOutput(ns("error_content")),
+      status = "error"
+    )
 
     observeEvent(input$toggle_card, {
       visibility$models_options <- !visibility$models_options
@@ -127,12 +142,12 @@ server <- function(id, sf, visibility) {
         label = "Add LSTM layer amount",
         type = "number",
         min = 1,
-        value = sf$addLSTMamount
+        value = shared_data$addLSTMamount
       )
     })
 
     observeEvent(input$addLSTMamount, {
-      sf$addLSTMamount <- input$addLSTMamount
+      shared_data$addLSTMamount <- input$addLSTMamount
     })
 
     observeEvent(input$acceptLSTMamountbutton, {
@@ -144,20 +159,25 @@ server <- function(id, sf, visibility) {
           add_lstm_amount_val < 1 ||
           (add_lstm_amount_val %% 1 != 0)
       ) {
-        shinyalert(
-          "Error",
-          "Wrong amount of LSTM layers format, most be an integer number bigger than 0",
-          type = "error"
+        error_message(
+          "Wrong amount of LSTM layers format, must be an integer number bigger than 0"
         )
+        error_visible(TRUE)
       } else {
-        if (is.null(sf$lstm_amounts)) {
-          sf$lstm_amounts <- add_lstm_amount_val
-          sf$std_lstm_amounts <- add_lstm_amount_val
+        if (is.null(shared_data$lstm_amounts)) {
+          shared_data$lstm_amounts <- add_lstm_amount_val
+          shared_data$std_lstm_amounts <- add_lstm_amount_val
         } else {
-          if (!is.element(add_lstm_amount_val, sf$lstm_amounts)) {
-            sf$lstm_amounts <- c(sf$lstm_amounts, add_lstm_amount_val)
-            sf$lstm_amounts <- sort(sf$lstm_amounts)
-            sf$std_lstm_amounts <- c(sf$std_lstm_amounts, add_lstm_amount_val)
+          if (!is.element(add_lstm_amount_val, shared_data$lstm_amounts)) {
+            shared_data$lstm_amounts <- c(
+              shared_data$lstm_amounts,
+              add_lstm_amount_val
+            )
+            shared_data$lstm_amounts <- sort(shared_data$lstm_amounts)
+            shared_data$std_lstm_amounts <- c(
+              shared_data$std_lstm_amounts,
+              add_lstm_amount_val
+            )
           }
         }
       }
@@ -168,13 +188,15 @@ server <- function(id, sf, visibility) {
         session$ns("selectLSTMsoptions"),
         label = "Select the amounts of LSTM",
         multiSelect = TRUE,
-        value = sf$std_lstm_amounts,
-        options = lapply(sf$lstm_amounts, function(x) list(key = x, text = x))
+        value = shared_data$std_lstm_amounts,
+        options = lapply(shared_data$lstm_amounts, function(x) {
+          list(key = x, text = x)
+        })
       )
     })
 
     observeEvent(input$selectLSTMsoptions, {
-      sf$std_lstm_amounts <- input$selectLSTMsoptions
+      shared_data$std_lstm_amounts <- input$selectLSTMsoptions
     })
 
     output$addneuronsamount_ui <- renderUI({
@@ -183,12 +205,12 @@ server <- function(id, sf, visibility) {
         label = "Add neuron amount",
         type = "number",
         min = 1,
-        value = sf$addneuronsamount
+        value = shared_data$addneuronsamount
       )
     })
 
     observeEvent(input$addneuronsamount, {
-      sf$addneuronsamount <- input$addneuronsamount
+      shared_data$addneuronsamount <- input$addneuronsamount
     })
 
     observeEvent(input$acceptneuronamountbutton, {
@@ -200,21 +222,23 @@ server <- function(id, sf, visibility) {
           addneuronsamount_val < 1 ||
           (addneuronsamount_val %% 1 != 0)
       ) {
-        shinyalert(
-          "Error",
-          "Wrong amount of neurons format, most be an integer number bigger than 0",
-          type = "error"
+        error_message(
+          "Wrong amount of neurons format, must be an integer number bigger than 0"
         )
+        error_visible(TRUE)
       } else {
-        if (is.null(sf$neuron_amounts)) {
-          sf$neuron_amounts <- addneuronsamount_val
-          sf$std_neuron_amounts <- addneuronsamount_val
+        if (is.null(shared_data$neuron_amounts)) {
+          shared_data$neuron_amounts <- addneuronsamount_val
+          shared_data$std_neuron_amounts <- addneuronsamount_val
         } else {
-          if (!is.element(addneuronsamount_val, sf$neuron_amounts)) {
-            sf$neuron_amounts <- c(sf$neuron_amounts, addneuronsamount_val)
-            sf$neuron_amounts <- sort(sf$neuron_amounts)
-            sf$std_neuron_amounts <- c(
-              sf$std_neuron_amounts,
+          if (!is.element(addneuronsamount_val, shared_data$neuron_amounts)) {
+            shared_data$neuron_amounts <- c(
+              shared_data$neuron_amounts,
+              addneuronsamount_val
+            )
+            shared_data$neuron_amounts <- sort(shared_data$neuron_amounts)
+            shared_data$std_neuron_amounts <- c(
+              shared_data$std_neuron_amounts,
               addneuronsamount_val
             )
           }
@@ -227,13 +251,15 @@ server <- function(id, sf, visibility) {
         session$ns("selectneuronsoptions"),
         label = "Select the amounts of neurons",
         multiSelect = TRUE,
-        value = sf$std_neuron_amounts,
-        options = lapply(sf$neuron_amounts, function(x) list(key = x, text = x))
+        value = shared_data$std_neuron_amounts,
+        options = lapply(shared_data$neuron_amounts, function(x) {
+          list(key = x, text = x)
+        })
       )
     })
 
     observeEvent(input$selectneuronsoptions, {
-      sf$std_neuron_amounts <- input$selectneuronsoptions
+      shared_data$std_neuron_amounts <- input$selectneuronsoptions
     })
   })
 }

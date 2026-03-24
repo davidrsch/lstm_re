@@ -4,6 +4,9 @@ box::use(
   runner[runner],
 )
 
+# Converts a 2-D data frame or matrix into a 3-D rolling-window tensor of
+# shape (samples, steps, features) suitable for LSTM input.
+# - datasample: two-element vector of [start_row, end_row] indices
 #' @export
 create_3d_vector <- function(data, steps, datasample) {
   if (is.data.frame(data) || is.matrix(data)) {
@@ -24,6 +27,7 @@ create_3d_vector <- function(data, steps, datasample) {
   threedrw
 }
 
+# Returns the sorted positions within vec that match any element in equalto.
 #' @export
 which_equal_vec <- function(vec, equalto) {
   sort(which(vec %in% equalto))

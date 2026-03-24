@@ -27,14 +27,14 @@ status_mapping <- tribble(
 
 #' @export
 transformations <- list(
-  list(key = "Original", text = "Original"),
-  list(key = "First transformation", text = "First transformation"),
-  list(key = "Second transformation", text = "Second transformation")
+  list(key = "original", text = "Original"),
+  list(key = "first", text = "First transformation"),
+  list(key = "second", text = "Second transformation")
 )
 
 #' @export
 scales <- list(
-  list(key = "Exact", text = "Exact"),
-  list(key = "From 0 to 1", text = "From 0 to 1"),
-  list(key = "From -1 to 1", text = "From -1 to 1")
+  list(key = "exact", text = "Exact"),
+  list(key = "zero_one", text = "From 0 to 1"),
+  list(key = "minus_plus", text = "From -1 to 1")
 )

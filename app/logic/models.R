@@ -2,6 +2,9 @@ box::use(
   keras3[keras_input, keras_model, layer_dense, layer_lstm, layer_reshape],
 )
 
+# Builds a Keras functional-API LSTM model from a column-per-layer structure
+# matrix. Stacks LSTM layers (returning sequences for all but the last), then
+# adds a Dense layer reshaped to match the output vector dimensions.
 #' @export
 create_model <- function(structure, inputvec, outputvec) {
   n_layers <- dim(structure)[2]

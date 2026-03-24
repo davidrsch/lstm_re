@@ -115,7 +115,7 @@ server <- function(id, shared_data, visibility) {
         label = "Time series to use",
         options = transformations,
         value = if (is.null(shared_data$transf)) {
-          list("Original", "First transformation", "Second transformation")
+          list("original", "first", "second")
         } else {
           shared_data$transf
         },
@@ -129,7 +129,7 @@ server <- function(id, shared_data, visibility) {
         label = "Scales to use",
         options = scales,
         value = if (is.null(shared_data$scales)) {
-          list("Exact", "From 0 to 1", "From -1 to 1")
+          list("exact", "zero_one", "minus_plus")
         } else {
           shared_data$scales
         },
