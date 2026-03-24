@@ -123,8 +123,9 @@ server <- function(id, shared_data) {
             selected_key(new_key)
         })
 
-        r$path_of_directorio <- paste0("app/static/", session$token)
-        dir.create(r$path_of_directorio, showWarnings = FALSE)
+        path_of_directorio <- paste0("app/static/", session$token)
+        r$path_of_directorio <- path_of_directorio
+        dir.create(path_of_directorio, showWarnings = FALSE)
 
         observeEvent(input$rcalculation, {
             if (input$rcalculation == 1) {
