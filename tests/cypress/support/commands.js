@@ -1,6 +1,3 @@
-import 'cypress-file-upload';
-import $ from 'jquery';
-
 // Upload a CSV file and wait for the data table to appear in the Data Analysis panel
 Cypress.Commands.add('upload_csv_flow', () => {
   cy.get('[data-testid="file"]').should('be.visible');
