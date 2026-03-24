@@ -13,6 +13,8 @@ make_card <- function(
   is_contained = FALSE,
   stacked = TRUE
 ) {
+  # is_contained: when TRUE the card fills its parent instead of using the
+  # grid column width classes (ms-sm/ms-xl). Used for cards inside a column.
   if (is_contained) {
     card_class <- "card ms-depth-8"
   } else {

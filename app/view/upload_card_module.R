@@ -45,7 +45,8 @@ ui <- function(id) {
             root = list(
               "min-width" = "32px"
             )
-          )
+          ),
+          `data-testid` = "toggle_upload_card"
         )
       ),
       div(
@@ -194,8 +195,8 @@ server <- function(id, shared_data) {
       click("upload_file")
     })
 
-    # Enabling or disabling inputs depending on the imported file
-    # format
+    # Enabling or disabling delimiter/decimal_point based on file format:
+    # text formats (csv, tsv) support custom delimiters; Excel files do not.
     observeEvent(input$upload_file, {
       if (!is.null(input$upload_file)) {
         file_path <- input$upload_file$datapath
@@ -272,6 +273,7 @@ server <- function(id, shared_data) {
           )
         }
 
+        shared_data$filename <- input$upload_file$name
         if (any(is.na(shared_data$df))) {
           shared_data$df <- na.omit(shared_data$df)
           warning_message(

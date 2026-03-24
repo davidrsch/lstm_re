@@ -62,7 +62,8 @@ server <- function(id) {
       test_start_date = NULL,
       test_end_date = NULL,
       set_seed = FALSE,
-      seed = NULL
+      seed = NULL,
+      filename = NULL
     )
 
     upload_data_out <- upload_data$server("upload_data", shared_data)

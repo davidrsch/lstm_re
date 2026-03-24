@@ -35,7 +35,11 @@ ui <- function(id) {
         Stack(
           horizontal = TRUE,
           tokens = list(childrenGap = "10%"),
-          PrimaryButton.shinyInput(ns("startexperimentation"), "Start"),
+          PrimaryButton.shinyInput(
+            ns("startexperimentation"),
+            "Start",
+            `data-testid` = "startexperimentation"
+          ),
           div(style = "flex-grow: 1;"),
           DefaultButton.shinyInput(ns("repeatexperimentation"), "Repeat")
         )
@@ -53,6 +57,11 @@ ui <- function(id) {
 server <- function(id, shared_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+
+    # Each card module receives this shared reactiveValues object.
+    # When a card sets its own visibility flag to TRUE, the other
+    # cards observe the change and collapse themselves — implementing
+    # accordion (mutual-exclusion) behavior without a central coordinator.
 
     modal_visible <- reactiveVal(FALSE)
 
@@ -82,7 +91,8 @@ server <- function(id, shared_data) {
       training_options = FALSE
     )
 
-    # The reactiveValues are now in app/main.R
+    # Pass visibility to every card module. Each card owns one flag
+    # and watches all other flags, collapsing itself when a sibling opens.
 
     ts_transformations_card_module$server(
       "ts_transformations_card",

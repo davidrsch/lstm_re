@@ -112,7 +112,7 @@ add_traces <- function(x, loss, plotid) {
 # Extends the last trace on the Plotly loss chart by appending the most recent
 # loss value, enabling live epoch-by-epoch updates.
 #' @export
-extend_traces <- function(loss, epoch, plotid) {
+extend_traces <- function(loss, plotid) {
   runjs(paste0(
     "
         var graphDiv = document.getElementById(\"",
@@ -171,7 +171,7 @@ on_epoch_end <- function(
     loss_store$loss <- loss
   } else {
     loss_store$loss <- c(loss_store$loss, logs$loss)
-    extend_traces(loss_store$loss, epoch, plotid)
+    extend_traces(loss_store$loss, plotid)
   }
 }
 

@@ -61,8 +61,8 @@ server <- function(id, shared_data) {
 
     # 04-Imported file name ----
     output$filename <- renderText({
-      req(input$upload_file)
-      input$upload_file$name
+      req(shared_data$filename)
+      shared_data$filename
     })
 
     # 05-Imported file table----

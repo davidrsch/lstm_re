@@ -23,6 +23,8 @@ create_3d_vector <- function(data, steps, datasample) {
       }) |>
       reduce(function(acc, x) abind(acc, x, along = 3))
     dimnames(threedrw) <- list(NULL, NULL, colnames(data))
+  } else {
+    stop("'data' must be a data frame or matrix.")
   }
   threedrw
 }

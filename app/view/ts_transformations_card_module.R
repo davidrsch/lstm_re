@@ -2,12 +2,13 @@ box::use(
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack],
   shiny.fluent[updateDefaultButton.shinyInput],
   shiny[div, moduleServer, NS, observeEvent, renderUI, tagList, uiOutput],
-  shinyjs[hide, toggle],
+  shinyjs[toggle],
 )
 
 box::use(
   app / logic / constants[scales, transformations],
   app / logic / make_card[make_card],
+  app / logic / ui_helpers[collapse_on_sibling_open],
 )
 
 #' @export
@@ -24,7 +25,8 @@ ui <- function(id) {
           root = list(
             "min-width" = "32px"
           )
-        )
+        ),
+        `data-testid` = "toggle_ts_card"
       )
     ),
     content = div(
@@ -46,6 +48,8 @@ server <- function(id, shared_data, visibility) {
     ns <- session$ns
 
     observeEvent(input$toggle_card, {
+      # Toggle this card's visibility flag and let shinyjs show/hide the content.
+      # The other cards observe their siblings' flags and collapse when one opens.
       visibility$ts_transformations <- !visibility$ts_transformations
       toggle("card_content")
       updateDefaultButton.shinyInput(
@@ -61,52 +65,24 @@ server <- function(id, shared_data, visibility) {
       )
     })
 
-    observeEvent(
-      visibility$training_vectors,
-      {
-        if (visibility$training_vectors && visibility$ts_transformations) {
-          visibility$ts_transformations <- FALSE
-          hide("card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      },
-      ignoreInit = TRUE
+    # Collapse this card whenever another card opens, enforcing accordion behavior.
+    collapse_on_sibling_open(
+      "training_vectors",
+      "ts_transformations",
+      visibility,
+      session
     )
-
-    observeEvent(
-      visibility$models_options,
-      {
-        if (visibility$models_options && visibility$ts_transformations) {
-          visibility$ts_transformations <- FALSE
-          hide("card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      },
-      ignoreInit = TRUE
+    collapse_on_sibling_open(
+      "models_options",
+      "ts_transformations",
+      visibility,
+      session
     )
-
-    observeEvent(
-      visibility$training_options,
-      {
-        if (visibility$training_options && visibility$ts_transformations) {
-          visibility$ts_transformations <- FALSE
-          hide("card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      },
-      ignoreInit = TRUE
+    collapse_on_sibling_open(
+      "training_options",
+      "ts_transformations",
+      visibility,
+      session
     )
 
     output$selectimeseries_ui <- renderUI({
@@ -119,7 +95,8 @@ server <- function(id, shared_data, visibility) {
         } else {
           shared_data$transf
         },
-        multiSelect = TRUE
+        multiSelect = TRUE,
+        `data-testid` = "selectimeseries"
       )
     })
 
@@ -133,7 +110,8 @@ server <- function(id, shared_data, visibility) {
         } else {
           shared_data$scales
         },
-        multiSelect = TRUE
+        multiSelect = TRUE,
+        `data-testid` = "selectimeseriescales"
       )
     })
 

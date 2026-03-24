@@ -11,11 +11,12 @@ box::use(
     tagList,
     uiOutput
   ],
-  shinyjs[hidden, hide, toggle],
+  shinyjs[hidden, toggle],
 )
 
 box::use(
   app / logic / make_card[make_card],
+  app / logic / ui_helpers[collapse_on_sibling_open],
   app / view / make_modal,
 )
 
@@ -35,7 +36,8 @@ ui <- function(id) {
             root = list(
               "min-width" = "32px"
             )
-          )
+          ),
+          `data-testid` = "toggle_tv_card"
         )
       ),
       hidden(
@@ -92,52 +94,23 @@ server <- function(id, shared_data, visibility) {
       )
     })
 
-    observeEvent(
-      visibility$ts_transformations,
-      {
-        if (visibility$ts_transformations && visibility$training_vectors) {
-          visibility$training_vectors <- FALSE
-          hide("card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      },
-      ignoreInit = TRUE
+    collapse_on_sibling_open(
+      "ts_transformations",
+      "training_vectors",
+      visibility,
+      session
     )
-
-    observeEvent(
-      visibility$models_options,
-      {
-        if (visibility$models_options && visibility$training_vectors) {
-          visibility$training_vectors <- FALSE
-          hide("card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      },
-      ignoreInit = TRUE
+    collapse_on_sibling_open(
+      "models_options",
+      "training_vectors",
+      visibility,
+      session
     )
-
-    observeEvent(
-      visibility$training_options,
-      {
-        if (visibility$training_options && visibility$training_vectors) {
-          visibility$training_vectors <- FALSE
-          hide("card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      },
-      ignoreInit = TRUE
+    collapse_on_sibling_open(
+      "training_options",
+      "training_vectors",
+      visibility,
+      session
     )
 
     output$temporalhorizon_ui <- renderUI({
@@ -146,7 +119,8 @@ server <- function(id, shared_data, visibility) {
         label = "Temporal horizon",
         type = "number",
         min = 1,
-        value = shared_data$temporalhorizon
+        value = shared_data$temporalhorizon,
+        `data-testid` = "temporalhorizon"
       )
     })
 

@@ -2,29 +2,13 @@ box::use(
   dplyr[bind_rows],
   DT[DTOutput],
   purrr[map_dfr],
-  shiny.fluent[DefaultButton.shinyInput, PrimaryButton.shinyInput],
-  shiny[div, p, tagList, tags, uiOutput],
-)
-
-# Bulleted HTML checklist shown when the user tries to start training without
-# filling in all required fields.
-#' @export
-startalert <- tagList(
-  div(
-    p(
-      "Check have selected at least:"
-    ),
-    tags$ul(
-      tags$li("A time serie to use."),
-      tags$li("A scale to use."),
-      tags$li("Specified a temporal horizon."),
-      tags$li("Specified an input amount."),
-      tags$li("Specified a LSTM layers amount."),
-      tags$li("Specified a neurons amount."),
-      tags$li("Specified an epoch amount.")
-    ),
-    style = "text-align:left; margin-left: 20%"
-  )
+  shiny.fluent[
+    DefaultButton.shinyInput,
+    PrimaryButton.shinyInput,
+    updateDefaultButton.shinyInput
+  ],
+  shiny[div, observeEvent, p, tagList, tags, uiOutput],
+  shinyjs[hide],
 )
 
 # Generates the full Cartesian product of neuron amounts across all LSTM layer
@@ -218,4 +202,31 @@ html_table <- function(df) {
   }
   x <- paste(x, "</table></div>")
   x
+}
+
+# Registers an observer that collapses this accordion card whenever a sibling
+# card opens. Call once per sibling from inside moduleServer, passing the
+# shared visibility reactiveValues and the module's session object.
+#' @export
+collapse_on_sibling_open <- function(
+  sibling_flag,
+  this_flag,
+  visibility,
+  session
+) {
+  observeEvent(
+    visibility[[sibling_flag]],
+    {
+      if (visibility[[sibling_flag]] && visibility[[this_flag]]) {
+        visibility[[this_flag]] <- FALSE
+        hide("card_content")
+        updateDefaultButton.shinyInput(
+          session,
+          "toggle_card",
+          iconProps = list(iconName = "ChevronDown")
+        )
+      }
+    },
+    ignoreInit = TRUE
+  )
 }

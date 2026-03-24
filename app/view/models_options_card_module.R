@@ -11,11 +11,12 @@ box::use(
     tagList,
     uiOutput
   ],
-  shinyjs[hidden, hide, toggle],
+  shinyjs[hidden, toggle],
 )
 
 box::use(
   app / logic / make_card[make_card],
+  app / logic / ui_helpers[collapse_on_sibling_open],
   app / view / make_modal,
 )
 
@@ -35,7 +36,8 @@ ui <- function(id) {
             root = list(
               "min-width" = "32px"
             )
-          )
+          ),
+          `data-testid` = "toggle_mo_card"
         )
       ),
       hidden(
@@ -97,52 +99,23 @@ server <- function(id, shared_data, visibility) {
       )
     })
 
-    observeEvent(
-      visibility$ts_transformations,
-      {
-        if (visibility$ts_transformations && visibility$models_options) {
-          visibility$models_options <- FALSE
-          hide("card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      },
-      ignoreInit = TRUE
+    collapse_on_sibling_open(
+      "ts_transformations",
+      "models_options",
+      visibility,
+      session
     )
-
-    observeEvent(
-      visibility$training_vectors,
-      {
-        if (visibility$training_vectors && visibility$models_options) {
-          visibility$models_options <- FALSE
-          hide("card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      },
-      ignoreInit = TRUE
+    collapse_on_sibling_open(
+      "training_vectors",
+      "models_options",
+      visibility,
+      session
     )
-
-    observeEvent(
-      visibility$training_options,
-      {
-        if (visibility$training_options && visibility$models_options) {
-          visibility$models_options <- FALSE
-          hide("card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      },
-      ignoreInit = TRUE
+    collapse_on_sibling_open(
+      "training_options",
+      "models_options",
+      visibility,
+      session
     )
 
     output$addLSTMamount_ui <- renderUI({

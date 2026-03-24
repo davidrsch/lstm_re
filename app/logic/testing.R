@@ -60,7 +60,6 @@ predict_with_keras <- function(
   inputs,
   outputs,
   lastvaluesout,
-  trueoutputs,
   scale,
   transformation,
   transf_ts

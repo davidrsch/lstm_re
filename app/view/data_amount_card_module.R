@@ -40,7 +40,8 @@ ui <- function(id) {
             root = list(
               "min-width" = "32px"
             )
-          )
+          ),
+          `data-testid` = "toggle_data_amount_card"
         )
       ),
       hidden(

@@ -94,34 +94,31 @@ rescale_df <- function(x, to) {
   result
 }
 
+# Removes the difv bookkeeping column from a time-series data frame if present.
+strip_difv <- function(ts) {
+  if (any(names(ts) == "difv")) {
+    ts[, -grep("difv", names(ts)), drop = FALSE]
+  } else {
+    ts
+  }
+}
+
 # Applies the chosen scale transformation by key: "exact" (no scaling),
 # "zero_one" ([0, 1]), "minus_plus" ([-1, 1]). Also strips the difv
 # bookkeeping column before scaling.
 #' @export
 create_scaled_ts <- function(ts, sc, nsc) {
   if (sc[nsc] == "exact") {
-    if (any(names(ts) == "difv")) {
-      x <- ts[, -grep("difv", names(ts)), drop = FALSE]
-    } else {
-      x <- ts
-    }
+    x <- strip_difv(ts)
   } else {
     if (sc[nsc] == "zero_one") {
-      if (any(names(ts) == "difv")) {
-        y <- ts[, -grep("difv", names(ts)), drop = FALSE]
-      } else {
-        y <- ts
-      }
+      y <- strip_difv(ts)
       dftrsc <- y[, -1, drop = FALSE]
       date <- y[1, drop = FALSE]
       df <- rescale_df(x = dftrsc, to = c(0, 1))
       x <- cbind(date, df)
     } else {
-      if (any(names(ts) == "difv")) {
-        y <- ts[, -grep("difv", names(ts)), drop = FALSE]
-      } else {
-        y <- ts
-      }
+      y <- strip_difv(ts)
       dftrsc <- y[, -1, drop = FALSE]
       date <- y[1, drop = FALSE]
       df <- rescale_df(dftrsc, c(-1, 1))

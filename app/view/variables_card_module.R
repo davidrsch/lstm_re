@@ -28,7 +28,8 @@ ui <- function(id) {
           root = list(
             "min-width" = "32px"
           )
-        )
+        ),
+        `data-testid` = "toggle_variables_card"
       )
     ),
     hidden(

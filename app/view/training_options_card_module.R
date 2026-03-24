@@ -11,11 +11,12 @@ box::use(
     tagList,
     uiOutput
   ],
-  shinyjs[disable, enable, hidden, hide, toggle],
+  shinyjs[disable, enable, hidden, toggle],
 )
 
 box::use(
   app / logic / make_card[make_card],
+  app / logic / ui_helpers[collapse_on_sibling_open],
   app / view / make_modal,
 )
 
@@ -35,7 +36,8 @@ ui <- function(id) {
             root = list(
               "min-width" = "32px"
             )
-          )
+          ),
+          `data-testid` = "toggle_to_card"
         )
       ),
       hidden(
@@ -92,52 +94,23 @@ server <- function(id, shared_data, visibility) {
       )
     })
 
-    observeEvent(
-      visibility$ts_transformations,
-      {
-        if (visibility$ts_transformations && visibility$training_options) {
-          visibility$training_options <- FALSE
-          hide("card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      },
-      ignoreInit = TRUE
+    collapse_on_sibling_open(
+      "ts_transformations",
+      "training_options",
+      visibility,
+      session
     )
-
-    observeEvent(
-      visibility$training_vectors,
-      {
-        if (visibility$training_vectors && visibility$training_options) {
-          visibility$training_options <- FALSE
-          hide("card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      },
-      ignoreInit = TRUE
+    collapse_on_sibling_open(
+      "training_vectors",
+      "training_options",
+      visibility,
+      session
     )
-
-    observeEvent(
-      visibility$models_options,
-      {
-        if (visibility$models_options && visibility$training_options) {
-          visibility$training_options <- FALSE
-          hide("card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      },
-      ignoreInit = TRUE
+    collapse_on_sibling_open(
+      "models_options",
+      "training_options",
+      visibility,
+      session
     )
 
     output$selectepochamount_ui <- renderUI({

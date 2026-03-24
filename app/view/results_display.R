@@ -71,9 +71,6 @@ server <- function(id, shared_data) {
         })
 
         observeEvent(shared_data$run_experiment, {
-            r$dashboard <- "A"
-            r$modelsdir <- "A"
-
             runjs(
                 "document.querySelector('[data-content=\"Results\"]').click();"
             )
@@ -128,9 +125,7 @@ server <- function(id, shared_data) {
         })
 
         r$path_of_directorio <- paste0("app/static/", session$token)
-        observe({
-            dir.create(r$path_of_directorio)
-        })
+        dir.create(r$path_of_directorio, showWarnings = FALSE)
 
         observeEvent(input$rcalculation, {
             if (input$rcalculation == 1) {
@@ -138,15 +133,14 @@ server <- function(id, shared_data) {
                 exp_models <- paste0(exp_directory, "/models")
                 exp_dashdirect <- paste0(exp_directory, "/dashboard")
                 exp_dashdata <- paste0(exp_dashdirect, "/www")
-                dir.create(exp_directory)
-                dir.create(exp_models)
-                dir.create(exp_dashdirect)
-                dir.create(exp_dashdata)
+                dir.create(exp_directory, showWarnings = FALSE)
+                dir.create(exp_models, showWarnings = FALSE)
+                dir.create(exp_dashdirect, showWarnings = FALSE)
+                dir.create(exp_dashdata, showWarnings = FALSE)
                 amountofts <- dim(shared_data$selected_trains)[1]
                 amountoftf <- length(shared_data$transf)
                 amountofsc <- length(shared_data$scales)
                 amountofinps <- length(shared_data$input_amounts)
-                print(shared_data$input_amounts)
                 amountofmodels <- dim(shared_data$models_table)[1]
                 amountoftotalmodels <- amountofts *
                     amountoftf *
@@ -169,7 +163,7 @@ server <- function(id, shared_data) {
                     return()
                 }
 
-                for (i in 1:amountofts) {
+                for (i in seq_len(amountofts)) {
                     ts <- create_ts(
                         shared_data$x_data,
                         shared_data$EDA,
@@ -181,26 +175,26 @@ server <- function(id, shared_data) {
                         next
                     }
                     set <- shared_data$selected_trains[i, 1]
-                    for (tf in 1:amountoftf) {
+                    for (tf in seq_len(amountoftf)) {
                         transfts <- create_transformed_ts(
                             ts = ts,
                             trf = shared_data$transf,
                             ntrf = tf
                         )
                         trf <- shared_data$transf[tf]
-                        for (sc in 1:amountofsc) {
+                        for (sc in seq_len(amountofsc)) {
                             scts <- create_scaled_ts(
                                 transfts,
                                 shared_data$scales,
                                 sc
                             )
                             sca <- shared_data$scales[sc]
-                            for (input in 1:amountofinps) {
+                            for (input in seq_len(amountofinps)) {
                                 steps <- as.numeric(shared_data$input_amounts[
                                     input
                                 ]) +
                                     as.numeric(shared_data$temporalhorizon)
-                                if (trf == "Second transformation") {
+                                if (trf == "second") {
                                     tstv <- ts[, -1, drop = FALSE]
                                     date <- ts[[1]]
                                     tstv <- log(tstv)
@@ -288,13 +282,19 @@ server <- function(id, shared_data) {
                                         "/model_",
                                         modelbuilding
                                     )
-                                    dir.create(savemodelpath)
+                                    dir.create(
+                                        savemodelpath,
+                                        showWarnings = FALSE
+                                    )
                                     dashdatamodelpath <- paste0(
                                         exp_dashdata,
                                         "/model_",
                                         modelbuilding
                                     )
-                                    dir.create(dashdatamodelpath)
+                                    dir.create(
+                                        dashdatamodelpath,
+                                        showWarnings = FALSE
+                                    )
                                     struct <- shared_data$models_table[
                                         m,
                                         ,
@@ -557,21 +557,21 @@ server <- function(id, shared_data) {
                                         )
                                         rownames(modelcharact) <- NULL
                                         write_json(
-                                            toJSON(modelloss),
+                                            modelloss,
                                             paste0(
                                                 exp_dashdata,
                                                 "/modelsloss.json"
                                             )
                                         )
                                         write_json(
-                                            toJSON(modelcharact),
+                                            modelcharact,
                                             paste0(
                                                 exp_dashdata,
                                                 "/modelcharact.json"
                                             )
                                         )
                                         write_json(
-                                            toJSON(trueoutvalue),
+                                            trueoutvalue,
                                             paste0(
                                                 exp_dashdata,
                                                 "/realvalues.json"
@@ -632,7 +632,7 @@ server <- function(id, shared_data) {
                                         )
                                         if (length(model_builded) == 1) {
                                             model_builded <- c("1" = 1)
-                                        } else {}
+                                        }
                                         updatePickerInput(
                                             session = session,
                                             "downloadmodels",
