@@ -115,7 +115,7 @@ get_metrics <- function(actual, predicted) {
 # variable.
 #' @export
 create_plot_pred_df <- function(threddata, xdata, colnames) {
-  date_slice <- as.data.frame(as.matrix(threddata[,, 1]))
+  date_slice <- as.data.frame(as.matrix(threddata[, , 1]))
 
   map_dfc(seq_along(colnames), function(col) {
     predictions_list <- map(seq_along(xdata), function(date) {
