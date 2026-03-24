@@ -196,7 +196,7 @@ server <- function(id, shared_data) {
                   tstv <- ts
                 }
                 vector <- create_3d_vector(
-                  tstv[,, drop = FALSE],
+                  tstv[, , drop = FALSE],
                   steps,
                   c(1, dim(tstv)[1])
                 )
