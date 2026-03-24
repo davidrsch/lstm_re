@@ -178,27 +178,23 @@ server <- function(id, shared_data) {
       ignoreInit = TRUE
     )
 
-    observeEvent(
-      session,
-      {
-        updateCheckbox.shinyInput(
-          session,
-          "header",
-          value = shared_data$header
-        )
-        updateTextField.shinyInput(
-          session,
-          "delimiter",
-          value = shared_data$delimiter
-        )
-        updateTextField.shinyInput(
-          session,
-          "decimal_point",
-          value = shared_data$decimal_point
-        )
-      },
-      once = TRUE
-    )
+    session$onFlushed(once = TRUE, fun = function() {
+      updateCheckbox.shinyInput(
+        session,
+        "header",
+        value = shared_data$header
+      )
+      updateTextField.shinyInput(
+        session,
+        "delimiter",
+        value = shared_data$delimiter
+      )
+      updateTextField.shinyInput(
+        session,
+        "decimal_point",
+        value = shared_data$decimal_point
+      )
+    })
     observeEvent(input$file, {
       click("upload_file")
     })
