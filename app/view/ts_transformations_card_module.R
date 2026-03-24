@@ -47,7 +47,7 @@ server <- function(id, shared_data, visibility) {
 
     observeEvent(input$toggle_card, {
       visibility$ts_transformations <- !visibility$ts_transformations
-      toggle(id = ns("card_content"))
+      toggle("card_content")
       updateDefaultButton.shinyInput(
         session,
         "toggle_card",
@@ -66,7 +66,7 @@ server <- function(id, shared_data, visibility) {
       {
         if (visibility$training_vectors && visibility$ts_transformations) {
           visibility$ts_transformations <- FALSE
-          hide(id = ns("card_content"))
+          hide("card_content")
           updateDefaultButton.shinyInput(
             session,
             "toggle_card",
@@ -82,7 +82,7 @@ server <- function(id, shared_data, visibility) {
       {
         if (visibility$models_options && visibility$ts_transformations) {
           visibility$ts_transformations <- FALSE
-          hide(id = ns("card_content"))
+          hide("card_content")
           updateDefaultButton.shinyInput(
             session,
             "toggle_card",
@@ -98,7 +98,7 @@ server <- function(id, shared_data, visibility) {
       {
         if (visibility$training_options && visibility$ts_transformations) {
           visibility$ts_transformations <- FALSE
-          hide(id = ns("card_content"))
+          hide("card_content")
           updateDefaultButton.shinyInput(
             session,
             "toggle_card",
