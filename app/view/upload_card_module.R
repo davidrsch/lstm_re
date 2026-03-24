@@ -14,6 +14,7 @@ box::use(
   shiny[
     div,
     fileInput,
+    isolate,
     moduleServer,
     NS,
     observeEvent,
