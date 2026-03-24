@@ -4,8 +4,10 @@ box::use(
   pastecs[stat.desc],
 )
 
+# Generates a pairwise correlation and distribution plot for the uploaded
+# dataset using GGally. Adds a centred title and uniform text sizing.
 #' @export
-plotedafunc <- function(data) {
+plot_eda <- function(data) {
   p <- ggpairs(
     data,
     title = "Exploratory Data Analysis",
@@ -37,7 +39,9 @@ plotedafunc <- function(data) {
   p
 }
 
+# Returns a descriptive statistics table for each column of the dataset,
+# including min, max, mean, and standard deviation.
 #' @export
-databasesum <- function(data) {
+database_summary <- function(data) {
   stat.desc(data)
 }

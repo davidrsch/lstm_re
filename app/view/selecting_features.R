@@ -2,18 +2,16 @@ box::use(
   DT[datatable, renderDataTable],
   shiny.fluent[DefaultButton.shinyInput, PrimaryButton.shinyInput, Stack],
   shiny.fluent[Modal, reactOutput, renderReact],
-  shiny.fluent[updateDefaultButton.shinyInput],
   shiny[div, moduleServer, NS, observeEvent, reactiveVal, reactiveValues],
-  shiny[req],
-  shinyalert[shinyalert],
-  shinyjs[hide, toggle],
+  shiny[renderUI, req, uiOutput],
   stats[runif],
 )
 
 
 box::use(
-  app / logic / ui_helpers[findmodels, selectmodelstobuild],
+  app / logic / ui_helpers[find_models, select_models_to_build],
   app / view / feature_selection_guide_module,
+  app / view / make_modal,
   app / view / models_options_card_module,
   app / view / training_options_card_module,
   app / view / training_vectors_card_module,
@@ -29,6 +27,7 @@ ui <- function(id) {
       style = "display: flex; flex-wrap: wrap;",
       div(
         class = "ms-Grid-col ms-sm4",
+        make_modal$ui(ns("error_modal")),
         ts_transformations_card_module$ui(ns("ts_transformations_card")),
         training_vectors_card_module$ui(ns("training_vectors_card")),
         models_options_card_module$ui(ns("models_options_card")),
@@ -36,7 +35,11 @@ ui <- function(id) {
         Stack(
           horizontal = TRUE,
           tokens = list(childrenGap = "10%"),
-          PrimaryButton.shinyInput(ns("startexperimentation"), "Start"),
+          PrimaryButton.shinyInput(
+            ns("startexperimentation"),
+            "Start",
+            `data-testid` = "startexperimentation"
+          ),
           div(style = "flex-grow: 1;"),
           DefaultButton.shinyInput(ns("repeatexperimentation"), "Repeat")
         )
@@ -55,7 +58,24 @@ server <- function(id, shared_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
+    # Each card module receives this shared reactiveValues object.
+    # When a card sets its own visibility flag to TRUE, the other
+    # cards observe the change and collapse themselves — implementing
+    # accordion (mutual-exclusion) behavior without a central coordinator.
+
     modal_visible <- reactiveVal(FALSE)
+
+    error_visible <- reactiveVal(FALSE)
+    error_message <- reactiveVal("")
+    output$error_content <- renderUI(div(error_message()))
+    make_modal$server(
+      "error_modal",
+      name = "error_modal",
+      is_open = error_visible,
+      title = "Error",
+      content = uiOutput(ns("error_content")),
+      status = "error"
+    )
 
     startalert <- paste0(
       "Please make sure that you have selected a time series, a scale, a ",
@@ -71,227 +91,68 @@ server <- function(id, shared_data) {
       training_options = FALSE
     )
 
-    # The reactiveValues are now in app/main.R
+    # Pass visibility to every card module. Each card owns one flag
+    # and watches all other flags, collapsing itself when a sibling opens.
 
     ts_transformations_card_module$server(
       "ts_transformations_card",
-      shared_data
+      shared_data,
+      visibility
     )
-    training_vectors_card_module$server("training_vectors_card", shared_data)
-    models_options_card_module$server("models_options_card", shared_data)
-    training_options_card_module$server("training_options_card", shared_data)
+    training_vectors_card_module$server(
+      "training_vectors_card",
+      shared_data,
+      visibility
+    )
+    models_options_card_module$server(
+      "models_options_card",
+      shared_data,
+      visibility
+    )
+    training_options_card_module$server(
+      "training_options_card",
+      shared_data,
+      visibility
+    )
     feature_selection_guide_module$server("feature_selection_guide")
-
-    observeEvent(input$`ts_transformations_card-toggle_card`, {
-      visibility$ts_transformations <- !visibility$ts_transformations
-      toggle(id = "ts_transformations_card-card_content")
-      updateDefaultButton.shinyInput(
-        session,
-        "ts_transformations_card-toggle_card",
-        iconProps = list(
-          iconName = ifelse(
-            visibility$ts_transformations,
-            "ChevronUp",
-            "ChevronDown"
-          )
-        )
-      )
-      if (visibility$ts_transformations) {
-        if (visibility$training_vectors) {
-          visibility$training_vectors <- FALSE
-          hide(id = "training_vectors_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "training_vectors_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-        if (visibility$models_options) {
-          visibility$models_options <- FALSE
-          hide(id = "models_options_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "models_options_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-        if (visibility$training_options) {
-          visibility$training_options <- FALSE
-          hide(id = "training_options_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "training_options_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      }
-    })
-
-    observeEvent(input$`training_vectors_card-toggle_card`, {
-      visibility$training_vectors <- !visibility$training_vectors
-      toggle(id = "training_vectors_card-card_content")
-      updateDefaultButton.shinyInput(
-        session,
-        "training_vectors_card-toggle_card",
-        iconProps = list(
-          iconName = ifelse(
-            visibility$training_vectors,
-            "ChevronUp",
-            "ChevronDown"
-          )
-        )
-      )
-      if (visibility$training_vectors) {
-        if (visibility$ts_transformations) {
-          visibility$ts_transformations <- FALSE
-          hide(id = "ts_transformations_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "ts_transformations_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-        if (visibility$models_options) {
-          visibility$models_options <- FALSE
-          hide(id = "models_options_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "models_options_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-        if (visibility$training_options) {
-          visibility$training_options <- FALSE
-          hide(id = "training_options_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "training_options_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      }
-    })
-
-    observeEvent(input$`models_options_card-toggle_card`, {
-      visibility$models_options <- !visibility$models_options
-      toggle(id = "models_options_card-card_content")
-      updateDefaultButton.shinyInput(
-        session,
-        "models_options_card-toggle_card",
-        iconProps = list(
-          iconName = ifelse(
-            visibility$models_options,
-            "ChevronUp",
-            "ChevronDown"
-          )
-        )
-      )
-      if (visibility$models_options) {
-        if (visibility$ts_transformations) {
-          visibility$ts_transformations <- FALSE
-          hide(id = "ts_transformations_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "ts_transformations_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-        if (visibility$training_vectors) {
-          visibility$training_vectors <- FALSE
-          hide(id = "training_vectors_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "training_vectors_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-        if (visibility$training_options) {
-          visibility$training_options <- FALSE
-          hide(id = "training_options_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "training_options_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      }
-    })
-
-    observeEvent(input$`training_options_card-toggle_card`, {
-      visibility$training_options <- !visibility$training_options
-      toggle(id = "training_options_card-card_content")
-      updateDefaultButton.shinyInput(
-        session,
-        "training_options_card-toggle_card",
-        iconProps = list(
-          iconName = ifelse(
-            visibility$training_options,
-            "ChevronUp",
-            "ChevronDown"
-          )
-        )
-      )
-      if (visibility$training_options) {
-        if (visibility$ts_transformations) {
-          visibility$ts_transformations <- FALSE
-          hide(id = "ts_transformations_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "ts_transformations_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-        if (visibility$training_vectors) {
-          visibility$training_vectors <- FALSE
-          hide(id = "training_vectors_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "training_vectors_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-        if (visibility$models_options) {
-          visibility$models_options <- FALSE
-          hide(id = "models_options_card-card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "models_options_card-toggle_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      }
-    })
 
     observeEvent(input$startexperimentation, {
       if (
+        is.null(shared_data$selected_trains) ||
+          nrow(shared_data$selected_trains) == 0
+      ) {
+        error_message(
+          "Please select training data in the 'Select amount of data to use' section."
+        )
+        error_visible(TRUE)
+      } else if (
         is.null(shared_data$transf) ||
           is.null(shared_data$scales) ||
           is.na(shared_data$temporalhorizon) ||
-          is.null(shared_data$stdinputamnts) ||
-          is.null(shared_data$stdLSTMamnts) ||
-          is.null(shared_data$stdneuronsamnts) ||
+          is.null(shared_data$std_input_amounts) ||
+          is.null(shared_data$std_lstm_amounts) ||
+          is.null(shared_data$std_neuron_amounts) ||
           is.na(shared_data$epoch)
       ) {
-        shinyalert(html = TRUE, text = startalert, type = "error")
+        error_message(startalert)
+        error_visible(TRUE)
       } else {
         if (shared_data$epoch < 1 || !is.integer(shared_data$epoch)) {
-          shinyalert(
-            "Error",
-            "Wrong epoch format, most be an integer number bigger than 0",
-            type = "error"
+          error_message(
+            "Wrong epoch format, must be an integer number bigger than 0"
           )
+          error_visible(TRUE)
         } else {
-          if (shared_data$setseed == TRUE && is.na(shared_data$seed)) {
-            shinyalert(
-              "Error",
-              "If a seed is going to be used a seed most be specified",
-              type = "error"
+          if (shared_data$set_seed == TRUE && is.na(shared_data$seed)) {
+            error_message(
+              "If a seed is going to be used, a seed must be specified"
             )
+            error_visible(TRUE)
           } else {
             modal_visible(TRUE)
-            shared_data$modelstable <- findmodels(
-              shared_data$stdLSTMamnts,
-              shared_data$stdneuronsamnts
+            shared_data$models_table <- find_models(
+              shared_data$std_lstm_amounts,
+              shared_data$std_neuron_amounts
             )
           }
         }
@@ -303,23 +164,23 @@ server <- function(id, shared_data) {
         Modal(
           isOpen = modal_visible(),
           isBlocking = FALSE,
-          selectmodelstobuild(
+          select_models_to_build(
             ns = ns,
-            train = shared_data$selectedtrains,
+            train = shared_data$selected_trains,
             ts = shared_data$transf,
             sc = shared_data$scales,
-            vec = shared_data$stdinputamnts,
-            lstm = shared_data$stdLSTMamnts,
-            neu = shared_data$stdneuronsamnts
+            vec = shared_data$std_input_amounts,
+            lstm = shared_data$std_lstm_amounts,
+            neu = shared_data$std_neuron_amounts
           )
         )
       }
     })
 
     output$modelestable <- renderDataTable({
-      req(shared_data$modelstable)
+      req(shared_data$models_table)
       datatable(
-        shared_data$modelstable,
+        shared_data$models_table,
         options = list(
           dom = "t",
           ordering = FALSE,
@@ -346,8 +207,8 @@ server <- function(id, shared_data) {
     })
 
     observeEvent(input$eliminatemodel, {
-      req(shared_data$modelstable, input$modelestable_rows_selected)
-      shared_data$modelstable <- shared_data$modelstable[
+      req(shared_data$models_table, input$modelestable_rows_selected)
+      shared_data$models_table <- shared_data$models_table[
         -as.numeric(input$modelestable_rows_selected),
       ]
     })

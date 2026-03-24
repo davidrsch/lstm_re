@@ -1,67 +1,131 @@
 box::use(
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack],
-  shiny.fluent[TextField.shinyInput],
-  shiny[div, moduleServer, NS, observeEvent, renderUI, tagList, uiOutput],
-  shinyalert[shinyalert],
-  shinyjs[hidden],
+  shiny.fluent[TextField.shinyInput, updateDefaultButton.shinyInput],
+  shiny[
+    div,
+    moduleServer,
+    NS,
+    observeEvent,
+    reactiveVal,
+    renderUI,
+    tagList,
+    uiOutput
+  ],
+  shinyjs[hidden, toggle],
 )
 
 box::use(
   app / logic / make_card[make_card],
+  app / logic / ui_helpers[collapse_on_sibling_open],
+  app / view / make_modal,
 )
 
 #' @export
 ui <- function(id) {
   ns <- NS(id)
-  make_card(
-    title = tagList(
-      "Training vectors options",
-      DefaultButton.shinyInput(
-        ns("toggle_card"),
-        iconProps = list(iconName = "ChevronDown"),
-        style = "float: right; width: 0.7em",
-        styles = list(
-          root = list(
-            "min-width" = "32px"
+  tagList(
+    make_modal$ui(ns("error_modal")),
+    make_card(
+      title = tagList(
+        "Training vectors options",
+        DefaultButton.shinyInput(
+          ns("toggle_card"),
+          iconProps = list(iconName = "ChevronDown"),
+          style = "float: right; width: 0.7em",
+          styles = list(
+            root = list(
+              "min-width" = "32px"
+            )
+          ),
+          `data-testid` = "toggle_tv_card"
+        )
+      ),
+      hidden(
+        div(
+          id = ns("card_content"),
+          Stack(
+            tokens = list(childrenGap = 10),
+            uiOutput(ns("temporalhorizon_ui")),
+            uiOutput(ns("addINoption_ui")),
+            DefaultButton.shinyInput(
+              ns("acceptinputoptionbutton"),
+              text = "Add input"
+            ),
+            uiOutput(ns("selectinputoptions_ui"))
           )
         )
-      )
-    ),
-    hidden(
-      div(
-        id = ns("card_content"),
-        Stack(
-          tokens = list(childrenGap = 10),
-          uiOutput(ns("temporalhorizon_ui")),
-          uiOutput(ns("addINoption_ui")),
-          DefaultButton.shinyInput(
-            ns("acceptinputoptionbutton"),
-            "Add input"
-          ),
-          uiOutput(ns("selectinputoptions_ui"))
-        )
-      )
-    ),
-    style = "background-color: white;",
-    is_contained = TRUE
+      ),
+      style = "background-color: white;",
+      is_contained = TRUE
+    )
   )
 }
 
 #' @export
-server <- function(id, sf) {
+server <- function(id, shared_data, visibility) {
   moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+
+    error_visible <- reactiveVal(FALSE)
+    error_message <- reactiveVal("")
+    output$error_content <- renderUI(div(error_message()))
+    make_modal$server(
+      "error_modal",
+      name = "error_modal",
+      is_open = error_visible,
+      title = "Error",
+      content = uiOutput(ns("error_content")),
+      status = "error"
+    )
+
+    observeEvent(input$toggle_card, {
+      visibility$training_vectors <- !visibility$training_vectors
+      toggle("card_content")
+      updateDefaultButton.shinyInput(
+        session,
+        "toggle_card",
+        iconProps = list(
+          iconName = if (visibility$training_vectors) {
+            "ChevronUp"
+          } else {
+            "ChevronDown"
+          }
+        )
+      )
+    })
+
+    collapse_on_sibling_open(
+      "ts_transformations",
+      "training_vectors",
+      visibility,
+      session
+    )
+    collapse_on_sibling_open(
+      "models_options",
+      "training_vectors",
+      visibility,
+      session
+    )
+    collapse_on_sibling_open(
+      "training_options",
+      "training_vectors",
+      visibility,
+      session
+    )
+
     output$temporalhorizon_ui <- renderUI({
       TextField.shinyInput(
         session$ns("temporalhorizon"),
         label = "Temporal horizon",
         type = "number",
         min = 1,
-        value = sf$temporalhorizon
+        value = shared_data$temporalhorizon,
+        `data-testid` = "temporalhorizon"
       )
     })
 
     observeEvent(input$temporalhorizon, {
-      sf$temporalhorizon <- input$temporalhorizon
+      shared_data$temporalhorizon <- input$temporalhorizon
     })
 
     output$addINoption_ui <- renderUI({
@@ -70,12 +134,12 @@ server <- function(id, sf) {
         label = "Add input amount",
         type = "number",
         min = 1,
-        value = sf$addINoption
+        value = shared_data$addINoption
       )
     })
 
     observeEvent(input$addINoption, {
-      sf$addINoption <- input$addINoption
+      shared_data$addINoption <- input$addINoption
     })
 
     observeEvent(input$temporalhorizon, {
@@ -86,11 +150,10 @@ server <- function(id, sf) {
           temporalhorizon_val != "" &&
           (temporalhorizon_val < 1 || (temporalhorizon_val %% 1 != 0))
       ) {
-        shinyalert(
-          "Error",
-          "Temporal horizon must be an integer number bigger than 0",
-          type = "error"
+        error_message(
+          "Temporal horizon must be an integer number bigger than 0"
         )
+        error_visible(TRUE)
       }
     })
 
@@ -103,19 +166,24 @@ server <- function(id, sf) {
           add_in_option_val < 1 ||
           (add_in_option_val %% 1 != 0)
       ) {
-        shinyalert(
-          "Error",
-          "Wrong input format. Input must be an integer number bigger than 0",
-          type = "error"
+        error_message(
+          "Wrong input format. Input must be an integer number bigger than 0"
         )
+        error_visible(TRUE)
       } else {
-        if (is.null(sf$inputamnts)) {
-          sf$inputamnts <- add_in_option_val
-          sf$stdinputamnts <- add_in_option_val
+        if (is.null(shared_data$input_amounts)) {
+          shared_data$input_amounts <- add_in_option_val
+          shared_data$std_input_amounts <- add_in_option_val
         } else {
-          if (!is.element(add_in_option_val, sf$inputamnts)) {
-            sf$inputamnts <- c(sf$inputamnts, add_in_option_val)
-            sf$stdinputamnts <- c(sf$stdinputamnts, add_in_option_val)
+          if (!is.element(add_in_option_val, shared_data$input_amounts)) {
+            shared_data$input_amounts <- c(
+              shared_data$input_amounts,
+              add_in_option_val
+            )
+            shared_data$std_input_amounts <- c(
+              shared_data$std_input_amounts,
+              add_in_option_val
+            )
           }
         }
       }
@@ -126,13 +194,15 @@ server <- function(id, sf) {
         session$ns("selectinputoptions"),
         label = "Select the amounts of inputs",
         multiSelect = TRUE,
-        value = sf$stdinputamnts,
-        options = lapply(sf$inputamnts, function(x) list(key = x, text = x))
+        value = shared_data$std_input_amounts,
+        options = lapply(shared_data$input_amounts, function(x) {
+          list(key = x, text = x)
+        })
       )
     })
 
     observeEvent(input$selectinputoptions, {
-      sf$stdinputamnts <- input$selectinputoptions
+      shared_data$std_input_amounts <- input$selectinputoptions
     })
   })
 }

@@ -3,101 +3,182 @@ box::use(
   DT[datatable, DTOutput, renderDataTable],
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack, Text],
   shiny.fluent[PrimaryButton.shinyInput],
-  shiny[div, moduleServer, NS, observeEvent, renderUI, req, tagList],
+  shiny[
+    div,
+    moduleServer,
+    NS,
+    observeEvent,
+    reactiveVal,
+    renderUI,
+    req,
+    tagList
+  ],
   shiny[uiOutput],
-  shinyalert[shinyalert],
-  shinyjs[hidden],
+  shinyjs[hidden, hide, toggle],
+  shiny.fluent[updateDefaultButton.shinyInput],
 )
 
 box::use(
   app / logic / make_card[make_card],
+  app / view / make_modal,
+  rlang[`%||%`],
 )
 
 #' @export
 ui <- function(id) {
   ns <- NS(id)
-  make_card(
-    tagList(
-      "Select amount of data to use",
-      DefaultButton.shinyInput(
-        ns("toggle_data_amount_card"),
-        iconProps = list(iconName = "ChevronDown"),
-        style = "float: right; width: 0.7em",
-        styles = list(
-          root = list(
-            "min-width" = "32px"
-          )
-        )
-      )
-    ),
-    hidden(
-      div(
-        id = ns("data_amount_card_content"),
-        Stack(
-          tokens = list(childrenGap = 10),
-          Text(
-            "Test set:",
-            style = "text-align: center; font-weight: bold;"
-          ),
-          Stack(
-            horizontal = TRUE,
-            tokens = list(childrenGap = 10),
-            div(
-              uiOutput(ns("selectteststart_dropdown")),
-              style = "min-width:45%; max-width:45%;"
-            ),
-            div(style = "flex-grow: 1;"),
-            div(
-              uiOutput(ns("selecttestend_dropdown")),
-              style = "min-width:45%; max-width:45%;"
+  tagList(
+    make_modal$ui(ns("error_modal")),
+    make_card(
+      tagList(
+        "Select amount of data to use",
+        DefaultButton.shinyInput(
+          ns("toggle_data_amount_card"),
+          iconProps = list(iconName = "ChevronDown"),
+          style = "float: right; width: 0.7em",
+          styles = list(
+            root = list(
+              "min-width" = "32px"
             )
           ),
-          Text(
-            "Train set:",
-            style = "text-align: center; font-weight: bold;"
-          ),
-          uiOutput(ns("selecttrainstart_dropdown")),
-          PrimaryButton.shinyInput(
-            ns("adtraintotest"),
-            text = "OK"
-          ),
-          div(
-            style = paste0(
-              "border-radius: 0; border: black thin solid;",
-              " max-height: 140px; overflow: auto; ",
-              "font-size: 0.9em; text-align: center"
+          `data-testid` = "toggle_data_amount_card"
+        )
+      ),
+      hidden(
+        div(
+          id = ns("data_amount_card_content"),
+          Stack(
+            tokens = list(childrenGap = 10),
+            Text(
+              "Test set:",
+              style = "text-align: center; font-weight: bold;"
             ),
-            DTOutput(ns("traindatestable")),
-          ),
-          DefaultButton.shinyInput(
-            ns("eliminatetrainsd"),
-            text = "Eliminate"
+            Stack(
+              horizontal = TRUE,
+              tokens = list(childrenGap = 10),
+              div(
+                uiOutput(ns("selectteststart_dropdown")),
+                style = "min-width:45%; max-width:45%;"
+              ),
+              div(style = "flex-grow: 1;"),
+              div(
+                uiOutput(ns("selecttestend_dropdown")),
+                style = "min-width:45%; max-width:45%;"
+              )
+            ),
+            Text(
+              "Train set:",
+              style = "text-align: center; font-weight: bold;"
+            ),
+            uiOutput(ns("selecttrainstart_dropdown")),
+            PrimaryButton.shinyInput(
+              ns("adtraintotest"),
+              text = "OK"
+            ),
+            div(
+              style = paste0(
+                "border-radius: 0; border: black thin solid;",
+                " max-height: 140px; overflow: auto; ",
+                "font-size: 0.9em; text-align: center"
+              ),
+              DTOutput(ns("traindatestable")),
+            ),
+            DefaultButton.shinyInput(
+              ns("eliminatetrainsd"),
+              text = "Eliminate"
+            )
           )
         )
-      )
-    ),
-    style = "background-color: white;",
-    is_contained = TRUE
+      ),
+      style = "background-color: white;",
+      is_contained = TRUE
+    )
   )
 }
 
 #' @export
-server <- function(id, database) {
+server <- function(id, shared_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
+    error_visible <- reactiveVal(FALSE)
+    error_message <- reactiveVal("")
+    output$error_content <- renderUI(div(error_message()))
+    make_modal$server(
+      "error_modal",
+      name = "error_modal",
+      is_open = error_visible,
+      title = "Error",
+      content = uiOutput(ns("error_content")),
+      status = "error"
+    )
+
+    observeEvent(input$toggle_data_amount_card, {
+      shared_data$data_amount_card_visible <- !shared_data$data_amount_card_visible
+      toggle(id = ns("data_amount_card_content"))
+      updateDefaultButton.shinyInput(
+        session,
+        "toggle_data_amount_card",
+        iconProps = list(
+          iconName = if (shared_data$data_amount_card_visible) {
+            "ChevronUp"
+          } else {
+            "ChevronDown"
+          }
+        )
+      )
+    })
+
+    observeEvent(
+      shared_data$upload_card_visible,
+      {
+        if (
+          shared_data$upload_card_visible &&
+            shared_data$data_amount_card_visible
+        ) {
+          shared_data$data_amount_card_visible <- FALSE
+          hide(id = ns("data_amount_card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_data_amount_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
+
+    observeEvent(
+      shared_data$variables_card_visible,
+      {
+        if (
+          shared_data$variables_card_visible &&
+            shared_data$data_amount_card_visible
+        ) {
+          shared_data$data_amount_card_visible <- FALSE
+          hide(id = ns("data_amount_card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_data_amount_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
+
     # 08-Select dates-periods----
-    observeEvent(list(database$df, database$selected_date_variable), {
-      req(database$df)
+    observeEvent(list(shared_data$df, shared_data$selected_date_variable), {
+      req(shared_data$df)
       if (
-        is.null(database$selected_date_variable) ||
-          database$selected_date_variable == "" ||
-          !(database$selected_date_variable %in% colnames(database$df))
+        is.null(shared_data$selected_date_variable) ||
+          shared_data$selected_date_variable == "" ||
+          !(shared_data$selected_date_variable %in% colnames(shared_data$df))
       ) {
-        database$x_data <- seq_len(dim(database$EDA)[1])
+        shared_data$x_data <- seq_len(dim(shared_data$EDA)[1])
       } else {
-        database$x_data <- as.character(database$df[[
-          database$selected_date_variable
+        shared_data$x_data <- as.character(shared_data$df[[
+          shared_data$selected_date_variable
         ]])
       }
     })
@@ -105,9 +186,9 @@ server <- function(id, database) {
     output$selectteststart_dropdown <- renderUI(
       {
         options <- list()
-        if (!is.null(database$x_data) && length(database$x_data) > 2) {
+        if (!is.null(shared_data$x_data) && length(shared_data$x_data) > 2) {
           options <- lapply(
-            database$x_data[2:(length(database$x_data) - 1)],
+            shared_data$x_data[2:(length(shared_data$x_data) - 1)],
             function(x) list(key = x, text = x)
           )
         }
@@ -116,7 +197,7 @@ server <- function(id, database) {
           ns("selectteststart"),
           label = "Start",
           options = options,
-          value = database$test_start_date %||%
+          value = shared_data$test_start_date %||%
             if (length(options) > 0) options[[1]]$key else NULL,
           key = "selectteststart_dropdown_key"
         )
@@ -124,13 +205,13 @@ server <- function(id, database) {
     )
 
     output$selecttestend_dropdown <- renderUI({
-      # This renderUI will react to input$selectteststart, database$x_data, input$selecttestend
-      x_data <- database$x_data
+      # This renderUI will react to input$selectteststart, shared_data$x_data, input$selecttestend
+      x_data <- shared_data$x_data
       start <- input$selectteststart
       end <- input$selecttestend # This is the current value of the dropdown
 
-      # Ensure database$df is available before proceeding
-      req(database$df)
+      # Ensure shared_data$df is available before proceeding
+      req(shared_data$df)
 
       if (is.null(start)) {
         choices2 <- x_data # If start is NULL, all x_data are potential end dates
@@ -142,39 +223,39 @@ server <- function(id, database) {
         ns("selecttestend"),
         label = "End",
         options = lapply(choices2, function(x) list(key = x, text = x)),
-        value = database$test_end_date %||%
+        value = shared_data$test_end_date %||%
           if (length(choices2) > 0) choices2[[1]] else NULL,
         key = "selecttestend_dropdown_key"
       )
     })
 
     observeEvent(input$selectteststart, {
-      database$test_start_date <- input$selectteststart
-      x_data <- database$x_data
+      shared_data$test_start_date <- input$selectteststart
+      x_data <- shared_data$x_data
       start <- input$selectteststart
       end <- input$selecttestend
       choices2 <- x_data[(which(x_data == start) + 1):length(x_data)]
     })
 
     observeEvent(input$selecttestend, {
-      database$test_end_date <- input$selecttestend
+      shared_data$test_end_date <- input$selecttestend
     })
 
     output$selecttrainstart_dropdown <- renderUI({
-      # This renderUI will react to input$selectteststart, database$x_data, input$selecttrainstart
-      x_data <- database$x_data
+      # This renderUI will react to input$selectteststart, shared_data$x_data, input$selecttrainstart
+      x_data <- shared_data$x_data
       end <- input$selectteststart
       start <- input$selecttrainstart # This is the current value of the dropdown
 
-      # Ensure database$df is available before proceeding
-      req(database$df)
+      # Ensure shared_data$df is available before proceeding
+      req(shared_data$df)
 
       if (is.null(end)) {
         choices <- x_data # If end is NULL, all x_data are potential train start dates
       } else {
         choices <- x_data[1:(which(x_data == end) - 1)]
       }
-      database$starttrainlevels <- choices # Update starttrainlevels here
+      shared_data$start_train_levels <- choices # Update starttrainlevels here
 
       if (
         is.null(start) ||
@@ -196,11 +277,11 @@ server <- function(id, database) {
     })
 
     observeEvent(input$selectteststart, {
-      x_data <- database$x_data
+      x_data <- shared_data$x_data
       end <- input$selectteststart
       start <- input$selecttrainstart
       choices <- x_data[1:(which(x_data == end) - 1)]
-      database$starttrainlevels <- choices
+      shared_data$start_train_levels <- choices
       if (
         is.null(start) ||
           !is.element(start, x_data) ||
@@ -220,49 +301,46 @@ server <- function(id, database) {
           input$selecttestend == "" ||
           is.null(input$selecttrainstart) ||
           input$selecttrainstart == "" ||
-          !any(database$grid$Inputs == 1) ||
-          !any(database$grid$Outputs == 1)
+          !any(shared_data$grid$Inputs == 1) ||
+          !any(shared_data$grid$Outputs == 1)
       ) {
-        shinyalert(
-          "Error",
-          paste0(
-            "Make sure you have selected Input and Output variables, start",
-            " and end dates to the test set and at least an start date for ",
-            "training set"
-          ),
-          type = "error"
-        )
+        error_message(paste0(
+          "Make sure you have selected Input and Output variables, start",
+          " and end dates to the test set and at least an start date for ",
+          "training set"
+        ))
+        error_visible(TRUE)
       } else {
         stns <- input$selecttrainstart
-        if (dim(database$selectedtrains)[1] == 0) {
-          database$selectedtrains <- data.frame(`Train start dates` = stns)
-          if (database$showGraphs < 2) {
-            database$showGraphs <- database$showGraphs + 1
+        if (dim(shared_data$selected_trains)[1] == 0) {
+          shared_data$selected_trains <- data.frame(`Train start dates` = stns)
+          if (shared_data$show_graphs < 2) {
+            shared_data$show_graphs <- shared_data$show_graphs + 1
           }
-          if (database$showGraphs == 1) {
+          if (shared_data$show_graphs == 1) {
             # select graph pivot
           }
         } else {
-          if (!is.element(stns, database$selectedtrains[, 1])) {
-            database$selectedtrains <- rbind(
-              database$selectedtrains,
+          if (!is.element(stns, shared_data$selected_trains[, 1])) {
+            shared_data$selected_trains <- rbind(
+              shared_data$selected_trains,
               data.frame(`Train start dates` = stns)
             )
-            database$selectedtrains <- database$selectedtrains |>
+            shared_data$selected_trains <- shared_data$selected_trains |>
               arrange(factor(
                 Train.start.dates,
-                levels = database$starttrainlevels
+                levels = shared_data$start_train_levels
               ))
           }
         }
         indxofstn <- which(is.element(
-          database$x_data,
-          database$selectedtrains$Train.start.dates
+          shared_data$x_data,
+          shared_data$selected_trains$Train.start.dates
         ))
-        indxofstt <- which(database$x_data == input$selectteststart)
+        indxofstt <- which(shared_data$x_data == input$selectteststart)
         if (any(indxofstn > indxofstt)) {
           whichisbig <- which(indxofstn > indxofstt)
-          database$selectedtrains <- database$selectedtrains |>
+          shared_data$selected_trains <- shared_data$selected_trains |>
             slice(-whichisbig)
         }
       }
@@ -270,14 +348,18 @@ server <- function(id, database) {
 
     output$traindatestable <- renderDataTable({
       datatable(
-        database$selectedtrains,
-        options = list(dom = "t", pageLength = dim(database$selectedtrains)[1])
+        shared_data$selected_trains,
+        options = list(
+          dom = "t",
+          pageLength = dim(shared_data$selected_trains)[1]
+        )
       )
     })
 
     observeEvent(input$eliminatetrainsd, {
       rwstr <- input$traindatestable_rows_selected
-      database$selectedtrains <- database$selectedtrains |> slice(-rwstr)
+      shared_data$selected_trains <- shared_data$selected_trains |>
+        slice(-rwstr)
     })
   })
 }

@@ -1,48 +1,32 @@
 box::use(
   dplyr[bind_rows],
   DT[DTOutput],
-  shiny.fluent[DefaultButton.shinyInput, PrimaryButton.shinyInput],
-  shiny[div, p, tagList, tags, uiOutput],
+  purrr[map_dfr],
+  shiny.fluent[
+    DefaultButton.shinyInput,
+    PrimaryButton.shinyInput,
+    updateDefaultButton.shinyInput
+  ],
+  shiny[div, observeEvent, p, tagList, tags, uiOutput],
+  shinyjs[hide],
 )
 
+# Generates the full Cartesian product of neuron amounts across all LSTM layer
+# counts and returns it as a tidy data frame, one column per layer.
 #' @export
-startalert <- tagList(
-  div(
-    p(
-      "Check have selected at least:"
-    ),
-    tags$ul(
-      tags$li("A time serie to use."),
-      tags$li("A scale to use."),
-      tags$li("Specified a temporal horizon."),
-      tags$li("Specified an input amount."),
-      tags$li("Specified a LSTM layers amount."),
-      tags$li("Specified a neurons amount."),
-      tags$li("Specified an epoch amount.")
-    ),
-    style = "text-align:left; margin-left: 20%"
-  )
-)
-
-#' @export
-findmodels <- function(lstm, neurons) {
-  for (i in seq_along(lstm)) {
-    if (i == 1) {
-      df <- expand.grid(rep(list(neurons), lstm[i]))
-      colsnames <- lapply(1:lstm[i], function(x) paste0(x, "_LSTM"))
-      names(df) <- colsnames
-    } else {
-      df2 <- expand.grid(rep(list(neurons), lstm[i]))
-      colsnames <- lapply(1:lstm[i], function(x) paste0(x, "_LSTM"))
-      names(df2) <- colsnames
-      df <- bind_rows(df, df2)
-    }
-  }
-  df
+find_models <- function(lstm, neurons) {
+  map_dfr(lstm, function(n_lstm) {
+    df <- expand.grid(rep(list(neurons), n_lstm))
+    names(df) <- lapply(seq_len(n_lstm), function(i) paste0(i, "_LSTM"))
+    df
+  })
 }
 
+# Builds the modal content for the experiment confirmation screen, summarising
+# the selected training sets, transformations, scales, input amounts, and the
+# full model grid with DT table and OK/Cancel/Eliminate buttons.
 #' @export
-selectmodelstobuild <- function(ns, train, ts, sc, vec, lstm, neu) {
+select_models_to_build <- function(ns, train, ts, sc, vec, lstm, neu) {
   amountoftrain <- dim(train)[1]
   if (dim(train)[1] == 1) {
     setors <- "set"
@@ -64,7 +48,7 @@ selectmodelstobuild <- function(ns, train, ts, sc, vec, lstm, neu) {
   } else {
     inputors <- "amounts"
   }
-  models <- findmodels(lstm = lstm, neurons = neu)
+  models <- find_models(lstm = lstm, neurons = neu)
   if (dim(models)[1] == 1) {
     modelors <- "model"
   } else {
@@ -154,23 +138,20 @@ selectmodelstobuild <- function(ns, train, ts, sc, vec, lstm, neu) {
   text
 }
 
+# Extracts the rightmost n characters from string x.
 #' @export
 substright <- function(x, n) {
   substr(x, nchar(x) - n + 1, nchar(x))
 }
 
+# Collapses a character vector into a single space-separated string.
 #' @export
-pastevec <- function(vect) {
-  for (i in seq_along(vect)) {
-    if (i == 1) {
-      x <- vect[i]
-    } else {
-      x <- paste(x, vect[i])
-    }
-  }
-  x
+paste_vec <- function(vect) {
+  paste(vect, collapse = " ")
 }
 
+# Converts a data frame to an inline HTML table string with basic black-border
+# styling. Used to embed tabular content in JavaScript-driven UI elements.
 #' @export
 html_table <- function(df) {
   x <- "<div>
@@ -221,4 +202,31 @@ html_table <- function(df) {
   }
   x <- paste(x, "</table></div>")
   x
+}
+
+# Registers an observer that collapses this accordion card whenever a sibling
+# card opens. Call once per sibling from inside moduleServer, passing the
+# shared visibility reactiveValues and the module's session object.
+#' @export
+collapse_on_sibling_open <- function(
+  sibling_flag,
+  this_flag,
+  visibility,
+  session
+) {
+  observeEvent(
+    visibility[[sibling_flag]],
+    {
+      if (visibility[[sibling_flag]] && visibility[[this_flag]]) {
+        visibility[[this_flag]] <- FALSE
+        hide("card_content")
+        updateDefaultButton.shinyInput(
+          session,
+          "toggle_card",
+          iconProps = list(iconName = "ChevronDown")
+        )
+      }
+    },
+    ignoreInit = TRUE
+  )
 }

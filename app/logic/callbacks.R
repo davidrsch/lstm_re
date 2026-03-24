@@ -1,12 +1,14 @@
 box::use(
-  jsonlite[fromJSON, toJSON, write_json],
+  jsonlite[toJSON],
   keras3[callback_lambda],
   shinyjs[runjs],
 )
 
 
+# Fires a JavaScript Shiny.setInputValue event to update a Fluent ProgressIndicator
+# to the fraction (item + 1) / amount.
 #' @export
-updatingpg <- function(session, pgbid, amount, item) {
+update_progress <- function(session, pgbid, amount, item) {
   progress <- (item + 1) / amount
   runjs(
     paste0(
@@ -20,8 +22,10 @@ updatingpg <- function(session, pgbid, amount, item) {
 }
 
 
+# Applies a Plotly relayout to set axis titles, tick values, legend position,
+# and removes the mode bar on the training loss chart.
 #' @export
-updatelayoutfunc <- function(x, valuesofx, plotid) {
+update_layout <- function(x, valuesofx, plotid) {
   runjs(paste0(
     "
         var graphDiv = document.getElementById(\"",
@@ -70,8 +74,10 @@ updatelayoutfunc <- function(x, valuesofx, plotid) {
   ))
 }
 
+# Adds a new scatter-line trace to the Plotly loss chart with the full x/loss
+# vectors for the current model.
 #' @export
-addtracesfunction <- function(x, loss, plotid) {
+add_traces <- function(x, loss, plotid) {
   runjs(paste0(
     "
         var graphDiv = document.getElementById(\"",
@@ -103,8 +109,10 @@ addtracesfunction <- function(x, loss, plotid) {
   ))
 }
 
+# Extends the last trace on the Plotly loss chart by appending the most recent
+# loss value, enabling live epoch-by-epoch updates.
 #' @export
-extendtraces <- function(loss, epoch, plotid) {
+extend_traces <- function(loss, plotid) {
   runjs(paste0(
     "
         var graphDiv = document.getElementById(\"",
@@ -116,8 +124,10 @@ extendtraces <- function(loss, epoch, plotid) {
   ))
 }
 
+# Removes the last trace from the Plotly loss chart. Called before drawing the
+# first epoch of each new model to clear the previous model's trace.
 #' @export
-eliminatetraces <- function(plotid) {
+delete_traces <- function(plotid) {
   runjs(paste0(
     "
   var graphDiv = document.getElementById(\"",
@@ -127,10 +137,20 @@ eliminatetraces <- function(plotid) {
   ))
 }
 
+# Handles the Keras on_epoch_end event: initialises the chart layout on the
+# first epoch, adds a fresh trace for each new model, and extends the trace
+# on subsequent epochs.
 #' @export
-onepochend <- function(nmodel, directory, plotid, amountofepoch, epoch, logs) {
+on_epoch_end <- function(
+  nmodel,
+  loss_store,
+  plotid,
+  amountofepoch,
+  epoch,
+  logs
+) {
   logs <- lapply(logs, as.numeric)
-  plotx <- 1:amountofepoch
+  plotx <- seq_len(amountofepoch)
   if (plotx[length(plotx)] > 10) {
     xticksvalues <- seq(
       1,
@@ -141,38 +161,36 @@ onepochend <- function(nmodel, directory, plotid, amountofepoch, epoch, logs) {
     xticksvalues <- plotx
   }
 
-  loss_file <- paste0(directory, "loss.json")
-
-  if (!file.exists(loss_file)) {
+  if (is.null(loss_store$loss)) {
     if (nmodel != 1) {
-      eliminatetraces(plotid)
+      delete_traces(plotid)
     }
-    updatelayoutfunc(plotx, xticksvalues, plotid)
+    update_layout(plotx, xticksvalues, plotid)
     loss <- logs$loss
-    addtracesfunction(plotx, loss, plotid)
-    write_json(loss, loss_file)
+    add_traces(plotx, loss, plotid)
+    loss_store$loss <- loss
   } else {
-    loss <- fromJSON(loss_file)
-    loss <- c(loss, logs$loss)
-    extendtraces(loss, epoch, plotid)
-    write_json(loss, loss_file)
+    loss_store$loss <- c(loss_store$loss, logs$loss)
+    extend_traces(loss_store$loss, plotid)
   }
 }
 
+# Builds a Keras callback_lambda that reports batch and epoch progress to
+# Shiny progress bars and delegates loss-plot updates to on_epoch_end.
 #' @export
-creatingcallback <- function(
+create_callback <- function(
   nmodel,
   session,
-  directory,
+  loss_store,
   plotid,
   batchpbid,
   batchamount,
   epochpbid,
   epochamount
 ) {
-  cd <- callback_lambda(
+  callback_lambda(
     on_batch_begin = function(batch, logs) {
-      updatingpg(
+      update_progress(
         session = session,
         pgbid = batchpbid,
         amount = batchamount,
@@ -180,7 +198,7 @@ creatingcallback <- function(
       )
     },
     on_epoch_begin = function(epoch, logs) {
-      updatingpg(
+      update_progress(
         session = session,
         pgbid = epochpbid,
         amount = epochamount,
@@ -188,9 +206,9 @@ creatingcallback <- function(
       )
     },
     on_epoch_end = function(epoch, logs) {
-      onepochend(
+      on_epoch_end(
         nmodel = nmodel,
-        directory = directory,
+        loss_store = loss_store,
         plotid = plotid,
         amountofepoch = epochamount,
         epoch = epoch,
@@ -198,5 +216,4 @@ creatingcallback <- function(
       )
     }
   )
-  cd
 }

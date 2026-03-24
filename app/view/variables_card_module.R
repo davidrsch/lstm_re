@@ -6,7 +6,8 @@ box::use(
   shiny.fluent[PrimaryButton.shinyInput],
   shiny[div, moduleServer, NS],
   shiny[observeEvent, renderUI, req, tagList, uiOutput],
-  shinyjs[hidden],
+  shinyjs[hidden, hide, toggle],
+  shiny.fluent[updateDefaultButton.shinyInput],
 )
 
 box::use(
@@ -27,7 +28,8 @@ ui <- function(id) {
           root = list(
             "min-width" = "32px"
           )
-        )
+        ),
+        `data-testid` = "toggle_variables_card"
       )
     ),
     hidden(
@@ -82,6 +84,59 @@ server <- function(id, shared_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
+    observeEvent(input$toggle_variables_card, {
+      shared_data$variables_card_visible <- !shared_data$variables_card_visible
+      toggle(id = ns("variables_card_content"))
+      updateDefaultButton.shinyInput(
+        session,
+        "toggle_variables_card",
+        iconProps = list(
+          iconName = if (shared_data$variables_card_visible) {
+            "ChevronUp"
+          } else {
+            "ChevronDown"
+          }
+        )
+      )
+    })
+
+    observeEvent(
+      shared_data$upload_card_visible,
+      {
+        if (
+          shared_data$upload_card_visible && shared_data$variables_card_visible
+        ) {
+          shared_data$variables_card_visible <- FALSE
+          hide(id = ns("variables_card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_variables_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
+
+    observeEvent(
+      shared_data$data_amount_card_visible,
+      {
+        if (
+          shared_data$data_amount_card_visible &&
+            shared_data$variables_card_visible
+        ) {
+          shared_data$variables_card_visible <- FALSE
+          hide(id = ns("variables_card_content"))
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_variables_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
+
     output$date_variable_dropdown <- renderUI({
       req(shared_data$df) # Ensure df is available before rendering dropdown
 
@@ -133,8 +188,8 @@ server <- function(id, shared_data) {
     # 07-EDA ----
     observeEvent(input$io_gridtable, {
       if (any(hot_to_r(input$io_gridtable) == 1)) {
-        if (shared_data$showEDA < 2) {
-          shared_data$showEDA <- shared_data$showEDA + 1
+        if (shared_data$show_eda < 2) {
+          shared_data$show_eda <- shared_data$show_eda + 1
         }
         # Update shared_data$grid with the latest state from the handsontable
         shared_data$grid <- hot_to_r(input$io_gridtable)
@@ -145,7 +200,7 @@ server <- function(id, shared_data) {
         data <- shared_data$df[variables]
         if (!identical(data, shared_data$previousEDA)) {
           shared_data$EDA <- data
-          if (shared_data$showEDA == 1) {
+          if (shared_data$show_eda == 1) {
             # select eda pivot
           }
         }

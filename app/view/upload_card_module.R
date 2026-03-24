@@ -1,13 +1,31 @@
 box::use(
   readr[locale, read_delim],
   readxl[read_excel],
-  shiny.fluent[Checkbox.shinyInput, DefaultButton.shinyInput],
-  shiny.fluent[PrimaryButton.shinyInput, Stack, TextField.shinyInput],
-  shiny.fluent[updateCheckbox.shinyInput, updateTextField.shinyInput],
-  shiny[div, fileInput, moduleServer, NS, observeEvent, req],
-  shiny[tagAppendAttributes, tagList],
-  shinyalert[shinyalert],
-  shinyjs[click, hidden],
+  shiny.fluent[
+    Checkbox.shinyInput,
+    DefaultButton.shinyInput,
+    PrimaryButton.shinyInput,
+    Stack,
+    TextField.shinyInput,
+    updateCheckbox.shinyInput,
+    updateDefaultButton.shinyInput,
+    updateTextField.shinyInput
+  ],
+  shiny[
+    div,
+    fileInput,
+    isolate,
+    moduleServer,
+    NS,
+    observeEvent,
+    reactiveVal,
+    renderUI,
+    req,
+    tagAppendAttributes,
+    tagList,
+    uiOutput
+  ],
+  shinyjs[click, delay, hidden, hide, toggle],
   stats[na.omit],
   stringr[str_split_i],
   tools[file_ext],
@@ -17,15 +35,17 @@ box::use(
   app / logic / constants[file_formats],
   app / logic / make_card[make_card],
   app / logic / max_min_width_input[max_min_width_input],
+  app / view / make_modal,
 )
 
 #' @export
 ui <- function(id) {
   ns <- NS(id)
   div(
+    make_modal$ui(ns("warning_modal")),
     make_card(
       tagList(
-        "Upload shared_data",
+        "Upload data",
         DefaultButton.shinyInput(
           ns("toggle_upload_card"),
           iconProps = list(iconName = "ChevronUp"),
@@ -34,7 +54,8 @@ ui <- function(id) {
             root = list(
               "min-width" = "32px"
             )
-          )
+          ),
+          `data-testid` = "toggle_upload_card"
         )
       ),
       div(
@@ -93,33 +114,94 @@ server <- function(id, shared_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    observeEvent(
-      session,
-      {
-        updateCheckbox.shinyInput(
-          session,
-          "header",
-          value = shared_data$header
-        )
-        updateTextField.shinyInput(
-          session,
-          "delimiter",
-          value = shared_data$delimiter
-        )
-        updateTextField.shinyInput(
-          session,
-          "decimal_point",
-          value = shared_data$decimal_point
-        )
-      },
-      once = TRUE
+    warning_visible <- reactiveVal(FALSE)
+    warning_message <- reactiveVal("")
+    output$warning_content <- renderUI(div(warning_message()))
+    make_modal$server(
+      "warning_modal",
+      name = "warning_modal",
+      is_open = warning_visible,
+      title = "Warning",
+      content = uiOutput(ns("warning_content")),
+      status = "warning"
     )
+
+    observeEvent(input$toggle_upload_card, {
+      shared_data$upload_card_visible <- !shared_data$upload_card_visible
+      toggle("upload_card_content")
+      updateDefaultButton.shinyInput(
+        session,
+        "toggle_upload_card",
+        iconProps = list(
+          iconName = if (shared_data$upload_card_visible) {
+            "ChevronUp"
+          } else {
+            "ChevronDown"
+          }
+        )
+      )
+    })
+
+    observeEvent(
+      shared_data$variables_card_visible,
+      {
+        if (
+          shared_data$variables_card_visible && shared_data$upload_card_visible
+        ) {
+          shared_data$upload_card_visible <- FALSE
+          hide("upload_card_content")
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_upload_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
+
+    observeEvent(
+      shared_data$data_amount_card_visible,
+      {
+        if (
+          shared_data$data_amount_card_visible &&
+            shared_data$upload_card_visible
+        ) {
+          shared_data$upload_card_visible <- FALSE
+          hide("upload_card_content")
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_upload_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
+        }
+      },
+      ignoreInit = TRUE
+    )
+
+    delay(0, {
+      updateCheckbox.shinyInput(
+        session,
+        "header",
+        value = isolate(shared_data$header)
+      )
+      updateTextField.shinyInput(
+        session,
+        "delimiter",
+        value = isolate(shared_data$delimiter)
+      )
+      updateTextField.shinyInput(
+        session,
+        "decimal_point",
+        value = isolate(shared_data$decimal_point)
+      )
+    })
     observeEvent(input$file, {
       click("upload_file")
     })
 
-    # Enabling or disabling inputs depending on the imported file
-    # format
+    # Enabling or disabling delimiter/decimal_point based on file format:
+    # text formats (csv, tsv) support custom delimiters; Excel files do not.
     observeEvent(input$upload_file, {
       if (!is.null(input$upload_file)) {
         file_path <- input$upload_file$datapath
@@ -173,9 +255,18 @@ server <- function(id, shared_data) {
     })
 
     observeEvent(
-      list(input$upload_file, input$header, input$delimiter, input$decimal_point),
+      list(
+        input$upload_file,
+        input$header,
+        input$delimiter,
+        input$decimal_point
+      ),
       {
-        req(input$upload_file)
+        req(
+          input$upload_file,
+          input$delimiter,
+          input$decimal_point
+        )
         ext <- file_ext(input$upload_file$name)
         if (ext %in% c("txt", "csv", "tsv", "fwf")) {
           shared_data$df <- read_delim(
@@ -191,13 +282,13 @@ server <- function(id, shared_data) {
           )
         }
 
+        shared_data$filename <- input$upload_file$name
         if (any(is.na(shared_data$df))) {
           shared_data$df <- na.omit(shared_data$df)
-          shinyalert(
-            "Warning",
-            "Uploaded shared_data has NaN values, rows with NaN values has been removed",
-            type = "warning"
+          warning_message(
+            "Uploaded data has NaN values. Rows with NaN values have been removed."
           )
+          warning_visible(TRUE)
         }
       }
     )

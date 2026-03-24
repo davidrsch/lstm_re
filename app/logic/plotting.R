@@ -3,6 +3,9 @@ box::use(
   shiny[div, tagList],
 )
 
+# Creates one interactive Plotly line chart per selected training start date,
+# showing all EDA variables split into train (solid) and test (dashed) segments.
+# Charts are laid out in two-column rows and returned as a tagList.
 #' @export
 sets_vars_plots <- function(
   selected_trains,

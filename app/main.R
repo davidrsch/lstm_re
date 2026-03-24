@@ -5,10 +5,10 @@ box::use(
 )
 
 box::use(
-  app / view / results,
+  app / view / results_display,
   app / view / selecting_features,
   app / view / upload_data,
-  app / view / wellcome,
+  app / view / welcome,
 )
 
 #' @export
@@ -18,7 +18,7 @@ ui <- function(id) {
     useShinyjs(),
     Pivot(
       id = "Main_tabsetpanel",
-      PivotItem(headerText = "Welcome", wellcome$ui(ns("wellcome"))),
+      PivotItem(headerText = "Welcome", welcome$ui(ns("welcome"))),
       PivotItem(headerText = "Upload Data", upload_data$ui(ns("upload_data"))),
       PivotItem(
         headerText = "Selecting Features",
@@ -26,7 +26,7 @@ ui <- function(id) {
       ),
       PivotItem(
         headerText = "Results",
-        results$ui(ns("results"))
+        results_display$ui(ns("results"))
       )
     )
   )
@@ -39,33 +39,38 @@ server <- function(id) {
       df = data.frame(),
       grid = data.frame(),
       EDA = data.frame(),
-      showEDA = 0,
+      show_eda = 0,
       x_data = NULL,
-      previousx_data = NULL,
-      starttrainlevels = NULL,
-      selectedtrains = data.frame(),
-      showGraphs = 0,
+      previous_x_data = NULL,
+      start_train_levels = NULL,
+      selected_trains = data.frame(),
+      show_graphs = 0,
       upload_card_visible = TRUE,
       variables_card_visible = FALSE,
       data_amount_card_visible = FALSE,
-      transf = c("Original", "First transformation", "Second transformation"),
-      inputamnts = NULL,
-      stdinputamnts = NULL,
-      LSTMamnts = NULL,
-      stdLSTMamnts = NULL,
-      neuronsamnts = NULL,
-      stdneuronsamnts = NULL,
-      modelstable = NULL,
+      transf = c("original", "first", "second"),
+      scales = c("exact", "zero_one", "minus_plus"),
+      input_amounts = NULL,
+      std_input_amounts = NULL,
+      lstm_amounts = NULL,
+      std_lstm_amounts = NULL,
+      neuron_amounts = NULL,
+      std_neuron_amounts = NULL,
+      models_table = NULL,
       run_experiment = NULL,
       selected_date_variable = "",
       test_start_date = NULL,
       test_end_date = NULL,
-      setseed = FALSE,
-      seed = NULL
+      set_seed = FALSE,
+      seed = NULL,
+      filename = NULL
     )
 
-    upload_data$server("upload_data", shared_data)
-    selecting_features$server("selecting_features", shared_data)
-    results$server("results", shared_data)
+    upload_data_out <- upload_data$server("upload_data", shared_data)
+    selecting_features_out <- selecting_features$server(
+      "selecting_features",
+      upload_data_out
+    )
+    results_display$server("results", selecting_features_out)
   })
 }

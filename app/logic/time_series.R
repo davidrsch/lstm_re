@@ -1,17 +1,24 @@
 box::use(
+  purrr[detect_index, map, map_int],
   scales[rescale],
   tseries[adf.test, pp.test],
 )
 
+# Slices the combined date-variables data frame to the window defined by the
+# selected training start date (sttrain[ntrain]) and the test end date (endtt).
 #' @export
-createts <- function(date, variables, sttrain, ntrain, endtt) {
+create_ts <- function(date, variables, sttrain, ntrain, endtt) {
   df <- cbind(date, variables)
   start_date_char <- as.character(sttrain[ntrain, ][[1]])
   start <- which(as.character(df[[1]]) == start_date_char)
   end <- which(df[[1]] == endtt)
 
   if (length(start) == 0) {
-    warning(paste0("Start date '", start_date_char, "' not found in data. Returning NULL."))
+    warning(paste0(
+      "Start date '",
+      start_date_char,
+      "' not found in data. Returning NULL."
+    ))
     return(NULL)
   }
   if (length(end) == 0) {
@@ -21,26 +28,24 @@ createts <- function(date, variables, sttrain, ntrain, endtt) {
   df <- df[start:end, ]
 }
 
+# Applies the minimum order of first differencing needed to make each series
+# stationary (ADF and PP tests, p <= 0.05). Returns the differenced data frame
+# with a trailing difv column recording the applied difference order.
 #' @export
-firstrf <- function(ts) {
+first_diff <- function(ts) {
   df <- ts[, -1, drop = FALSE]
-  for (variables in seq_len(dim(df)[2])) {
-    for (i in seq_len(dim(df)[1])) {
-      valuedif <- diff(df[[variables]], differences = i)
+
+  find_diff_order <- function(x) {
+    order <- detect_index(seq_len(length(x)), function(i) {
+      valuedif <- diff(x, differences = i)
       adf <- adf.test(valuedif, alternative = "stationary")
       pp <- pp.test(valuedif, alternative = "stationary")
-      if (adf$p.value <= 0.05 && pp$p.value <= 0.05) {
-        valuedif <- i
-        break
-      } else {}
-    }
-    if (variables == 1) {
-      diffvalue <- valuedif
-    } else {
-      diffvalue <- c(diffvalue, valuedif)
-    }
+      adf$p.value <= 0.05 && pp$p.value <= 0.05
+    })
+    if (order == 0L) length(x) else order
   }
-  diffvalue <- max(diffvalue)
+
+  diffvalue <- max(map_int(df, find_diff_order))
   diffdf <- data.frame(diff(as.matrix(df), differences = diffvalue))
   names(diffdf) <- names(ts)[-1]
   valstrm <- 1:diffvalue
@@ -50,71 +55,73 @@ firstrf <- function(ts) {
   diffdf
 }
 
+# Applies a log transform followed by first differencing. Useful for series
+# with exponential trends.
 #' @export
-secondtrf <- function(ts) {
+second_diff <- function(ts) {
   logts <- log(ts[, -1, drop = FALSE])
   date <- ts[, 1, drop = FALSE]
   logdf <- cbind(date, logts)
-  logdf <- firstrf(logdf)
+  logdf <- first_diff(logdf)
   logdf
 }
 
+# Dispatches to the correct transformation function based on the key trf[ntrf].
+# Keys: "original" (no change), "first" (first_diff), "second" (second_diff).
 #' @export
-createtrfts <- function(ts, trf, ntrf) {
-  if (trf[ntrf] == "Original") {
+create_transformed_ts <- function(ts, trf, ntrf) {
+  if (trf[ntrf] == "original") {
     x <- ts
   } else {
-    if (trf[ntrf] == "First transformation") {
-      x <- firstrf(ts)
+    if (trf[ntrf] == "first") {
+      x <- first_diff(ts)
     } else {
-      x <- secondtrf(ts)
+      x <- second_diff(ts)
     }
   }
   x
 }
 
+# Rescales all numeric columns of x to the interval [to[1], to[2]) using a
+# single global min/max derived from the entire data frame.
 #' @export
-rescaledf <- function(x, to) {
-  for (variable in seq_len(dim(x)[2])) {
-    df <- rescale(x[[variable]], to, from = c(min(x), max(x)))
-    if (variable == 1) {
-      datfra <- data.frame(df)
-    } else {
-      datfra <- cbind(datfra, df)
-    }
-  }
-  colnames(datfra) <- names(x)
-  datfra
+rescale_df <- function(x, to) {
+  global_from <- c(min(x), max(x))
+  result <- as.data.frame(map(x, function(col) {
+    rescale(col, to = to, from = global_from)
+  }))
+  colnames(result) <- names(x)
+  result
 }
 
-#' @export
-createscts <- function(ts, sc, nsc) {
-  if (sc[nsc] == "Exact") {
-    if (any(names(ts) == "difv")) {
-      x <- ts[, -grep("difv", names(ts)), drop = FALSE]
-    } else {
-      x <- ts
-    }
+# Removes the difv bookkeeping column from a time-series data frame if present.
+strip_difv <- function(ts) {
+  if (any(names(ts) == "difv")) {
+    ts[, -grep("difv", names(ts)), drop = FALSE]
   } else {
-    if (sc[nsc] == "From 0 to 1") {
-      if (any(names(ts) == "difv")) {
-        y <- ts[, -grep("difv", names(ts)), drop = FALSE]
-      } else {
-        y <- ts
-      }
+    ts
+  }
+}
+
+# Applies the chosen scale transformation by key: "exact" (no scaling),
+# "zero_one" ([0, 1]), "minus_plus" ([-1, 1]). Also strips the difv
+# bookkeeping column before scaling.
+#' @export
+create_scaled_ts <- function(ts, sc, nsc) {
+  if (sc[nsc] == "exact") {
+    x <- strip_difv(ts)
+  } else {
+    if (sc[nsc] == "zero_one") {
+      y <- strip_difv(ts)
       dftrsc <- y[, -1, drop = FALSE]
       date <- y[1, drop = FALSE]
-      df <- rescaledf(x = dftrsc, to = c(0, 1))
+      df <- rescale_df(x = dftrsc, to = c(0, 1))
       x <- cbind(date, df)
     } else {
-      if (any(names(ts) == "difv")) {
-        y <- ts[, -grep("difv", names(ts)), drop = FALSE]
-      } else {
-        y <- ts
-      }
+      y <- strip_difv(ts)
       dftrsc <- y[, -1, drop = FALSE]
       date <- y[1, drop = FALSE]
-      df <- rescaledf(dftrsc, c(-1, 1))
+      df <- rescale_df(dftrsc, c(-1, 1))
       x <- cbind(date, df)
     }
   }

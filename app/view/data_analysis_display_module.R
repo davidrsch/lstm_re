@@ -6,7 +6,7 @@ box::use(
 )
 
 box::use(
-  app / logic / eda[databasesum, plotedafunc],
+  app / logic / eda[database_summary, plot_eda],
   app / logic / make_card[make_card],
   app / logic / plotting[sets_vars_plots],
 )
@@ -55,19 +55,19 @@ ui <- function(id) {
 }
 
 #' @export
-server <- function(id, database) {
+server <- function(id, shared_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     # 04-Imported file name ----
     output$filename <- renderText({
-      req(input$upload_file)
-      input$upload_file$name
+      req(shared_data$filename)
+      shared_data$filename
     })
 
     # 05-Imported file table----
     output$files <- renderDataTable(
-      database$df,
+      shared_data$df,
       options = list(
         searching = FALSE,
         scrollX = TRUE,
@@ -80,24 +80,24 @@ server <- function(id, database) {
     )
 
     output$eda <- renderPlot({
-      req(database$EDA)
-      plotedafunc(database$EDA)
+      req(shared_data$EDA)
+      plot_eda(shared_data$EDA)
     })
 
     output$summary <- renderDataTable({
-      req(database$EDA)
-      databasesum(database$EDA)
+      req(shared_data$EDA)
+      database_summary(shared_data$EDA)
     })
 
     output$plotselectedvariables <- renderUI({
-      req(database$selectedtrains)
-      req(nrow(database$selectedtrains) > 0)
+      req(shared_data$selected_trains)
+      req(nrow(shared_data$selected_trains) > 0)
       sets_vars_plots(
-        database$selectedtrains,
-        database$EDA,
-        database$x_data,
-        database$test_start_date,
-        database$test_end_date
+        shared_data$selected_trains,
+        shared_data$EDA,
+        shared_data$x_data,
+        shared_data$test_start_date,
+        shared_data$test_end_date
       )
     })
   })
