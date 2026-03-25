@@ -45,7 +45,10 @@ ui <- function(id) {
           id = ns("card_content"),
           Stack(
             tokens = list(childrenGap = 10),
-            div(`data-testid` = "temporalhorizon", uiOutput(ns("temporalhorizon_ui"))),
+            div(
+              `data-testid` = "temporalhorizon",
+              uiOutput(ns("temporalhorizon_ui"))
+            ),
             uiOutput(ns("addINoption_ui")),
             DefaultButton.shinyInput(
               ns("acceptinputoptionbutton"),

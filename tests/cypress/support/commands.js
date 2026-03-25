@@ -9,6 +9,9 @@ Cypress.on('window:load', (win) => {
       animation-duration: 0s !important;
       transition-duration: 0s !important;
     }
+    .ms-Layer {
+      visibility: visible !important;
+    }
   `;
   win.document.head.appendChild(style);
 });

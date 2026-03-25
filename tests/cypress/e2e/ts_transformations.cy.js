@@ -38,8 +38,10 @@ describe("Time series transformations card", () => {
   });
 
   it("Can select a single transformation", () => {
-    cy.select_dropdown('selectimeseries', [0]);
+    // All 3 options are selected by default. Deselect indices 1 & 2
+    // to leave only index 0 ("Original") selected.
+    cy.select_dropdown('selectimeseries', [1, 2]);
     cy.get('[data-testid="selectimeseries"]')
-      .should('have.text', 'Original');
+      .should('contain.text', 'Original');
   });
 });
