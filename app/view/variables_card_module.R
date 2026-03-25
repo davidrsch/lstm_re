@@ -196,6 +196,7 @@ server <- function(id, shared_data) {
     })
 
     output$io_gridtable <- renderRHandsontable({
+      req("Variables" %in% names(shared_data$grid))
       rhandsontable(
         shared_data$grid,
         disableVisualSelection = TRUE,

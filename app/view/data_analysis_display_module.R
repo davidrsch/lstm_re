@@ -80,12 +80,12 @@ server <- function(id, shared_data) {
     )
 
     output$eda <- renderPlot({
-      req(shared_data$EDA)
+      req(nrow(shared_data$EDA) > 0)
       plot_eda(shared_data$EDA)
     })
 
     output$summary <- renderDataTable({
-      req(shared_data$EDA)
+      req(nrow(shared_data$EDA) > 0)
       database_summary(shared_data$EDA)
     })
 
