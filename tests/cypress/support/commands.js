@@ -36,13 +36,14 @@ Cypress.Commands.add('toggle_card', (testid) => {
 });
 
 // Open a FluentUI multi-select Dropdown and click one or more option indices.
-// FluentUI Dropdown does not forward data-* to the callout root, so we
-// identify open options by role="option" + data-index.
+// calloutProps data-testid IS forwarded to the callout root div via
+// FluentUI's getNativeProps divProperties whitelist (matches data-*).
 Cypress.Commands.add('select_dropdown', (inputTestid, indices) => {
   cy.get(`[data-testid="${inputTestid}"]`).click({ force: true });
   const idxArray = Array.isArray(indices) ? indices : [indices];
   idxArray.forEach((index) => {
-    cy.get(`[role="option"][data-index="${index}"]`)
+    cy.get(`[data-testid="${inputTestid}-callout"]`)
+      .find(`[data-index="${index}"]`)
       .click({ force: true });
   });
   // Close callout by pressing Escape
