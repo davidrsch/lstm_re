@@ -85,7 +85,7 @@ server <- function(id, shared_data) {
 
     observeEvent(input$toggle_variables_card, {
       shared_data$variables_card_visible <- !shared_data$variables_card_visible
-      toggle(id = ns("variables_card_content"))
+      toggle("variables_card_content")
       updateDefaultButton.shinyInput(
         session,
         "toggle_variables_card",
@@ -106,7 +106,7 @@ server <- function(id, shared_data) {
           shared_data$upload_card_visible && shared_data$variables_card_visible
         ) {
           shared_data$variables_card_visible <- FALSE
-          hide(id = ns("variables_card_content"))
+          hide("variables_card_content")
           updateDefaultButton.shinyInput(
             session,
             "toggle_variables_card",
@@ -125,7 +125,7 @@ server <- function(id, shared_data) {
             shared_data$variables_card_visible
         ) {
           shared_data$variables_card_visible <- FALSE
-          hide(id = ns("variables_card_content"))
+          hide("variables_card_content")
           updateDefaultButton.shinyInput(
             session,
             "toggle_variables_card",

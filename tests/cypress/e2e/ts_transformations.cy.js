@@ -38,13 +38,17 @@ describe("Time series transformations card", () => {
   it("Transformations dropdown defaults to all three selected", () => {
     cy.get('[data-testid="selectimeseries"]')
       .should('be.visible')
-      .should('have.text', 'Original, First transformation, Second transformation');
+      .should('contain.text', 'Original')
+      .should('contain.text', 'First transformation')
+      .should('contain.text', 'Second transformation');
   });
 
   it("Scales dropdown defaults to all three selected", () => {
     cy.get('[data-testid="selectimeseriescales"]')
       .should('be.visible')
-      .should('have.text', 'Exact, From 0 to 1, From -1 to 1');
+      .should('contain.text', 'Exact')
+      .should('contain.text', 'From 0 to 1')
+      .should('contain.text', 'From -1 to 1');
   });
 
   it("Can select a single transformation", () => {

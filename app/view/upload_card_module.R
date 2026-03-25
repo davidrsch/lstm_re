@@ -247,6 +247,10 @@ server <- function(id, shared_data) {
             inputId = "decimal_point",
             disabled = TRUE
           )
+          warning_message(
+            "Invalid file format. Please upload a CSV, TSV, XLS, or XLSX file."
+          )
+          warning_visible(TRUE)
         }
       }
     })

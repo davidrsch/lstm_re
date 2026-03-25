@@ -114,7 +114,7 @@ server <- function(id, shared_data) {
 
     observeEvent(input$toggle_data_amount_card, {
       shared_data$data_amount_card_visible <- !shared_data$data_amount_card_visible
-      toggle(id = ns("data_amount_card_content"))
+      toggle("data_amount_card_content")
       updateDefaultButton.shinyInput(
         session,
         "toggle_data_amount_card",
@@ -136,7 +136,7 @@ server <- function(id, shared_data) {
             shared_data$data_amount_card_visible
         ) {
           shared_data$data_amount_card_visible <- FALSE
-          hide(id = ns("data_amount_card_content"))
+          hide("data_amount_card_content")
           updateDefaultButton.shinyInput(
             session,
             "toggle_data_amount_card",
@@ -155,7 +155,7 @@ server <- function(id, shared_data) {
             shared_data$data_amount_card_visible
         ) {
           shared_data$data_amount_card_visible <- FALSE
-          hide(id = ns("data_amount_card_content"))
+          hide("data_amount_card_content")
           updateDefaultButton.shinyInput(
             session,
             "toggle_data_amount_card",

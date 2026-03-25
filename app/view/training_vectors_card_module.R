@@ -114,13 +114,15 @@ server <- function(id, shared_data, visibility) {
     )
 
     output$temporalhorizon_ui <- renderUI({
-      TextField.shinyInput(
-        session$ns("temporalhorizon"),
-        label = "Temporal horizon",
-        type = "number",
-        min = 1,
-        value = shared_data$temporalhorizon,
-        `data-testid` = "temporalhorizon"
+      div(
+        `data-testid` = "temporalhorizon",
+        TextField.shinyInput(
+          session$ns("temporalhorizon"),
+          label = "Temporal horizon",
+          type = "number",
+          min = 1,
+          value = shared_data$temporalhorizon
+        )
       )
     })
 

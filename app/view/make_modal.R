@@ -50,8 +50,11 @@ server <- function(
     observeEvent(input$hideModal, is_open(FALSE))
 
     output$make_modal <- renderReact({
+      if (!is_open()) {
+        return(NULL)
+      }
       Modal(
-        isOpen = is_open(),
+        isOpen = TRUE,
         Stack(
           tokens = list(padding = "15px", childrenGap = "10px"),
           div(
