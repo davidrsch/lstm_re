@@ -7,19 +7,19 @@ describe("Time series transformations card", () => {
 
   it("Transformations dropdown is visible and shows correct options", () => {
     cy.get('[data-testid="selectimeseries"]').should('be.visible').click({ force: true });
-    cy.get('[data-testid="selectimeseries-callout"]').should('exist');
-    cy.get('[data-testid="selectimeseries-callout"]').contains('[role="option"]', 'Original').should('exist');
-    cy.get('[data-testid="selectimeseries-callout"]').contains('[role="option"]', 'First transformation').should('exist');
-    cy.get('[data-testid="selectimeseries-callout"]').contains('[role="option"]', 'Second transformation').should('exist');
+    cy.get('[role="listbox"]').should('exist');
+    cy.get('[role="listbox"]').contains('[role="option"]', 'Original').should('exist');
+    cy.get('[role="listbox"]').contains('[role="option"]', 'First transformation').should('exist');
+    cy.get('[role="listbox"]').contains('[role="option"]', 'Second transformation').should('exist');
     cy.get('body').type('{esc}');
   });
 
   it("Scales dropdown is visible and shows correct options", () => {
     cy.get('[data-testid="selectimeseriescales"]').should('be.visible').click({ force: true });
-    cy.get('[data-testid="selectimeseriescales-callout"]').should('exist');
-    cy.get('[data-testid="selectimeseriescales-callout"]').contains('[role="option"]', 'Exact').should('exist');
-    cy.get('[data-testid="selectimeseriescales-callout"]').contains('[role="option"]', 'From 0 to 1').should('exist');
-    cy.get('[data-testid="selectimeseriescales-callout"]').contains('[role="option"]', 'From -1 to 1').should('exist');
+    cy.get('[role="listbox"]').should('exist');
+    cy.get('[role="listbox"]').contains('[role="option"]', 'Exact').should('exist');
+    cy.get('[role="listbox"]').contains('[role="option"]', 'From 0 to 1').should('exist');
+    cy.get('[role="listbox"]').contains('[role="option"]', 'From -1 to 1').should('exist');
     cy.get('body').type('{esc}');
   });
 
