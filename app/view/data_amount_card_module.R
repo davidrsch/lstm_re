@@ -117,6 +117,7 @@ server <- function(id, shared_data) {
     observeEvent(
       shared_data$grid,
       {
+        req("Inputs" %in% names(shared_data$grid))
         has_in <- nrow(filter(shared_data$grid, Inputs == TRUE)) > 0
         has_out <- nrow(filter(shared_data$grid, Outputs == TRUE)) > 0
         updateDefaultButton.shinyInput(
