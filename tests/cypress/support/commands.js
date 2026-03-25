@@ -1,3 +1,18 @@
+// Disable CSS animations/transitions so FluentUI modals and panels are
+// immediately visible in the headless Electron runner.
+Cypress.on('window:load', (win) => {
+  const style = win.document.createElement('style');
+  style.textContent = `
+    *, *::before, *::after {
+      transition: none !important;
+      animation: none !important;
+      animation-duration: 0s !important;
+      transition-duration: 0s !important;
+    }
+  `;
+  win.document.head.appendChild(style);
+});
+
 // Upload a CSV file and wait for the data table to appear in the Data Analysis panel
 Cypress.Commands.add('upload_csv_flow', () => {
   cy.get('[data-testid="file"]').should('be.visible');
@@ -20,13 +35,14 @@ Cypress.Commands.add('toggle_card', (testid) => {
   cy.wait(500);
 });
 
-// Open a FluentUI multi-select Dropdown and click one or more option indices
+// Open a FluentUI multi-select Dropdown and click one or more option indices.
+// FluentUI Dropdown does not forward data-* to the callout root, so we
+// identify open options by role="option" + data-index.
 Cypress.Commands.add('select_dropdown', (inputTestid, indices) => {
   cy.get(`[data-testid="${inputTestid}"]`).click({ force: true });
   const idxArray = Array.isArray(indices) ? indices : [indices];
   idxArray.forEach((index) => {
-    cy.get(`[data-testid="${inputTestid}-callout"]`)
-      .find(`[data-index="${index}"]`)
+    cy.get(`[role="option"][data-index="${index}"]`)
       .click({ force: true });
   });
   // Close callout by pressing Escape

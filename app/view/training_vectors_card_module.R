@@ -45,7 +45,7 @@ ui <- function(id) {
           id = ns("card_content"),
           Stack(
             tokens = list(childrenGap = 10),
-            uiOutput(ns("temporalhorizon_ui")),
+            div(`data-testid` = "temporalhorizon", uiOutput(ns("temporalhorizon_ui"))),
             uiOutput(ns("addINoption_ui")),
             DefaultButton.shinyInput(
               ns("acceptinputoptionbutton"),
@@ -114,15 +114,12 @@ server <- function(id, shared_data, visibility) {
     )
 
     output$temporalhorizon_ui <- renderUI({
-      div(
-        `data-testid` = "temporalhorizon",
-        TextField.shinyInput(
-          session$ns("temporalhorizon"),
-          label = "Temporal horizon",
-          type = "number",
-          min = 1,
-          value = shared_data$temporalhorizon
-        )
+      TextField.shinyInput(
+        session$ns("temporalhorizon"),
+        label = "Temporal horizon",
+        type = "number",
+        min = 1,
+        value = shared_data$temporalhorizon
       )
     })
 
