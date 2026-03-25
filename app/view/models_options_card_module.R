@@ -11,7 +11,7 @@ box::use(
     tagList,
     uiOutput
   ],
-  shinyjs[hidden, toggle],
+  shinyjs[hidden, runjs, toggle],
 )
 
 box::use(
@@ -97,6 +97,11 @@ server <- function(id, shared_data, visibility) {
           }
         )
       )
+      if (visibility$models_options) {
+        runjs(
+          "[...document.querySelectorAll('[role=\"tab\"]')].find(el => el.textContent.trim() === 'Models')?.click();"
+        )
+      }
     })
 
     collapse_on_sibling_open(

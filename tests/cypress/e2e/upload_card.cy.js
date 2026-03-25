@@ -26,6 +26,7 @@ describe("Upload card accordion", () => {
   });
 
   it("Clicking variables card toggle expands it", () => {
+    cy.upload_csv_flow();
     cy.toggle_card("toggle_variables_card");
     cy.get('[data-testid="io_gridtable"]').should('be.visible');
   });

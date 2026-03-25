@@ -1,5 +1,5 @@
 box::use(
-  dplyr[arrange, slice],
+  dplyr[arrange, filter, slice],
   DT[datatable, DTOutput, renderDataTable],
   rlang[`%||%`],
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack, Text],
@@ -15,7 +15,7 @@ box::use(
     tagList
   ],
   shiny[uiOutput],
-  shinyjs[hidden, hide, toggle],
+  shinyjs[hidden, hide, runjs, toggle],
 )
 
 box::use(
@@ -33,6 +33,7 @@ ui <- function(id) {
         "Select amount of data to use",
         DefaultButton.shinyInput(
           ns("toggle_data_amount_card"),
+          disabled = TRUE,
           iconProps = list(iconName = "ChevronDown"),
           style = "float: right; width: 0.7em",
           styles = list(
@@ -112,6 +113,17 @@ server <- function(id, shared_data) {
       status = "error"
     )
 
+    # Enable/disable toggle based on whether input and output variables are selected
+    observeEvent(shared_data$grid, {
+      has_in  <- nrow(filter(shared_data$grid, Inputs  == TRUE)) > 0
+      has_out <- nrow(filter(shared_data$grid, Outputs == TRUE)) > 0
+      updateDefaultButton.shinyInput(
+        session,
+        "toggle_data_amount_card",
+        disabled = !(has_in && has_out)
+      )
+    }, ignoreNULL = FALSE, ignoreInit = FALSE)
+
     observeEvent(input$toggle_data_amount_card, {
       shared_data$data_amount_card_visible <- !shared_data$data_amount_card_visible
       toggle("data_amount_card_content")
@@ -126,6 +138,11 @@ server <- function(id, shared_data) {
           }
         )
       )
+      if (shared_data$data_amount_card_visible) {
+        runjs(
+          "[...document.querySelectorAll('[role=\"tab\"]')].find(el => el.textContent.trim() === 'Graphs')?.click();"
+        )
+      }
     })
 
     observeEvent(

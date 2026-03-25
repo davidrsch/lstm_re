@@ -22,7 +22,7 @@ box::use(
     renderUI
   ],
   shiny[req, tagAppendAttributes, tagList, uiOutput],
-  shinyjs[click, delay, hidden, hide, toggle],
+  shinyjs[click, delay, hidden, hide, runjs, toggle],
   stats[na.omit],
   stringr[str_split_i],
   tools[file_ext],
@@ -137,6 +137,11 @@ server <- function(id, shared_data) {
           }
         )
       )
+      if (shared_data$upload_card_visible) {
+        runjs(
+          "[...document.querySelectorAll('[role=\"tab\"]')].find(el => el.textContent.trim() === 'Data')?.click();"
+        )
+      }
     })
 
     observeEvent(

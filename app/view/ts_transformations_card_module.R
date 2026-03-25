@@ -2,7 +2,7 @@ box::use(
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack],
   shiny.fluent[updateDefaultButton.shinyInput],
   shiny[div, moduleServer, NS, observeEvent, renderUI, tagList, uiOutput],
-  shinyjs[toggle],
+  shinyjs[runjs, toggle],
 )
 
 box::use(
@@ -63,6 +63,11 @@ server <- function(id, shared_data, visibility) {
           }
         )
       )
+      if (visibility$ts_transformations) {
+        runjs(
+          "[...document.querySelectorAll('[role=\"tab\"]')].find(el => el.textContent.trim() === 'Time series')?.click();"
+        )
+      }
     })
 
     # Collapse this card whenever another card opens, enforcing accordion behavior.

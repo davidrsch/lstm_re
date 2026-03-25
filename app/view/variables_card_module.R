@@ -6,7 +6,7 @@ box::use(
   shiny.fluent[PrimaryButton.shinyInput, updateDefaultButton.shinyInput],
   shiny[div, moduleServer, NS],
   shiny[observeEvent, renderUI, req, tagList, uiOutput],
-  shinyjs[hidden, hide, toggle],
+  shinyjs[hidden, hide, runjs, toggle],
 )
 
 box::use(
@@ -21,6 +21,7 @@ ui <- function(id) {
       "Select variables",
       DefaultButton.shinyInput(
         ns("toggle_variables_card"),
+        disabled = TRUE,
         iconProps = list(iconName = "ChevronDown"),
         style = "float: right; width: 0.7em",
         styles = list(
@@ -83,6 +84,15 @@ server <- function(id, shared_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
+    # Enable/disable toggle based on whether data has been uploaded
+    observeEvent(shared_data$df, {
+      updateDefaultButton.shinyInput(
+        session,
+        "toggle_variables_card",
+        disabled = nrow(shared_data$df) == 0
+      )
+    }, ignoreNULL = FALSE, ignoreInit = FALSE)
+
     observeEvent(input$toggle_variables_card, {
       shared_data$variables_card_visible <- !shared_data$variables_card_visible
       toggle("variables_card_content")
@@ -97,6 +107,11 @@ server <- function(id, shared_data) {
           }
         )
       )
+      if (shared_data$variables_card_visible) {
+        runjs(
+          "[...document.querySelectorAll('[role=\"tab\"]')].find(el => el.textContent.trim() === 'EDA')?.click();"
+        )
+      }
     })
 
     observeEvent(
@@ -200,7 +215,9 @@ server <- function(id, shared_data) {
         if (!identical(data, shared_data$previousEDA)) {
           shared_data$EDA <- data
           if (shared_data$show_eda == 1) {
-            # select eda pivot
+            runjs(
+              "[...document.querySelectorAll('[role=\"tab\"]')].find(el => el.textContent.trim() === 'EDA')?.click();"
+            )
           }
         }
       }

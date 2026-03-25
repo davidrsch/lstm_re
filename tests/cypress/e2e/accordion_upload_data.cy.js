@@ -5,6 +5,8 @@ describe("Upload Data page accordion - mutual exclusion", () => {
   });
 
   it("Opening variables card collapses the upload card", () => {
+    // Upload a file first to enable the variables card toggle
+    cy.upload_csv_flow();
     // Upload card starts open
     cy.get('[data-testid="file"]').should('be.visible');
     // Open variables card
@@ -15,16 +17,17 @@ describe("Upload Data page accordion - mutual exclusion", () => {
     cy.get('[data-testid="io_gridtable"]').should('be.visible');
   });
 
-  it("Opening data amount card collapses the upload card", () => {
-    // Upload card starts open
-    cy.get('[data-testid="file"]').should('be.visible');
-    // Open data amount card
-    cy.toggle_card("toggle_data_amount_card");
-    // Upload card content should now be hidden
-    cy.get('[data-testid="file"]').should('not.be.visible');
+  it("Data amount card toggle is disabled until input/output variables are selected", () => {
+    // Without upload, data amount card should be disabled
+    cy.get('[data-testid="toggle_data_amount_card"]').should('be.disabled');
+    // After upload it is still disabled (no I/O variables selected yet)
+    cy.upload_csv_flow();
+    cy.get('[data-testid="toggle_data_amount_card"]').should('be.disabled');
   });
 
   it("Re-opening upload card collapses variables card", () => {
+    // Upload a file first to enable the variables card toggle
+    cy.upload_csv_flow();
     // First open variables card (which collapses upload card)
     cy.toggle_card("toggle_variables_card");
     cy.get('[data-testid="io_gridtable"]').should('be.visible');

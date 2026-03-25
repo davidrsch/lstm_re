@@ -11,7 +11,7 @@ box::use(
     tagList,
     uiOutput
   ],
-  shinyjs[disable, enable, hidden, toggle],
+  shinyjs[disable, enable, hidden, runjs, toggle],
 )
 
 box::use(
@@ -92,6 +92,11 @@ server <- function(id, shared_data, visibility) {
           }
         )
       )
+      if (visibility$training_options) {
+        runjs(
+          "[...document.querySelectorAll('[role=\"tab\"]')].find(el => el.textContent.trim() === 'Training')?.click();"
+        )
+      }
     })
 
     collapse_on_sibling_open(

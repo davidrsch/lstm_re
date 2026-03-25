@@ -2,6 +2,7 @@ box::use(
   abind[abind],
   dplyr[across, filter, mutate, pull, select, where],
   english[ordinal],
+  htmlwidgets[JS],
   jsonlite[toJSON, write_json],
   keras3[clear_session, compile, fit, save_model],
   rmarkdown[render],
@@ -9,8 +10,8 @@ box::use(
   shiny[div, moduleServer, NS, observeEvent, reactiveVal],
   shiny[reactiveValues, renderUI, uiOutput],
   shinyjs[html, runjs],
-  shinyWidgets[updatePickerInput],
   utils[type.convert],
+  zip[zipr],
 )
 
 box::use(
@@ -31,21 +32,7 @@ ui <- function(id) {
   div(
     Stack(
       tokens = list(childrenGap = 10),
-      CommandBar(
-        items = list(
-          list(
-            key = "download",
-            text = "Download",
-            iconProps = list(iconName = "Download"),
-            subMenuProps = list(
-              items = list(
-                list(key = "dashboard", text = "Dashboard"),
-                list(key = "models", text = "Models")
-              )
-            )
-          )
-        )
-      ),
+      uiOutput(ns("commandbar_placeholder")),
       uiOutput(ns("pivot_placeholder"))
     )
   )
@@ -61,6 +48,68 @@ server <- function(id, shared_data) {
     r$progress <- reactiveValues()
     pivot_items <- reactiveVal(list())
     selected_key <- reactiveVal()
+    experiment_done <- reactiveVal(FALSE)
+
+    output$commandbar_placeholder <- renderUI({
+      CommandBar(
+        items = list(
+          list(
+            key = "download",
+            text = "Download",
+            iconProps = list(iconName = "Download"),
+            disabled = !experiment_done(),
+            subMenuProps = list(
+              items = list(
+                list(
+                  key = "dashboard",
+                  text = "Dashboard",
+                  onClick = JS(paste0(
+                    "function() { Shiny.setInputValue('",
+                    ns("download_clicked"),
+                    "', 'dashboard', {priority: 'event'}); }"
+                  ))
+                ),
+                list(
+                  key = "models",
+                  text = "Models",
+                  onClick = JS(paste0(
+                    "function() { Shiny.setInputValue('",
+                    ns("download_clicked"),
+                    "', 'models', {priority: 'event'}); }"
+                  ))
+                )
+              )
+            )
+          )
+        )
+      )
+    })
+
+    observeEvent(input$download_clicked, {
+      req(experiment_done())
+      if (input$download_clicked == "dashboard") {
+        runjs(paste0(
+          "var a = document.createElement('a');",
+          "a.href = '/", r$last_htmldir, "/interactivedashb.html';",
+          "a.download = 'interactivedashb.html';",
+          "document.body.appendChild(a);",
+          "a.click();",
+          "document.body.removeChild(a);"
+        ))
+      } else if (input$download_clicked == "models") {
+        zip_path <- paste0(r$path_of_directorio, "/models.zip")
+        zipr(zip_path, files = ".", root = r$last_exp_models)
+        zip_url <- paste0("/", gsub("app/static/", "", zip_path))
+        runjs(paste0(
+          "var a = document.createElement('a');",
+          "a.href = '", zip_url, "';",
+          "a.download = 'models.zip';",
+          "document.body.appendChild(a);",
+          "a.click();",
+          "document.body.removeChild(a);"
+        ))
+      }
+    })
 
     output$pivot_placeholder <- renderUI({
       do.call(
@@ -600,6 +649,8 @@ server <- function(id, shared_data) {
                       "",
                       exp_dashdirect
                     )
+                    r$last_htmldir <- htmldir
+                    r$last_exp_models <- exp_models
                     runjs(paste0(
                       "
             document.getElementById('",
@@ -609,31 +660,9 @@ server <- function(id, shared_data) {
                       htmldir,
                       "/interactivedashb.html",
                       " \" style = \"height: 690px; width: 100%\">';
-            document.querySelector('#downloadmodels + button').classList.remove('disabled');
-            document.querySelector('#downloadmodels + button').removeAttribute('disabled');
-            document.querySelector('#dragablepanelcontent').parentElement.style.display = 'block';
                   "
                     ))
-                    model_builded <- list.files(paste0(
-                      exp_models,
-                      "/"
-                    ))
-                    model_builded <- gsub(
-                      "model_",
-                      "",
-                      model_builded
-                    )
-                    if (length(model_builded) == 1) {
-                      model_builded <- c("1" = 1)
-                    }
-                    updatePickerInput(
-                      session = session,
-                      "downloadmodels",
-                      choices = list(
-                        "Dashboard" = "Dashboard",
-                        "Models" = model_builded
-                      )
-                    )
+                    experiment_done(TRUE)
                   }
                   clear_session()
                 }

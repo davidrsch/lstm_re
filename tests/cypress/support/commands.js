@@ -49,3 +49,11 @@ Cypress.Commands.add('select_dropdown', (inputTestid, indices) => {
   // Close callout by pressing Escape
   cy.get('body').type('{esc}');
 });
+
+// Assert that a Pivot tab with exact text is the currently selected tab.
+// Uses exact text match to avoid false positives (e.g. "Training" vs "Training vectors").
+Cypress.Commands.add('tab_should_be_active', (tabText) => {
+  cy.get('[role="tab"]')
+    .filter((i, el) => Cypress.$(el).text().trim() === tabText)
+    .should('have.attr', 'aria-selected', 'true');
+});
