@@ -5,7 +5,7 @@ describe("Results download button disabled state", () => {
   });
 
   it("Download CommandBar button is disabled before an experiment completes", () => {
-    cy.contains('button', 'Download', { timeout: 8000 })
+    cy.contains('[role="menuitem"]', 'Download', { timeout: 8000 })
       .should('have.attr', 'aria-disabled', 'true');
   });
 });
