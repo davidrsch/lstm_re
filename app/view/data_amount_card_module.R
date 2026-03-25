@@ -114,15 +114,18 @@ server <- function(id, shared_data) {
     )
 
     # Enable/disable toggle based on whether input and output variables are selected
-    observeEvent(shared_data$grid, {
-      has_in  <- nrow(filter(shared_data$grid, Inputs  == TRUE)) > 0
-      has_out <- nrow(filter(shared_data$grid, Outputs == TRUE)) > 0
-      updateDefaultButton.shinyInput(
-        session,
-        "toggle_data_amount_card",
-        disabled = !(has_in && has_out)
-      )
-    }, ignoreNULL = FALSE, ignoreInit = FALSE)
+    observeEvent(
+      shared_data$grid,
+      {
+        has_in <- nrow(filter(shared_data$grid, Inputs == TRUE)) > 0
+        has_out <- nrow(filter(shared_data$grid, Outputs == TRUE)) > 0
+        updateDefaultButton.shinyInput(
+          session,
+          "toggle_data_amount_card",
+          disabled = !(has_in && has_out)
+        )
+      }
+    )
 
     observeEvent(input$toggle_data_amount_card, {
       shared_data$data_amount_card_visible <- !shared_data$data_amount_card_visible
@@ -139,9 +142,11 @@ server <- function(id, shared_data) {
         )
       )
       if (shared_data$data_amount_card_visible) {
-        runjs(
-          "[...document.querySelectorAll('[role=\"tab\"]')].find(el => el.textContent.trim() === 'Graphs')?.click();"
-        )
+        runjs(paste0(
+          "[...document.querySelectorAll('[role=\"tab\"]')]",
+          ".find(el => el.textContent.trim() === 'Graphs')",
+          "?.click();"
+        ))
       }
     })
 

@@ -96,9 +96,11 @@ server <- function(id, shared_data, visibility) {
         )
       )
       if (visibility$training_vectors) {
-        runjs(
-          "[...document.querySelectorAll('[role=\"tab\"]')].find(el => el.textContent.trim() === 'Training vectors')?.click();"
-        )
+        runjs(paste0(
+          "[...document.querySelectorAll('[role=\"tab\"]')]",
+          ".find(el => el.textContent.trim() === 'Training vectors')",
+          "?.click();"
+        ))
       }
     })
 

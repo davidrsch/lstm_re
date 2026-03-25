@@ -64,9 +64,11 @@ server <- function(id, shared_data, visibility) {
         )
       )
       if (visibility$ts_transformations) {
-        runjs(
-          "[...document.querySelectorAll('[role=\"tab\"]')].find(el => el.textContent.trim() === 'Time series')?.click();"
-        )
+        runjs(paste0(
+          "[...document.querySelectorAll('[role=\"tab\"]')]",
+          ".find(el => el.textContent.trim() === 'Time series')",
+          "?.click();"
+        ))
       }
     })
 

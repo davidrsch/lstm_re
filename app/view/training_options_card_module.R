@@ -93,9 +93,11 @@ server <- function(id, shared_data, visibility) {
         )
       )
       if (visibility$training_options) {
-        runjs(
-          "[...document.querySelectorAll('[role=\"tab\"]')].find(el => el.textContent.trim() === 'Training')?.click();"
-        )
+        runjs(paste0(
+          "[...document.querySelectorAll('[role=\"tab\"]')]",
+          ".find(el => el.textContent.trim() === 'Training')",
+          "?.click();"
+        ))
       }
     })
 

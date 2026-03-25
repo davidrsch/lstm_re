@@ -8,7 +8,7 @@ box::use(
   rmarkdown[render],
   shiny.fluent[CommandBar, Pivot, PivotItem, Stack],
   shiny[div, moduleServer, NS, observeEvent, reactiveVal],
-  shiny[reactiveValues, renderUI, uiOutput],
+  shiny[reactiveValues, renderUI, req, uiOutput],
   shinyjs[html, runjs],
   utils[type.convert],
   zip[zipr],
@@ -90,7 +90,9 @@ server <- function(id, shared_data) {
       if (input$download_clicked == "dashboard") {
         runjs(paste0(
           "var a = document.createElement('a');",
-          "a.href = '/", r$last_htmldir, "/interactivedashb.html';",
+          "a.href = '/",
+          r$last_htmldir,
+          "/interactivedashb.html';",
           "a.download = 'interactivedashb.html';",
           "document.body.appendChild(a);",
           "a.click();",
@@ -102,7 +104,9 @@ server <- function(id, shared_data) {
         zip_url <- paste0("/", gsub("app/static/", "", zip_path))
         runjs(paste0(
           "var a = document.createElement('a');",
-          "a.href = '", zip_url, "';",
+          "a.href = '",
+          zip_url,
+          "';",
           "a.download = 'models.zip';",
           "document.body.appendChild(a);",
           "a.click();",
@@ -245,7 +249,7 @@ server <- function(id, shared_data) {
                   tstv <- ts
                 }
                 vector <- create_3d_vector(
-                  tstv[, , drop = FALSE],
+                  tstv[,, drop = FALSE],
                   steps,
                   c(1, dim(tstv)[1])
                 )
@@ -510,7 +514,7 @@ server <- function(id, shared_data) {
                     output_with_date_x,
                     as.is = TRUE
                   )
-                  date2d <- unique(as.matrix(output_with_date[, , 1]))
+                  date2d <- unique(as.matrix(output_with_date[,, 1]))
                   mmmpred <- create_plot_pred_df(
                     threddata = output_with_date,
                     xdata = date2d,

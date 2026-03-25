@@ -98,9 +98,11 @@ server <- function(id, shared_data, visibility) {
         )
       )
       if (visibility$models_options) {
-        runjs(
-          "[...document.querySelectorAll('[role=\"tab\"]')].find(el => el.textContent.trim() === 'Models')?.click();"
-        )
+        runjs(paste0(
+          "[...document.querySelectorAll('[role=\"tab\"]')]",
+          ".find(el => el.textContent.trim() === 'Models')",
+          "?.click();"
+        ))
       }
     })
 

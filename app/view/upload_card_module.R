@@ -138,9 +138,11 @@ server <- function(id, shared_data) {
         )
       )
       if (shared_data$upload_card_visible) {
-        runjs(
-          "[...document.querySelectorAll('[role=\"tab\"]')].find(el => el.textContent.trim() === 'Data')?.click();"
-        )
+        runjs(paste0(
+          "[...document.querySelectorAll('[role=\"tab\"]')]",
+          ".find(el => el.textContent.trim() === 'Data')",
+          "?.click();"
+        ))
       }
     })
 

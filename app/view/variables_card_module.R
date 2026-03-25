@@ -85,13 +85,16 @@ server <- function(id, shared_data) {
     ns <- session$ns
 
     # Enable/disable toggle based on whether data has been uploaded
-    observeEvent(shared_data$df, {
-      updateDefaultButton.shinyInput(
-        session,
-        "toggle_variables_card",
-        disabled = nrow(shared_data$df) == 0
-      )
-    }, ignoreNULL = FALSE, ignoreInit = FALSE)
+    observeEvent(
+      shared_data$df,
+      {
+        updateDefaultButton.shinyInput(
+          session,
+          "toggle_variables_card",
+          disabled = nrow(shared_data$df) == 0
+        )
+      }
+    )
 
     observeEvent(input$toggle_variables_card, {
       shared_data$variables_card_visible <- !shared_data$variables_card_visible
@@ -108,9 +111,11 @@ server <- function(id, shared_data) {
         )
       )
       if (shared_data$variables_card_visible) {
-        runjs(
-          "[...document.querySelectorAll('[role=\"tab\"]')].find(el => el.textContent.trim() === 'EDA')?.click();"
-        )
+        runjs(paste0(
+          "[...document.querySelectorAll('[role=\"tab\"]')]",
+          ".find(el => el.textContent.trim() === 'EDA')",
+          "?.click();"
+        ))
       }
     })
 
@@ -215,9 +220,11 @@ server <- function(id, shared_data) {
         if (!identical(data, shared_data$previousEDA)) {
           shared_data$EDA <- data
           if (shared_data$show_eda == 1) {
-            runjs(
-              "[...document.querySelectorAll('[role=\"tab\"]')].find(el => el.textContent.trim() === 'EDA')?.click();"
-            )
+            runjs(paste0(
+              "[...document.querySelectorAll('[role=\"tab\"]')]",
+              ".find(el => el.textContent.trim() === 'EDA')",
+              "?.click();"
+            ))
           }
         }
       }
