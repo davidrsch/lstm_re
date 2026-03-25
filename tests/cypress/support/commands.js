@@ -52,8 +52,9 @@ Cypress.Commands.add('select_dropdown', (inputTestid, indices) => {
 
 // Assert that a Pivot tab with exact text is the currently selected tab.
 // Uses exact text match to avoid false positives (e.g. "Training" vs "Training vectors").
+// Timeout of 8 s to allow Shiny→runjs round-trip in CI.
 Cypress.Commands.add('tab_should_be_active', (tabText) => {
-  cy.get('[role="tab"]')
+  cy.get('[role="tab"]', { timeout: 8000 })
     .filter((i, el) => Cypress.$(el).text().trim() === tabText)
     .should('have.attr', 'aria-selected', 'true');
 });

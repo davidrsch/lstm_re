@@ -5,8 +5,7 @@ describe("Results download button disabled state", () => {
   });
 
   it("Download CommandBar button is disabled before an experiment completes", () => {
-    cy.get('[role="menuitem"]')
-      .filter((i, el) => Cypress.$(el).text().trim() === "Download")
-      .should("have.attr", "aria-disabled", "true");
+    cy.contains('[role="menuitem"]', 'Download', { timeout: 8000 })
+      .should('be.disabled');
   });
 });
