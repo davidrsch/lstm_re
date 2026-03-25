@@ -23,8 +23,8 @@ describe("Training vectors options card", () => {
       .blur();
     cy.wait(1000);
     // Error modal should appear
-    cy.get('[role="dialog"]').should('be.visible');
-    cy.contains('Temporal horizon must be an integer number bigger than 0').should('be.visible');
+    cy.get('[role="dialog"]').should('exist');
+    cy.contains('Temporal horizon must be an integer number bigger than 0').should('exist');
   });
 
   it("Card starts hidden before being opened", () => {

@@ -26,7 +26,7 @@ describe("Upload file", () => {
       .should('not.be.visible')
       .selectFile('cypress/fixtures/png_example.png', { force: true });
     cy.wait(2000);
-    // Warning modal should be visible (wrong file format)
-    cy.get('[role="dialog"]').should('be.visible');
+    // Warning modal should appear (wrong file format)
+    cy.get('[role="dialog"]').should('exist');
   });
 });

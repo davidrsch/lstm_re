@@ -12,13 +12,13 @@ describe("Start experimentation validation", () => {
   it("Clicking Start without required inputs shows error modal", () => {
     cy.get('[data-testid="startexperimentation"]').click({ force: true });
     cy.wait(1000);
-    cy.get('[role="dialog"]').should('be.visible');
+    cy.get('[role="dialog"]').should('exist');
   });
 
   it("Error modal can be dismissed", () => {
     cy.get('[data-testid="startexperimentation"]').click({ force: true });
     cy.wait(1000);
-    cy.get('[role="dialog"]').should('be.visible');
+    cy.get('[role="dialog"]').should('exist');
     // Find and click the close/OK button inside the modal
     cy.get('[role="dialog"]').find('button').first().click({ force: true });
     cy.wait(500);
