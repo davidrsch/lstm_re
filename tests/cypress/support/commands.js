@@ -19,8 +19,10 @@ Cypress.Commands.add('upload_csv_flow', () => {
   cy.get('[data-testid="upload_file"] [type="file"]')
     .should('not.be.visible')
     .selectFile('cypress/fixtures/csv_example.csv', { force: true });
-  // Wait for the server to process the file (header checkbox becomes enabled)
-  cy.get('[data-testid="header"]', { timeout: 10000 }).should('not.be.disabled');
+  // Wait for the toggle_variables_card button to become enabled, confirming
+  // the server processed the file and renderUI has re-rendered the button.
+  cy.get('[data-testid="toggle_variables_card"]', { timeout: 10000 })
+    .should('not.have.attr', 'aria-disabled', 'true');
 });
 
 // Navigate to a Pivot tab by its label text
@@ -55,7 +57,7 @@ Cypress.Commands.add('select_dropdown', (inputTestid, indices) => {
 // Uses anchored regex with cy.contains for full Cypress retryability.
 // Timeout of 8 s to allow Shiny→runjs round-trip in CI.
 Cypress.Commands.add('tab_should_be_active', (tabText) => {
-  const regex = new RegExp('^' + tabText + '$');
-  cy.contains('[role="tab"]', regex, { timeout: 8000 })
+  // Use string (not regex) so Cypress normalises whitespace in textContent.
+  cy.contains('[role="tab"]', tabText, { timeout: 8000 })
     .should('have.attr', 'aria-selected', 'true');
 });

@@ -20,13 +20,6 @@ describe("Upload Data page accordion - mutual exclusion", () => {
   it("Data amount card toggle is disabled until input/output variables are selected", () => {
     // Without upload, data amount card should be disabled
     cy.get('[data-testid="toggle_data_amount_card"]', { timeout: 10000 })
-      .then(($el) => {
-        cy.log('toggle_data_amount_card (accordion): disabled=' + $el.attr('disabled') +
-          ' aria-disabled=' + $el.attr('aria-disabled') +
-          ' tag=' + $el.prop('tagName') +
-          ' class=' + ($el.attr('class') || '').substring(0, 60));
-        return $el;
-      })
       .should('have.attr', 'aria-disabled', 'true');
     // After upload it is still disabled (no I/O variables selected yet)
     cy.upload_csv_flow();
