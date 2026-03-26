@@ -128,11 +128,12 @@ server <- function(id, shared_data) {
       } else if (
         is.null(shared_data$transf) ||
           is.null(shared_data$scales) ||
+          is.null(shared_data$temporalhorizon) ||
           is.na(shared_data$temporalhorizon) ||
           is.null(shared_data$std_input_amounts) ||
           is.null(shared_data$std_lstm_amounts) ||
           is.null(shared_data$std_neuron_amounts) ||
-          is.na(shared_data$epoch)
+          is.null(shared_data$epoch) || is.na(shared_data$epoch)
       ) {
         error_message(startalert)
         error_visible(TRUE)

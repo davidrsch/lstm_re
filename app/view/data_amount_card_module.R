@@ -294,13 +294,22 @@ server <- function(id, shared_data) {
     })
 
     observeEvent(input$adtraintotest, {
+      stns <- if (
+        !is.null(input$selecttrainstart) &&
+          input$selecttrainstart != ""
+      ) {
+        input$selecttrainstart
+      } else if (length(shared_data$start_train_levels) > 0) {
+        shared_data$start_train_levels[[1]]
+      } else {
+        ""
+      }
       if (
         is.null(input$selectteststart) ||
           input$selectteststart == "" ||
           is.null(input$selecttestend) ||
           input$selecttestend == "" ||
-          is.null(input$selecttrainstart) ||
-          input$selecttrainstart == "" ||
+          stns == "" ||
           !any(shared_data$grid$Inputs == 1) ||
           !any(shared_data$grid$Outputs == 1)
       ) {
@@ -311,7 +320,6 @@ server <- function(id, shared_data) {
         ))
         error_visible(TRUE)
       } else {
-        stns <- input$selecttrainstart
         if (dim(shared_data$selected_trains)[1] == 0) {
           shared_data$selected_trains <- data.frame(`Train start dates` = stns)
           if (shared_data$show_graphs < 2) {

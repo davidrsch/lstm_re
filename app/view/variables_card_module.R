@@ -213,10 +213,22 @@ server <- function(id, shared_data) {
     # Server-side logic for select/deselect all buttons
     observeEvent(input$select_all_inputs, {
       shared_data$grid$Inputs <- TRUE
+      inp <- shared_data$grid |> filter(Inputs == 1) |> select(Variables)
+      out <- shared_data$grid |> filter(Outputs == 1) |> select(Variables)
+      variables <- merge(inp, out, all = TRUE)[[1]]
+      if (length(variables) > 0) {
+        shared_data$EDA <- shared_data$df[variables]
+      }
     })
 
     observeEvent(input$select_all_outputs, {
       shared_data$grid$Outputs <- TRUE
+      inp <- shared_data$grid |> filter(Inputs == 1) |> select(Variables)
+      out <- shared_data$grid |> filter(Outputs == 1) |> select(Variables)
+      variables <- merge(inp, out, all = TRUE)[[1]]
+      if (length(variables) > 0) {
+        shared_data$EDA <- shared_data$df[variables]
+      }
     })
 
     observeEvent(input$deselect_all_inputs, {
