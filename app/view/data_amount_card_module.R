@@ -170,7 +170,7 @@ server <- function(id, shared_data) {
           shared_data$selected_date_variable == "" ||
           !(shared_data$selected_date_variable %in% colnames(shared_data$df))
       ) {
-        shared_data$x_data <- seq_len(dim(shared_data$EDA)[1])
+        shared_data$x_data <- seq_len(nrow(shared_data$df))
       } else {
         shared_data$x_data <- as.character(shared_data$df[[
           shared_data$selected_date_variable
