@@ -84,6 +84,16 @@ server <- function(id, shared_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
+    # Send initial disabled state after first flush so the client React
+    # component has had time to mount before the update message arrives.
+    session$onFlushed(once = TRUE, fun = function() {
+      updateDefaultButton.shinyInput(
+        session,
+        "toggle_variables_card",
+        disabled = nrow(shared_data$df) == 0
+      )
+    })
+
     # Enable/disable toggle based on whether data has been uploaded
     observeEvent(
       shared_data$df,
@@ -93,7 +103,8 @@ server <- function(id, shared_data) {
           "toggle_variables_card",
           disabled = nrow(shared_data$df) == 0
         )
-      }
+      },
+      ignoreInit = TRUE
     )
 
     observeEvent(input$toggle_variables_card, {

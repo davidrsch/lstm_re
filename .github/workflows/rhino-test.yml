@@ -79,3 +79,11 @@ jobs:
           project: ../tests
           wait-on: 'http://localhost:3333/'
           wait-on-timeout: 60
+
+      - name: Upload Cypress screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: tests/cypress/screenshots
+          if-no-files-found: ignore

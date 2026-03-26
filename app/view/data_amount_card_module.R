@@ -113,6 +113,16 @@ server <- function(id, shared_data) {
       status = "error"
     )
 
+    # Send initial disabled state after first flush so the client React
+    # component has had time to mount before the update message arrives.
+    session$onFlushed(once = TRUE, fun = function() {
+      updateDefaultButton.shinyInput(
+        session,
+        "toggle_data_amount_card",
+        disabled = TRUE
+      )
+    })
+
     # Enable/disable toggle based on whether input and output variables are selected
     observeEvent(
       shared_data$grid,

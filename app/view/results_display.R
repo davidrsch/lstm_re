@@ -249,7 +249,7 @@ server <- function(id, shared_data) {
                   tstv <- ts
                 }
                 vector <- create_3d_vector(
-                  tstv[, , drop = FALSE],
+                  tstv[,, drop = FALSE],
                   steps,
                   c(1, dim(tstv)[1])
                 )
@@ -514,7 +514,7 @@ server <- function(id, shared_data) {
                     output_with_date_x,
                     as.is = TRUE
                   )
-                  date2d <- unique(as.matrix(output_with_date[, , 1]))
+                  date2d <- unique(as.matrix(output_with_date[,, 1]))
                   mmmpred <- create_plot_pred_df(
                     threddata = output_with_date,
                     xdata = date2d,
