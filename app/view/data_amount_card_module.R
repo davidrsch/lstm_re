@@ -343,6 +343,8 @@ server <- function(id, shared_data) {
         ))
         error_visible(TRUE)
       } else {
+        shared_data$test_start_date <- teststart
+        shared_data$test_end_date <- testend
         if (dim(shared_data$selected_trains)[1] == 0) {
           shared_data$selected_trains <- data.frame(`Train start dates` = stns)
           if (shared_data$show_graphs < 2) {
