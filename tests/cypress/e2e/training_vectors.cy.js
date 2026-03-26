@@ -2,10 +2,11 @@ describe("Training vectors options card", () => {
   beforeEach(() => {
     cy.visit("/");
     cy.navigate_to_tab("Selecting Features");
-    cy.wait(2000);
-    // Open training vectors card
+    // Wait for the server to render before opening the card
+    cy.get('[data-testid="selectimeseries"]', { timeout: 10000 }).should('exist');
+    // Open training vectors card and wait for content to become visible
     cy.toggle_card("toggle_tv_card");
-    cy.wait(500);
+    cy.get('[data-testid="temporalhorizon"]', { timeout: 8000 }).should('be.visible');
   });
 
   it("Temporal horizon field is visible after opening card", () => {
@@ -21,16 +22,14 @@ describe("Training vectors options card", () => {
       .clear({ force: true })
       .type('0', { force: true })
       .blur();
-    cy.wait(1000);
-    // Error modal should appear
-    cy.get('[role="dialog"]').should('exist');
+    cy.get('[role="dialog"]', { timeout: 10000 }).should('exist');
     cy.contains('Temporal horizon must be an integer number bigger than 0').should('exist');
   });
 
   it("Card starts hidden before being opened", () => {
     cy.visit("/");
     cy.navigate_to_tab("Selecting Features");
-    cy.wait(1000);
-    cy.get('[data-testid="temporalhorizon"]').should('not.be.visible');
+    cy.get('[data-testid="selectimeseries"]', { timeout: 10000 }).should('exist');
+    cy.get('[data-testid="temporalhorizon"]', { timeout: 8000 }).should('not.be.visible');
   });
 });

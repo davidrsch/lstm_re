@@ -2,7 +2,8 @@ describe("Time series transformations card", () => {
   beforeEach(() => {
     cy.visit("/");
     cy.navigate_to_tab("Selecting Features");
-    cy.wait(2000);
+    // Wait for the server to render the Time series card content
+    cy.get('[data-testid="selectimeseries"]', { timeout: 10000 }).should('exist');
   });
 
   it("Transformations dropdown is visible with correct label", () => {

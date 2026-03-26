@@ -10,13 +10,13 @@ describe("Upload card accordion", () => {
 
   it("Clicking toggle collapses the upload card", () => {
     cy.toggle_card("toggle_upload_card");
-    cy.get('[data-testid="file"]').should('not.be.visible');
+    cy.get('[data-testid="file"]', { timeout: 8000 }).should('not.be.visible');
   });
 
   it("Clicking toggle again expands the upload card", () => {
     cy.toggle_card("toggle_upload_card");
     cy.toggle_card("toggle_upload_card");
-    cy.get('[data-testid="file"]').should('be.visible');
+    cy.get('[data-testid="file"]', { timeout: 8000 }).should('be.visible');
   });
 
   it("Variables card starts collapsed", () => {
@@ -28,6 +28,6 @@ describe("Upload card accordion", () => {
   it("Clicking variables card toggle expands it", () => {
     cy.upload_csv_flow();
     cy.toggle_card("toggle_variables_card");
-    cy.get('[data-testid="io_gridtable"]').should('be.visible');
+    cy.get('[data-testid="io_gridtable"]', { timeout: 8000 }).should('be.visible');
   });
 });

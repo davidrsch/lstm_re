@@ -6,7 +6,8 @@ describe("Tab-panel linkage - Selecting Features cards", () => {
   beforeEach(() => {
     cy.visit("/");
     cy.navigate_to_tab("Selecting Features");
-    cy.wait(1000);
+    // Wait for the server to render before interacting with cards
+    cy.get('[data-testid="selectimeseries"]', { timeout: 10000 }).should('exist');
   });
 
   it("Opening 'Training vectors' card selects 'Training vectors' guide tab", () => {
@@ -17,19 +18,19 @@ describe("Tab-panel linkage - Selecting Features cards", () => {
   it("Opening 'Models options' card selects 'Models' guide tab", () => {
     cy.toggle_card("toggle_tv_card");
     cy.toggle_card("toggle_mo_card");
-    cy.get('iframe[src*="models"]', { timeout: 8000 }).should('be.visible');
+    cy.get('iframe[src*="models"]', { timeout: 15000 }).should('be.visible');
   });
 
   it("Opening 'Training options' card selects 'Training' guide tab", () => {
     cy.toggle_card("toggle_to_card");
-    cy.get('iframe[src*="training.html"]', { timeout: 8000 }).should('be.visible');
+    cy.get('iframe[src*="training.html"]', { timeout: 15000 }).should('be.visible');
   });
 
   it("Reopening 'Time series transformations' card selects 'Time series' guide tab", () => {
     cy.toggle_card("toggle_tv_card");
-    cy.get('iframe[src*="training_vectors"]', { timeout: 8000 }).should('be.visible');
+    cy.get('iframe[src*="training_vectors"]', { timeout: 15000 }).should('be.visible');
     cy.toggle_card("toggle_ts_card");
-    cy.get('iframe[src*="time_series"]', { timeout: 8000 }).should('be.visible');
+    cy.get('iframe[src*="time_series"]', { timeout: 15000 }).should('be.visible');
   });
 });
 

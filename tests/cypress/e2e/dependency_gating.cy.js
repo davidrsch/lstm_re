@@ -11,6 +11,7 @@ describe("Dependency gating - disabled toggle buttons", () => {
           ' aria-disabled=' + $el.attr('aria-disabled') +
           ' tag=' + $el.prop('tagName') +
           ' class=' + ($el.attr('class') || '').substring(0, 60));
+        return $el;
       })
       .should('have.attr', 'aria-disabled', 'true');
   });
@@ -27,6 +28,7 @@ describe("Dependency gating - disabled toggle buttons", () => {
           ' aria-disabled=' + $el.attr('aria-disabled') +
           ' tag=' + $el.prop('tagName') +
           ' class=' + ($el.attr('class') || '').substring(0, 60));
+        return $el;
       })
       .should('have.attr', 'aria-disabled', 'true');
   });
@@ -40,6 +42,7 @@ describe("Dependency gating - disabled toggle buttons", () => {
           ' aria-disabled=' + $el.attr('aria-disabled') +
           ' tag=' + $el.prop('tagName') +
           ' class=' + ($el.attr('class') || '').substring(0, 60));
+        return $el;
       })
       .should('have.attr', 'aria-disabled', 'true');
   });

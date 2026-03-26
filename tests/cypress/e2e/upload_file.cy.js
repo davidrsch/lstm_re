@@ -11,9 +11,9 @@ describe("Upload file", () => {
 
   it("'Upload file' CSV - after upload header/delimiter/decimal_point become enabled", () => {
     cy.upload_csv_flow();
-    cy.get('[data-testid="header"]').should('not.be.disabled');
-    cy.get('[data-testid="delimiter"]').should('not.be.disabled');
-    cy.get('[data-testid="decimal_point"]').should('not.be.disabled');
+    cy.get('[data-testid="header"]', { timeout: 10000 }).should('not.be.disabled');
+    cy.get('[data-testid="delimiter"]', { timeout: 10000 }).should('not.be.disabled');
+    cy.get('[data-testid="decimal_point"]', { timeout: 10000 }).should('not.be.disabled');
   });
 
   it("'Upload file' CSV - data analysis panel shows after upload", () => {
@@ -25,8 +25,6 @@ describe("Upload file", () => {
     cy.get('[data-testid="upload_file"] [type="file"]')
       .should('not.be.visible')
       .selectFile('cypress/fixtures/png_example.png', { force: true });
-    cy.wait(2000);
-    // Warning modal should appear (wrong file format)
-    cy.get('[role="dialog"]').should('exist');
+    cy.get('[role="dialog"]', { timeout: 10000 }).should('exist');
   });
 });

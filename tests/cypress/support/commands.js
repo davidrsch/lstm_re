@@ -19,20 +19,22 @@ Cypress.Commands.add('upload_csv_flow', () => {
   cy.get('[data-testid="upload_file"] [type="file"]')
     .should('not.be.visible')
     .selectFile('cypress/fixtures/csv_example.csv', { force: true });
-  // Give Shiny time to process and render the data table
-  cy.wait(3000);
+  // Wait for the server to process the file (header checkbox becomes enabled)
+  cy.get('[data-testid="header"]', { timeout: 10000 }).should('not.be.disabled');
 });
 
 // Navigate to a Pivot tab by its label text
 Cypress.Commands.add('navigate_to_tab', (tabLabel) => {
   cy.contains('[role="tab"]', tabLabel).click({ force: true });
-  cy.wait(1000);
+  // Wait for the tab to actually be selected (client-side, near-instant)
+  cy.contains('[role="tab"]', new RegExp('^' + tabLabel + '$'), { timeout: 6000 })
+    .should('have.attr', 'aria-selected', 'true');
 });
 
 // Click a card accordion toggle button identified by data-testid
 Cypress.Commands.add('toggle_card', (testid) => {
   cy.get(`[data-testid="${testid}"]`).click({ force: true });
-  cy.wait(500);
+  cy.wait(1000);
 });
 
 // Open a FluentUI multi-select Dropdown and click one or more option indices.
