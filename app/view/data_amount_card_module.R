@@ -3,7 +3,7 @@ box::use(
   DT[datatable, DTOutput, renderDataTable],
   rlang[`%||%`],
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack, Text],
-  shiny.fluent[PrimaryButton.shinyInput, updateDefaultButton.shinyInput],
+  shiny.fluent[PrimaryButton.shinyInput],
   shiny[
     div,
     moduleServer,
@@ -31,18 +31,7 @@ ui <- function(id) {
     make_card(
       tagList(
         "Select amount of data to use",
-        DefaultButton.shinyInput(
-          ns("toggle_data_amount_card"),
-          disabled = TRUE,
-          iconProps = list(iconName = "ChevronDown"),
-          style = "float: right; width: 0.7em",
-          styles = list(
-            root = list(
-              "min-width" = "32px"
-            )
-          ),
-          `data-testid` = "toggle_data_amount_card"
-        )
+        uiOutput(ns("toggle_data_amount_card_ui"))
       ),
       hidden(
         div(
@@ -113,45 +102,28 @@ server <- function(id, shared_data) {
       status = "error"
     )
 
-    # Send initial disabled state after first flush so the client React
-    # component has had time to mount before the update message arrives.
-    session$onFlushed(once = TRUE, fun = function() {
-      updateDefaultButton.shinyInput(
-        session,
-        "toggle_data_amount_card",
-        disabled = TRUE
-      )
-    })
-
-    # Enable/disable toggle based on whether input and output variables are selected
-    observeEvent(
-      shared_data$grid,
-      {
-        req("Inputs" %in% names(shared_data$grid))
+    output$toggle_data_amount_card_ui <- renderUI({
+      has_in <- FALSE
+      has_out <- FALSE
+      if (!is.null(shared_data$grid) && "Inputs" %in% names(shared_data$grid)) {
         has_in <- nrow(filter(shared_data$grid, Inputs == TRUE)) > 0
         has_out <- nrow(filter(shared_data$grid, Outputs == TRUE)) > 0
-        updateDefaultButton.shinyInput(
-          session,
-          "toggle_data_amount_card",
-          disabled = !(has_in && has_out)
-        )
       }
-    )
+      disabled <- !(has_in && has_out)
+      icon <- if (isTRUE(shared_data$data_amount_card_visible)) "ChevronUp" else "ChevronDown"
+      DefaultButton.shinyInput(
+        ns("toggle_data_amount_card"),
+        disabled = disabled,
+        iconProps = list(iconName = icon),
+        style = "float: right; width: 0.7em",
+        styles = list(root = list("min-width" = "32px")),
+        `data-testid` = "toggle_data_amount_card"
+      )
+    })
 
     observeEvent(input$toggle_data_amount_card, {
       shared_data$data_amount_card_visible <- !shared_data$data_amount_card_visible
       toggle("data_amount_card_content")
-      updateDefaultButton.shinyInput(
-        session,
-        "toggle_data_amount_card",
-        iconProps = list(
-          iconName = if (shared_data$data_amount_card_visible) {
-            "ChevronUp"
-          } else {
-            "ChevronDown"
-          }
-        )
-      )
       if (shared_data$data_amount_card_visible) {
         runjs(paste0(
           "[...document.querySelectorAll('[role=\"tab\"]')]",
@@ -170,11 +142,6 @@ server <- function(id, shared_data) {
         ) {
           shared_data$data_amount_card_visible <- FALSE
           hide("data_amount_card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "toggle_data_amount_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
         }
       },
       ignoreInit = TRUE
@@ -189,11 +156,6 @@ server <- function(id, shared_data) {
         ) {
           shared_data$data_amount_card_visible <- FALSE
           hide("data_amount_card_content")
-          updateDefaultButton.shinyInput(
-            session,
-            "toggle_data_amount_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
         }
       },
       ignoreInit = TRUE
