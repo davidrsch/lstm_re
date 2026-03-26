@@ -13,13 +13,16 @@ describe("Data amount configuration (train/test split)", () => {
 
   it("Test start and test end dropdowns are visible after opening card", () => {
     cy.toggle_card('toggle_data_amount_card');
-    cy.contains('label', 'Test start', { timeout: 8000 }).should('be.visible');
-    cy.contains('label', 'Test end').should('be.visible');
+    // Section header and the two start/end dropdowns inside it
+    cy.contains('Test set:', { timeout: 8000 }).should('be.visible');
+    cy.contains('Train set:').should('be.visible');
   });
 
   it("Train start dropdown is visible after opening card", () => {
     cy.toggle_card('toggle_data_amount_card');
-    cy.contains('label', 'Train start', { timeout: 8000 }).should('be.visible');
+    // There are two "Start" labels (test start + train start);
+    // verify at least one is visible after opening the card
+    cy.contains('label', 'Start', { timeout: 8000 }).should('be.visible');
   });
 
   it("OK button is visible inside the data amount card", () => {

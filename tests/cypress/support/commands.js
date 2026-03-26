@@ -89,11 +89,18 @@ Cypress.Commands.add('add_train_set_flow', () => {
     .should('have.length.gte', 1);
 });
 
-// On the Selecting Features page: open the Training vectors card, set temporal
-// horizon to 1, add input amount 1, then open Models options and add 1 LSTM
-// layer with 4 neurons, then open Training options and set epoch to 1.
-// Uses minimal values so the CI training job finishes quickly.
+// On the Selecting Features page: select only the 'original' transformation
+// and 'exact' scale (reduce from defaults of 3×3 to 1×1), then open the
+// Training vectors card and set temporal horizon to 1 with input amount 1,
+// then open Models options with 1 LSTM layer and 4 neurons, and set epoch to 1.
+// Uses minimal values so the CI training job finishes quickly (1 model total).
 Cypress.Commands.add('configure_experiment_flow', () => {
+  // Transformations card (open by default): deselect all then re-select only index 0
+  cy.get('[data-testid="selectimeseries"]', { timeout: 10000 }).should('be.visible');
+  // Click the dropdown and deselect indices 1 ("first") and 2 ("second")
+  cy.select_dropdown('selectimeseries', [1, 2]);
+  // Deselect scales indices 1 (zero_one) and 2 (minus_plus) — keep only "exact" (index 0)
+  cy.select_dropdown('selectimeseriescales', [1, 2]);
   // Training vectors card
   cy.toggle_card('toggle_tv_card');
   cy.get('[data-testid="temporalhorizon"]', { timeout: 8000 }).should('be.visible');

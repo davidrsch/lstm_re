@@ -193,7 +193,11 @@ server <- function(id, shared_data) {
           label = "Start",
           options = options,
           value = shared_data$test_start_date %||%
-            if (length(options) > 0) options[[1]]$key else NULL,
+            if (length(options) > 0) {
+              options[[max(1, ceiling(length(options) * 0.75))]]$key
+            } else {
+              NULL
+            },
           key = "selectteststart_dropdown_key"
         )
       }
@@ -219,7 +223,7 @@ server <- function(id, shared_data) {
         label = "End",
         options = lapply(choices2, function(x) list(key = x, text = x)),
         value = shared_data$test_end_date %||%
-          if (length(choices2) > 0) choices2[[1]] else NULL,
+          if (length(choices2) > 0) choices2[[length(choices2)]] else NULL,
         key = "selecttestend_dropdown_key"
       )
     })
@@ -258,7 +262,7 @@ server <- function(id, shared_data) {
           !is.element(start, x_data) ||
           which(x_data == start) >= which(x_data == end)
       ) {
-        selected <- NULL
+        selected <- if (length(choices) > 0) choices[[1]] else NULL
       } else {
         selected <- start
       }
