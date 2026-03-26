@@ -294,6 +294,31 @@ server <- function(id, shared_data) {
     })
 
     observeEvent(input$adtraintotest, {
+      x_data <- shared_data$x_data
+      teststart <- if (
+        !is.null(input$selectteststart) &&
+          input$selectteststart != ""
+      ) {
+        input$selectteststart
+      } else if (!is.null(shared_data$test_start_date)) {
+        shared_data$test_start_date
+      } else if (length(x_data) > 2) {
+        x_data[[max(1, ceiling(length(x_data) * 0.75))]]
+      } else {
+        ""
+      }
+      testend <- if (
+        !is.null(input$selecttestend) &&
+          input$selecttestend != ""
+      ) {
+        input$selecttestend
+      } else if (!is.null(shared_data$test_end_date)) {
+        shared_data$test_end_date
+      } else if (length(x_data) > 0) {
+        x_data[[length(x_data)]]
+      } else {
+        ""
+      }
       stns <- if (
         !is.null(input$selecttrainstart) &&
           input$selecttrainstart != ""
@@ -305,10 +330,8 @@ server <- function(id, shared_data) {
         ""
       }
       if (
-        is.null(input$selectteststart) ||
-          input$selectteststart == "" ||
-          is.null(input$selecttestend) ||
-          input$selecttestend == "" ||
+        teststart == "" ||
+          testend == "" ||
           stns == "" ||
           !any(shared_data$grid$Inputs == 1) ||
           !any(shared_data$grid$Outputs == 1)
@@ -345,7 +368,7 @@ server <- function(id, shared_data) {
           shared_data$x_data,
           shared_data$selected_trains$Train.start.dates
         ))
-        indxofstt <- which(shared_data$x_data == input$selectteststart)
+        indxofstt <- which(shared_data$x_data == teststart)
         if (any(indxofstn > indxofstt)) {
           whichisbig <- which(indxofstn > indxofstt)
           shared_data$selected_trains <- shared_data$selected_trains |>
