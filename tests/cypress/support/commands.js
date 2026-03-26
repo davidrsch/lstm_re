@@ -61,3 +61,64 @@ Cypress.Commands.add('tab_should_be_active', (tabText) => {
   cy.contains('[role="tab"]', tabText, { timeout: 8000 })
     .should('have.attr', 'aria-selected', 'true');
 });
+
+// ── Full-flow helper commands ────────────────────────────────────────────────
+
+// Open the Variables card, select all columns as Inputs and Outputs using the
+// server-side "Select All" buttons, then wait for the data-amount card toggle
+// to become enabled (confirms the server registered the I/O selection).
+Cypress.Commands.add('select_io_variables_flow', () => {
+  cy.toggle_card('toggle_variables_card');
+  cy.get('[data-testid="io_gridtable"]', { timeout: 10000 }).should('be.visible');
+  // Use server-rendered "Select All" buttons — more reliable than handsontable cell clicks
+  cy.contains('button', 'Inputs').first().click({ force: true });
+  cy.contains('button', 'Outputs').first().click({ force: true });
+  // Wait for the data-amount toggle to become enabled
+  cy.get('[data-testid="toggle_data_amount_card"]', { timeout: 10000 })
+    .should('not.have.attr', 'aria-disabled', 'true');
+});
+
+// Open the data-amount card, keep the default test dates, and click OK to add
+// the first available training start date, then wait for the table row to appear.
+Cypress.Commands.add('add_train_set_flow', () => {
+  cy.toggle_card('toggle_data_amount_card');
+  cy.get('[data-testid="adtraintotest"]', { timeout: 10000 }).should('be.visible');
+  cy.get('[data-testid="adtraintotest"]').click({ force: true });
+  // Wait for a DT row to appear confirming the server added the train set
+  cy.get('[data-testid="traindatestable_container"] tbody tr', { timeout: 8000 })
+    .should('have.length.gte', 1);
+});
+
+// On the Selecting Features page: open the Training vectors card, set temporal
+// horizon to 1, add input amount 1, then open Models options and add 1 LSTM
+// layer with 4 neurons, then open Training options and set epoch to 1.
+// Uses minimal values so the CI training job finishes quickly.
+Cypress.Commands.add('configure_experiment_flow', () => {
+  // Training vectors card
+  cy.toggle_card('toggle_tv_card');
+  cy.get('[data-testid="temporalhorizon"]', { timeout: 8000 }).should('be.visible');
+  cy.get('[data-testid="temporalhorizon"] input').clear({ force: true }).type('1', { force: true });
+  // "Add input amount" TextField — select by label text sibling
+  cy.contains('label', 'Add input amount').parent().find('input')
+    .clear({ force: true }).type('1', { force: true });
+  cy.contains('button', 'Add input').click({ force: true });
+  // Models options card
+  cy.toggle_card('toggle_mo_card');
+  cy.contains('label', 'Add LSTM layer amount', { timeout: 8000 }).parent().find('input')
+    .clear({ force: true }).type('1', { force: true });
+  cy.contains('button', 'Add amount').first().click({ force: true });
+  cy.contains('label', 'Add neuron amount').parent().find('input')
+    .clear({ force: true }).type('4', { force: true });
+  cy.contains('button', 'Add amount').eq(1).click({ force: true });
+  // Training options card
+  cy.toggle_card('toggle_to_card');
+  cy.contains('label', 'Epoch', { timeout: 8000 }).parent().find('input')
+    .clear({ force: true }).type('1', { force: true });
+});
+
+// Click Start, confirm the experiment modal, and click OK to launch training.
+Cypress.Commands.add('start_experiment_flow', () => {
+  cy.get('[data-testid="startexperimentation"]').click({ force: true });
+  // The models-to-build modal appears; click OK to accept
+  cy.get('[data-testid="acceptmodels"]', { timeout: 10000 }).should('be.visible').click({ force: true });
+});

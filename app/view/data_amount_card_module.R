@@ -70,6 +70,7 @@ ui <- function(id) {
                 " max-height: 140px; overflow: auto; ",
                 "font-size: 0.9em; text-align: center"
               ),
+              `data-testid` = "traindatestable_container",
               DTOutput(ns("traindatestable")),
             ),
             DefaultButton.shinyInput(

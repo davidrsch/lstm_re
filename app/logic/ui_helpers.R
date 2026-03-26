@@ -124,7 +124,8 @@ select_models_to_build <- function(ns, train, ts, sc, vec, lstm, neu) {
       div(
         PrimaryButton.shinyInput(
           ns("acceptmodels"),
-          text = "OK"
+          text = "OK",
+          `data-testid` = "acceptmodels"
         ),
         DefaultButton.shinyInput(
           ns("cancelmodels"),
