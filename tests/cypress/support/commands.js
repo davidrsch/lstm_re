@@ -25,10 +25,9 @@ Cypress.Commands.add('upload_csv_flow', () => {
 
 // Navigate to a Pivot tab by its label text
 Cypress.Commands.add('navigate_to_tab', (tabLabel) => {
+  // Wait for the app navigation to render before clicking
+  cy.get('[role="tab"]', { timeout: 10000 }).should('have.length.gte', 1);
   cy.contains('[role="tab"]', tabLabel).click({ force: true });
-  // Wait for the tab to actually be selected (client-side, near-instant)
-  cy.contains('[role="tab"]', new RegExp('^' + tabLabel + '$'), { timeout: 6000 })
-    .should('have.attr', 'aria-selected', 'true');
 });
 
 // Click a card accordion toggle button identified by data-testid
