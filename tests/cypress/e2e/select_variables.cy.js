@@ -25,7 +25,8 @@ describe("Select variables (I/O grid)", () => {
 
   it("IO grid shows data columns from the uploaded CSV", () => {
     cy.toggle_card('toggle_variables_card');
-    // csv_example.csv has columns: col1, col2 (numeric only)
+    // csv_example.csv has columns: date, col1, col2
+    // When no date variable is set, all columns appear in the grid
     cy.get('[data-testid="io_gridtable"] tbody', { timeout: 10000 })
       .should('contain.text', 'col1')
       .and('contain.text', 'col2');

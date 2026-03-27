@@ -147,7 +147,8 @@ server <- function(id, shared_data) {
         label = "Date-sequence variable",
         options = dropdown_options,
         value = shared_data$selected_date_variable,
-        key = "datevariable_dropdown_key" # Keep the key for stability
+        key = "datevariable_dropdown_key", # Keep the key for stability
+        `data-testid` = "datevariable"
       )
     })
 

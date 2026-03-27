@@ -70,6 +70,8 @@ Cypress.Commands.add('tab_should_be_active', (tabText) => {
 Cypress.Commands.add('select_io_variables_flow', () => {
   cy.toggle_card('toggle_variables_card');
   cy.get('[data-testid="io_gridtable"]', { timeout: 10000 }).should('be.visible');
+  // Set the date variable so the date column is excluded from I/O features
+  cy.select_dropdown('datevariable', [0]);
   // Use server-rendered "Select All" buttons — more reliable than handsontable cell clicks
   cy.contains('button', 'Inputs').first().click({ force: true });
   cy.contains('button', 'Outputs').first().click({ force: true });
