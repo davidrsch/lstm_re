@@ -624,14 +624,14 @@ server <- function(id, shared_data) {
                       )
                     )
                     file.copy(
-                      "app/static/dashboard/interactivedashb.Rmd",
+                      "app/static/www/dashboard/interactivedashb.Rmd",
                       paste0(
                         exp_dashdirect,
                         "/interactivedashb.Rmd"
                       )
                     )
                     file.copy(
-                      "app/static/dashboard/plotly-latest.min.js",
+                      "app/static/www/dashboard/plotly-latest.min.js",
                       paste0(
                         exp_dashdata,
                         "/plotly-latest.min.js"
