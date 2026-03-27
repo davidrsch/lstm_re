@@ -62,7 +62,8 @@ ui <- function(id) {
             uiOutput(ns("selecttrainstart_dropdown")),
             PrimaryButton.shinyInput(
               ns("adtraintotest"),
-              text = "OK"
+              text = "OK",
+              `data-testid` = "adtraintotest"
             ),
             div(
               style = paste0(
