@@ -27,32 +27,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes "${packages[@]}"
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
       - name: Setup R
         uses: r-lib/actions/setup-r@v2
         with:
           r-version: renv
 
-      - name: Create Python virtualenv
-        run: |
-          set -euo pipefail
-          mkdir -p renv/python/virtualenvs
-          python -m venv renv/python/virtualenvs/renv-python-3.11
-
       - name: Setup R dependencies
         uses: r-lib/actions/setup-renv@v2
-
-      - name: Install Python ML packages
-        run: |
-          set -euo pipefail
-          renv/python/virtualenvs/renv-python-3.11/bin/pip install --upgrade pip
-          renv/python/virtualenvs/renv-python-3.11/bin/pip install tensorflow keras
-          renv/python/virtualenvs/renv-python-3.11/bin/python -c \
-            "import tensorflow; print('TensorFlow', tensorflow.__version__, 'OK')"
 
       - name: Setup Node
         uses: actions/setup-node@v3
