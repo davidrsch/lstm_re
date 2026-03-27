@@ -123,9 +123,11 @@ server <- function(id, shared_data) {
     })
 
     observeEvent(shared_data$run_experiment, {
-      runjs(
-        "document.querySelector('[data-content=\"Results\"]').click();"
-      )
+      runjs(paste0(
+        "[...document.querySelectorAll('[role=\"tab\"]')]",
+        ".find(el => el.textContent.trim() === 'Results')",
+        "?.click();"
+      ))
 
       if (is.null(r$tab)) {
         r$tab <- 1
