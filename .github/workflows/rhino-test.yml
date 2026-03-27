@@ -37,21 +37,16 @@ jobs:
         with:
           r-version: renv
 
+      - name: Setup Python virtualenv
+        run: |
+          set -euo pipefail
+          mkdir -p renv/python/virtualenvs
+          python -m venv renv/python/virtualenvs/renv-python-3.11
+          renv/python/virtualenvs/renv-python-3.11/bin/pip install --upgrade pip
+          renv/python/virtualenvs/renv-python-3.11/bin/pip install tensorflow keras
+
       - name: Setup R dependencies
         uses: r-lib/actions/setup-renv@v2
-
-      - name: Install Python dependencies
-        shell: Rscript {0}
-        run: |
-          reticulate::py_install(
-            packages = c("tensorflow==2.17.0", "keras==3.11.3"),
-            envname = normalizePath(
-              "renv/python/virtualenvs/renv-python-3.11",
-              mustWork = FALSE
-            ),
-            method = "virtualenv",
-            pip = TRUE
-          )
 
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -91,6 +86,8 @@ jobs:
       - name: Run Cypress end-to-end tests
         if: always()
         uses: cypress-io/github-action@v6
+        env:
+          KERAS_BACKEND: tensorflow
         with:
           working-directory: .rhino # Created by earlier commands which use Node.js
           start: npm run run-app
