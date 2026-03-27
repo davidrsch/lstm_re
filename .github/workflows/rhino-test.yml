@@ -37,16 +37,22 @@ jobs:
         with:
           r-version: renv
 
-      - name: Setup Python virtualenv
+      - name: Create Python virtualenv
         run: |
           set -euo pipefail
           mkdir -p renv/python/virtualenvs
           python -m venv renv/python/virtualenvs/renv-python-3.11
-          renv/python/virtualenvs/renv-python-3.11/bin/pip install --upgrade pip
-          renv/python/virtualenvs/renv-python-3.11/bin/pip install tensorflow keras
 
       - name: Setup R dependencies
         uses: r-lib/actions/setup-renv@v2
+
+      - name: Install Python ML packages
+        run: |
+          set -euo pipefail
+          renv/python/virtualenvs/renv-python-3.11/bin/pip install --upgrade pip
+          renv/python/virtualenvs/renv-python-3.11/bin/pip install tensorflow keras
+          renv/python/virtualenvs/renv-python-3.11/bin/python -c \
+            "import tensorflow; print('TensorFlow', tensorflow.__version__, 'OK')"
 
       - name: Setup Node
         uses: actions/setup-node@v3
