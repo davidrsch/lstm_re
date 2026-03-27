@@ -326,6 +326,8 @@ server <- function(id, shared_data) {
         input$selecttrainstart
       } else if (length(shared_data$start_train_levels) > 0) {
         shared_data$start_train_levels[[1]]
+      } else if (length(x_data) > 1) {
+        x_data[[1]]
       } else {
         ""
       }
