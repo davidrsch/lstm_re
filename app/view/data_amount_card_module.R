@@ -212,8 +212,8 @@ server <- function(id, shared_data) {
       # Ensure shared_data$df is available before proceeding
       req(shared_data$df)
 
-      if (is.null(start)) {
-        choices2 <- x_data # If start is NULL, all x_data are potential end dates
+      if (is.null(start) || !start %in% x_data) {
+        choices2 <- x_data # If start is NULL or stale, all x_data are potential end dates
       } else {
         choices2 <- x_data[(which(x_data == start) + 1):length(x_data)]
       }
@@ -250,8 +250,8 @@ server <- function(id, shared_data) {
       # Ensure shared_data$df is available before proceeding
       req(shared_data$df)
 
-      if (is.null(end)) {
-        choices <- x_data # If end is NULL, all x_data are potential train start dates
+      if (is.null(end) || !end %in% x_data) {
+        choices <- x_data # If end is NULL or stale, all x_data are potential train start dates
       } else {
         choices <- x_data[1:(which(x_data == end) - 1)]
       }
@@ -260,6 +260,8 @@ server <- function(id, shared_data) {
       if (
         is.null(start) ||
           !is.element(start, x_data) ||
+          is.null(end) ||
+          !is.element(end, x_data) ||
           which(x_data == start) >= which(x_data == end)
       ) {
         selected <- if (length(choices) > 0) choices[[1]] else NULL
@@ -280,11 +282,13 @@ server <- function(id, shared_data) {
       x_data <- shared_data$x_data
       end <- input$selectteststart
       start <- input$selecttrainstart
-      choices <- x_data[1:(which(x_data == end) - 1)]
+      choices <- if (!is.null(end) && end %in% x_data) x_data[1:(which(x_data == end) - 1)] else x_data
       shared_data$start_train_levels <- choices
       if (
         is.null(start) ||
           !is.element(start, x_data) ||
+          is.null(end) ||
+          !is.element(end, x_data) ||
           which(x_data == start) >= which(x_data == end)
       ) {
         selected <- NULL
