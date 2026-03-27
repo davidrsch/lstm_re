@@ -282,7 +282,11 @@ server <- function(id, shared_data) {
       x_data <- shared_data$x_data
       end <- input$selectteststart
       start <- input$selecttrainstart
-      choices <- if (!is.null(end) && end %in% x_data) x_data[1:(which(x_data == end) - 1)] else x_data
+      choices <- if (!is.null(end) && end %in% x_data) {
+        x_data[1:(which(x_data == end) - 1)]
+      } else {
+        x_data
+      }
       shared_data$start_train_levels <- choices
       if (
         is.null(start) ||
