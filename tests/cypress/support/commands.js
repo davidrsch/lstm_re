@@ -3,7 +3,7 @@
 // concurrently with a shinyjs DOM toggle. The error is internal to the
 // library and does not affect app functionality; suppress it so tests are
 // not aborted prematurely.
-Cypress.on('uncaughtException', (err) => {
+Cypress.on('uncaught:exception', (err) => {
   if (err.message && err.message.includes('Cannot read properties of null')) {
     return false
   }
@@ -60,10 +60,6 @@ Cypress.Commands.add('select_dropdown', (inputTestid, indices) => {
       .find(`[data-index="${index}"]`)
       .click({ force: true });
   });
-  // Wait for any server-side reactive re-renders triggered by the selection
-  // to complete before closing the callout. This prevents a race where
-  // shiny.react reconciles the DOM while the callout is still open.
-  cy.wait(500);
   // Close callout by pressing Escape
   cy.get('body').type('{esc}');
 });
@@ -89,8 +85,6 @@ Cypress.Commands.add('select_io_variables_flow', () => {
   cy.get('[data-testid="datevariable"]', { timeout: 10000 }).should('be.visible');
   // Set the date variable so the date column is excluded from I/O features
   cy.select_dropdown('datevariable', [0]);
-  // Allow the server to re-render the I/O grid after the date variable selection
-  cy.wait(1000);
   // Use server-rendered "Select All" buttons — more reliable than handsontable cell clicks
   cy.contains('button', 'Inputs').first().click({ force: true });
   cy.contains('button', 'Outputs').first().click({ force: true });
