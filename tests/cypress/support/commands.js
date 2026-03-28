@@ -56,7 +56,7 @@ Cypress.Commands.add('select_dropdown', (inputTestid, indices) => {
   cy.get(`[data-testid="${inputTestid}"]`).click({ force: true });
   const idxArray = Array.isArray(indices) ? indices : [indices];
   idxArray.forEach((index) => {
-    cy.get('[role="listbox"]', { timeout: 10000 })
+    cy.get(`[data-testid="${inputTestid}-callout"]`, { timeout: 10000 })
       .find(`[data-index="${index}"]`)
       .click({ force: true });
   });

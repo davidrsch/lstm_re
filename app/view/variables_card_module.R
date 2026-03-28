@@ -3,8 +3,8 @@ box::use(
   rhandsontable[hot_col, hot_to_r, renderRHandsontable, rhandsontable],
   rhandsontable[rHandsontableOutput],
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack, Text],
-  shiny.fluent[PrimaryButton.shinyInput, updateDefaultButton.shinyInput],
-  shiny[div, isolate, moduleServer, NS, renderUI, uiOutput],
+  shiny.fluent[PrimaryButton.shinyInput, reactOutput, renderReact, updateDefaultButton.shinyInput],
+  shiny[div, isolate, moduleServer, NS],
   shiny[observeEvent, req, tagList],
   shinyjs[hidden, hide, runjs, toggle],
 )
@@ -33,7 +33,7 @@ ui <- function(id) {
         id = ns("variables_card_content"),
         Stack(
           tokens = list(childrenGap = 10),
-          uiOutput(ns("datevariable_ui")),
+          reactOutput(ns("datevariable_ui")),
           div(
             `data-testid` = "io_gridtable",
             rHandsontableOutput(ns("io_gridtable"))
@@ -141,11 +141,11 @@ server <- function(id, shared_data) {
       ignoreInit = TRUE
     )
 
-    # Only render when the card is open so React mounts into a visible container.
-    # shiny.react v0.1.0 fails silently (null.querySelector) when mounting into
-    # a hidden div, leaving the Dropdown without click handlers.
-    # With this guard, renderUI fires AFTER shinyjs::toggle reveals the container.
-    output$datevariable_ui <- renderUI({
+    # Use reactOutput/renderReact (shiny.fluent's own React binding) instead of
+    # uiOutput/renderUI. renderReact calls ReactDOM.render() directly, eliminating
+    # the MutationObserver race that can leave the Dropdown without event handlers.
+    # Guard on variables_card_visible so React mounts into a visible container.
+    output$datevariable_ui <- renderReact({
       req(shared_data$df)
       req(isTRUE(shared_data$variables_card_visible))
       dropdown_options <- lapply(colnames(shared_data$df), function(col) {
@@ -157,7 +157,8 @@ server <- function(id, shared_data) {
         label = "Date-sequence variable",
         options = dropdown_options,
         value = if (!is.null(current_val) && current_val != "") current_val else NULL,
-        `data-testid` = "datevariable"
+        `data-testid` = "datevariable",
+        calloutProps = list(`data-testid` = "datevariable-callout")
       )
     })
 
