@@ -3,7 +3,7 @@ box::use(
   rhandsontable[hot_col, hot_to_r, renderRHandsontable, rhandsontable],
   rhandsontable[rHandsontableOutput],
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack, Text],
-  shiny.fluent[PrimaryButton.shinyInput],
+  shiny.fluent[PrimaryButton.shinyInput, updateDefaultButton.shinyInput],
   shiny[div, moduleServer, NS],
   shiny[observeEvent, renderUI, req, tagList, uiOutput],
   shinyjs[hidden, hide, runjs, toggle],
@@ -19,7 +19,14 @@ ui <- function(id) {
   make_card(
     tagList(
       "Select variables",
-      uiOutput(ns("toggle_variables_card_ui"))
+      DefaultButton.shinyInput(
+        ns("toggle_variables_card"),
+        disabled = TRUE,
+        iconProps = list(iconName = "ChevronDown"),
+        style = "float: right; width: 0.7em",
+        styles = list(root = list("min-width" = "32px")),
+        `data-testid` = "toggle_variables_card"
+      )
     ),
     hidden(
       div(
@@ -73,32 +80,23 @@ server <- function(id, shared_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    # Re-render the toggle button reactively so disabled state and icon are
-    # always correct without relying on updateDefaultButton.shinyInput.
-    output$toggle_variables_card_ui <- renderUI({
+    # Enable the toggle button once data is loaded.
+    observeEvent(shared_data$df, {
       disabled <- is.null(shared_data$df) || nrow(shared_data$df) == 0
-      icon <- if (isTRUE(shared_data$variables_card_visible)) {
-        "ChevronUp"
-      } else {
-        "ChevronDown"
-      }
-      DefaultButton.shinyInput(
-        ns("toggle_variables_card"),
-        disabled = disabled,
-        iconProps = list(iconName = icon),
-        style = "float: right; width: 0.7em",
-        styles = list(
-          root = list(
-            "min-width" = "32px"
-          )
-        ),
-        `data-testid` = "toggle_variables_card"
+      updateDefaultButton.shinyInput(
+        session, "toggle_variables_card", disabled = disabled
       )
     })
 
     observeEvent(input$toggle_variables_card, {
       shared_data$variables_card_visible <- !shared_data$variables_card_visible
       toggle("variables_card_content")
+      updateDefaultButton.shinyInput(
+        session, "toggle_variables_card",
+        iconProps = list(
+          iconName = if (shared_data$variables_card_visible) "ChevronUp" else "ChevronDown"
+        )
+      )
       if (shared_data$variables_card_visible) {
         runjs(paste0(
           "[...document.querySelectorAll('[role=\"tab\"]')]",
@@ -116,6 +114,10 @@ server <- function(id, shared_data) {
         ) {
           shared_data$variables_card_visible <- FALSE
           hide("variables_card_content")
+          updateDefaultButton.shinyInput(
+            session, "toggle_variables_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
         }
       },
       ignoreInit = TRUE
@@ -130,6 +132,10 @@ server <- function(id, shared_data) {
         ) {
           shared_data$variables_card_visible <- FALSE
           hide("variables_card_content")
+          updateDefaultButton.shinyInput(
+            session, "toggle_variables_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
         }
       },
       ignoreInit = TRUE

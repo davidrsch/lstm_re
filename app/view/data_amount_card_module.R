@@ -3,7 +3,7 @@ box::use(
   DT[datatable, DTOutput, renderDataTable],
   rlang[`%||%`],
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack, Text],
-  shiny.fluent[PrimaryButton.shinyInput],
+  shiny.fluent[PrimaryButton.shinyInput, updateDefaultButton.shinyInput],
   shiny[
     div,
     moduleServer,
@@ -31,7 +31,14 @@ ui <- function(id) {
     make_card(
       tagList(
         "Select amount of data to use",
-        uiOutput(ns("toggle_data_amount_card_ui"))
+        DefaultButton.shinyInput(
+          ns("toggle_data_amount_card"),
+          disabled = TRUE,
+          iconProps = list(iconName = "ChevronDown"),
+          style = "float: right; width: 0.7em",
+          styles = list(root = list("min-width" = "32px")),
+          `data-testid` = "toggle_data_amount_card"
+        )
       ),
       hidden(
         div(
@@ -104,28 +111,28 @@ server <- function(id, shared_data) {
       status = "error"
     )
 
-    output$toggle_data_amount_card_ui <- renderUI({
+    # Enable the toggle button once I/O variables are selected.
+    observeEvent(shared_data$grid, {
       has_in <- FALSE
       has_out <- FALSE
       if (!is.null(shared_data$grid) && "Inputs" %in% names(shared_data$grid)) {
         has_in <- nrow(filter(shared_data$grid, Inputs == TRUE)) > 0
         has_out <- nrow(filter(shared_data$grid, Outputs == TRUE)) > 0
       }
-      disabled <- !(has_in && has_out)
-      icon <- if (isTRUE(shared_data$data_amount_card_visible)) "ChevronUp" else "ChevronDown"
-      DefaultButton.shinyInput(
-        ns("toggle_data_amount_card"),
-        disabled = disabled,
-        iconProps = list(iconName = icon),
-        style = "float: right; width: 0.7em",
-        styles = list(root = list("min-width" = "32px")),
-        `data-testid` = "toggle_data_amount_card"
+      updateDefaultButton.shinyInput(
+        session, "toggle_data_amount_card", disabled = !(has_in && has_out)
       )
     })
 
     observeEvent(input$toggle_data_amount_card, {
       shared_data$data_amount_card_visible <- !shared_data$data_amount_card_visible
       toggle("data_amount_card_content")
+      updateDefaultButton.shinyInput(
+        session, "toggle_data_amount_card",
+        iconProps = list(
+          iconName = if (shared_data$data_amount_card_visible) "ChevronUp" else "ChevronDown"
+        )
+      )
       if (shared_data$data_amount_card_visible) {
         runjs(paste0(
           "[...document.querySelectorAll('[role=\"tab\"]')]",
@@ -144,6 +151,10 @@ server <- function(id, shared_data) {
         ) {
           shared_data$data_amount_card_visible <- FALSE
           hide("data_amount_card_content")
+          updateDefaultButton.shinyInput(
+            session, "toggle_data_amount_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
         }
       },
       ignoreInit = TRUE
@@ -158,6 +169,10 @@ server <- function(id, shared_data) {
         ) {
           shared_data$data_amount_card_visible <- FALSE
           hide("data_amount_card_content")
+          updateDefaultButton.shinyInput(
+            session, "toggle_data_amount_card",
+            iconProps = list(iconName = "ChevronDown")
+          )
         }
       },
       ignoreInit = TRUE
