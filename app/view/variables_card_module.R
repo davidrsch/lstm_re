@@ -141,13 +141,13 @@ server <- function(id, shared_data) {
       ignoreInit = TRUE
     )
 
-    # Render the date dropdown via renderUI so [data-testid="datevariable"]
-    # only exists in DOM once df (and options) are ready. This eliminates the
-    # async shiny.react reconciliation window between "element visible" and
-    # "options applied to React state" that existed with updateDropdown.shinyInput.
-    # The card is always closed when df first changes, so no toggle-race applies.
+    # Only render when the card is open so React mounts into a visible container.
+    # shiny.react v0.1.0 fails silently (null.querySelector) when mounting into
+    # a hidden div, leaving the Dropdown without click handlers.
+    # With this guard, renderUI fires AFTER shinyjs::toggle reveals the container.
     output$datevariable_ui <- renderUI({
       req(shared_data$df)
+      req(isTRUE(shared_data$variables_card_visible))
       dropdown_options <- lapply(colnames(shared_data$df), function(col) {
         list(key = col, text = col)
       })
