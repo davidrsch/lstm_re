@@ -56,10 +56,14 @@ Cypress.Commands.add('select_dropdown', (inputTestid, indices) => {
   cy.get(`[data-testid="${inputTestid}"]`).click({ force: true });
   const idxArray = Array.isArray(indices) ? indices : [indices];
   idxArray.forEach((index) => {
-    cy.get('[role="listbox"]')
+    cy.get('[role="listbox"]', { timeout: 10000 })
       .find(`[data-index="${index}"]`)
       .click({ force: true });
   });
+  // Wait for any server-side reactive re-renders triggered by the selection
+  // to complete before closing the callout. This prevents a race where
+  // shiny.react reconciles the DOM while the callout is still open.
+  cy.wait(500);
   // Close callout by pressing Escape
   cy.get('body').type('{esc}');
 });
@@ -81,8 +85,12 @@ Cypress.Commands.add('tab_should_be_active', (tabText) => {
 Cypress.Commands.add('select_io_variables_flow', () => {
   cy.toggle_card('toggle_variables_card');
   cy.get('[data-testid="io_gridtable"]', { timeout: 10000 }).should('be.visible');
+  // Ensure the date variable dropdown is fully rendered before interacting with it
+  cy.get('[data-testid="datevariable"]', { timeout: 10000 }).should('be.visible');
   // Set the date variable so the date column is excluded from I/O features
   cy.select_dropdown('datevariable', [0]);
+  // Allow the server to re-render the I/O grid after the date variable selection
+  cy.wait(1000);
   // Use server-rendered "Select All" buttons — more reliable than handsontable cell clicks
   cy.contains('button', 'Inputs').first().click({ force: true });
   cy.contains('button', 'Outputs').first().click({ force: true });
