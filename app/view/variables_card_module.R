@@ -4,8 +4,9 @@ box::use(
   rhandsontable[rHandsontableOutput],
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack, Text],
   shiny.fluent[PrimaryButton.shinyInput, updateDefaultButton.shinyInput],
+  shiny.fluent[updateDropdown.shinyInput],
   shiny[div, moduleServer, NS],
-  shiny[observeEvent, renderUI, req, tagList, uiOutput],
+  shiny[observeEvent, req, tagList],
   shinyjs[hidden, hide, runjs, toggle],
 )
 
@@ -33,7 +34,13 @@ ui <- function(id) {
         id = ns("variables_card_content"),
         Stack(
           tokens = list(childrenGap = 10),
-          uiOutput(ns("date_variable_dropdown")),
+          Dropdown.shinyInput(
+            ns("datevariable"),
+            label = "Date-sequence variable",
+            options = list(),
+            disabled = TRUE,
+            `data-testid` = "datevariable"
+          ),
           div(
             `data-testid` = "io_gridtable",
             rHandsontableOutput(ns("io_gridtable"))
@@ -141,20 +148,21 @@ server <- function(id, shared_data) {
       ignoreInit = TRUE
     )
 
-    output$date_variable_dropdown <- renderUI({
-      req(shared_data$df) # Ensure df is available before rendering dropdown
-
+    # When data is loaded, update the date dropdown options imperatively.
+    # Using updateDropdown.shinyInput instead of renderUI eliminates the
+    # concurrent shiny.react reconciliation that could leave the Dropdown
+    # without event handlers.
+    observeEvent(shared_data$df, {
+      req(shared_data$df)
       dropdown_options <- lapply(colnames(shared_data$df), function(col) {
         list(key = col, text = col)
       })
-
-      Dropdown.shinyInput(
-        ns("datevariable"),
-        label = "Date-sequence variable",
+      current_val <- shared_data$selected_date_variable
+      updateDropdown.shinyInput(
+        session, "datevariable",
         options = dropdown_options,
-        value = shared_data$selected_date_variable,
-        key = "datevariable_dropdown_key", # Keep the key for stability
-        `data-testid` = "datevariable"
+        disabled = FALSE,
+        value = if (!is.null(current_val) && current_val != "") current_val else NULL
       )
     })
 
