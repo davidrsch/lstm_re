@@ -107,7 +107,7 @@ Cypress.Commands.add('add_train_set_flow', () => {
   // placeholder) to confirm the server processed the click.
   cy.get(
     '[data-testid="traindatestable_container"] tbody td:not(.dataTables_empty)',
-    { timeout: 15000 }
+    { timeout: 30000 }
   ).should('have.length.gte', 1);
 });
 

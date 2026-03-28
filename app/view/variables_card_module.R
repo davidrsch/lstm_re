@@ -4,8 +4,7 @@ box::use(
   rhandsontable[rHandsontableOutput],
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack, Text],
   shiny.fluent[PrimaryButton.shinyInput, updateDefaultButton.shinyInput],
-  shiny.fluent[updateDropdown.shinyInput],
-  shiny[div, moduleServer, NS],
+  shiny[div, isolate, moduleServer, NS, renderUI, uiOutput],
   shiny[observeEvent, req, tagList],
   shinyjs[hidden, hide, runjs, toggle],
 )
@@ -34,12 +33,7 @@ ui <- function(id) {
         id = ns("variables_card_content"),
         Stack(
           tokens = list(childrenGap = 10),
-          Dropdown.shinyInput(
-            ns("datevariable"),
-            label = "Date-sequence variable",
-            options = list(),
-            `data-testid` = "datevariable"
-          ),
+          uiOutput(ns("datevariable_ui")),
           div(
             `data-testid` = "io_gridtable",
             rHandsontableOutput(ns("io_gridtable"))
@@ -147,20 +141,23 @@ server <- function(id, shared_data) {
       ignoreInit = TRUE
     )
 
-    # When data is loaded, update the date dropdown options imperatively.
-    # Using updateDropdown.shinyInput instead of renderUI eliminates the
-    # concurrent shiny.react reconciliation that could leave the Dropdown
-    # without event handlers.
-    observeEvent(shared_data$df, {
+    # Render the date dropdown via renderUI so [data-testid="datevariable"]
+    # only exists in DOM once df (and options) are ready. This eliminates the
+    # async shiny.react reconciliation window between "element visible" and
+    # "options applied to React state" that existed with updateDropdown.shinyInput.
+    # The card is always closed when df first changes, so no toggle-race applies.
+    output$datevariable_ui <- renderUI({
       req(shared_data$df)
       dropdown_options <- lapply(colnames(shared_data$df), function(col) {
         list(key = col, text = col)
       })
-      current_val <- shared_data$selected_date_variable
-      updateDropdown.shinyInput(
-        session, "datevariable",
+      current_val <- isolate(shared_data$selected_date_variable)
+      Dropdown.shinyInput(
+        ns("datevariable"),
+        label = "Date-sequence variable",
         options = dropdown_options,
-        value = if (!is.null(current_val) && current_val != "") current_val else NULL
+        value = if (!is.null(current_val) && current_val != "") current_val else NULL,
+        `data-testid` = "datevariable"
       )
     })
 
