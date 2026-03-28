@@ -192,6 +192,11 @@ server <- function(id, shared_data) {
           shared_data$selected_date_variable
         ]])
       }
+      # Initialise start_train_levels eagerly so adtraintotest fallback always
+      # has a valid value even if the selecttrainstart renderUI hasn't run yet
+      # (the card may still be hidden when x_data first becomes ready, causing
+      # lazy Shiny output evaluation to defer it until after the user clicks OK).
+      shared_data$start_train_levels <- shared_data$x_data
     })
 
     output$selectteststart_dropdown <- renderUI(
