@@ -98,10 +98,17 @@ Cypress.Commands.add('select_io_variables_flow', () => {
 Cypress.Commands.add('add_train_set_flow', () => {
   cy.toggle_card('toggle_data_amount_card');
   cy.get('[data-testid="adtraintotest"]', { timeout: 10000 }).should('be.visible');
+  // Wait for the renderUI date dropdowns to settle before clicking OK.
+  // Without this, shiny.react may still be reconciling the Dropdown components
+  // and the PrimaryButton binding can be unstable under load.
+  cy.contains('label', 'Start', { timeout: 10000 }).should('be.visible');
   cy.get('[data-testid="adtraintotest"]').click({ force: true });
-  // Wait for a DT row to appear confirming the server added the train set
-  cy.get('[data-testid="traindatestable_container"] tbody tr', { timeout: 8000 })
-    .should('have.length.gte', 1);
+  // Assert on a real data cell (not the DataTables "No data available"
+  // placeholder) to confirm the server processed the click.
+  cy.get(
+    '[data-testid="traindatestable_container"] tbody td:not(.dataTables_empty)',
+    { timeout: 15000 }
+  ).should('have.length.gte', 1);
 });
 
 // On the Selecting Features page: select only the 'original' transformation

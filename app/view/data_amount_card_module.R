@@ -410,7 +410,9 @@ server <- function(id, shared_data) {
         shared_data$selected_trains,
         options = list(
           dom = "t",
-          pageLength = dim(shared_data$selected_trains)[1]
+          # pageLength must be >= 1; max() guards against the initial empty
+          # data.frame() where dim()[1] == 0, which breaks DataTables init.
+          pageLength = max(1L, dim(shared_data$selected_trains)[1L])
         )
       )
     })
