@@ -38,7 +38,6 @@ ui <- function(id) {
             ns("datevariable"),
             label = "Date-sequence variable",
             options = list(),
-            disabled = TRUE,
             `data-testid` = "datevariable"
           ),
           div(
@@ -161,7 +160,6 @@ server <- function(id, shared_data) {
       updateDropdown.shinyInput(
         session, "datevariable",
         options = dropdown_options,
-        disabled = FALSE,
         value = if (!is.null(current_val) && current_val != "") current_val else NULL
       )
     })

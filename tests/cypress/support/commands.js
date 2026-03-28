@@ -81,8 +81,11 @@ Cypress.Commands.add('tab_should_be_active', (tabText) => {
 Cypress.Commands.add('select_io_variables_flow', () => {
   cy.toggle_card('toggle_variables_card');
   cy.get('[data-testid="io_gridtable"]', { timeout: 10000 }).should('be.visible');
-  // Ensure the date variable dropdown is fully rendered before interacting with it
-  cy.get('[data-testid="datevariable"]', { timeout: 10000 }).should('be.visible');
+  // Wait for the date variable dropdown to have options loaded.
+  // FluentUI renders [role="combobox"] inside the Dropdown only when the
+  // component is fully initialized with its option list.
+  cy.get('[data-testid="datevariable"] [role="combobox"]', { timeout: 10000 })
+    .should('exist');
   // Set the date variable so the date column is excluded from I/O features
   cy.select_dropdown('datevariable', [0]);
   // Use server-rendered "Select All" buttons — more reliable than handsontable cell clicks
