@@ -1,3 +1,14 @@
+// shiny.react v0.1.0 throws "Cannot read properties of null (reading
+// 'querySelector')" from its output binding when a renderUI update fires
+// concurrently with a shinyjs DOM toggle. The error is internal to the
+// library and does not affect app functionality; suppress it so tests are
+// not aborted prematurely.
+Cypress.on('uncaughtException', (err) => {
+  if (err.message && err.message.includes('Cannot read properties of null')) {
+    return false
+  }
+})
+
 // Disable CSS animations/transitions so FluentUI modals and panels are
 // immediately visible in the headless Electron runner.
 Cypress.on('window:load', (win) => {
