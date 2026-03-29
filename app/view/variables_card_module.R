@@ -3,8 +3,8 @@ box::use(
   rhandsontable[hot_col, hot_to_r, renderRHandsontable, rhandsontable],
   rhandsontable[rHandsontableOutput],
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack, Text],
-  shiny.fluent[PrimaryButton.shinyInput, reactOutput, renderReact, updateDefaultButton.shinyInput],
-  shiny[div, isolate, moduleServer, NS],
+  shiny.fluent[PrimaryButton.shinyInput, updateDefaultButton.shinyInput],
+  shiny[div, isolate, moduleServer, NS, renderUI, uiOutput],
   shiny[observeEvent, req, tagList],
   shinyjs[hidden, hide, runjs, toggle],
 )
@@ -33,7 +33,7 @@ ui <- function(id) {
         id = ns("variables_card_content"),
         Stack(
           tokens = list(childrenGap = 10),
-          reactOutput(ns("datevariable_ui")),
+          uiOutput(ns("datevariable_ui")),
           div(
             `data-testid` = "io_gridtable",
             rHandsontableOutput(ns("io_gridtable"))
@@ -141,11 +141,10 @@ server <- function(id, shared_data) {
       ignoreInit = TRUE
     )
 
-    # Use reactOutput/renderReact (shiny.fluent's own React binding) instead of
-    # uiOutput/renderUI. renderReact calls ReactDOM.render() directly, eliminating
-    # the MutationObserver race that can leave the Dropdown without event handlers.
-    # Guard on variables_card_visible so React mounts into a visible container.
-    output$datevariable_ui <- renderReact({
+    # Guard on variables_card_visible so renderUI only fires after shinyjs::toggle
+    # makes the container visible — then calloutProps forwards the data-testid
+    # to the FluentUI callout so select_dropdown can target it precisely.
+    output$datevariable_ui <- renderUI({
       req(shared_data$df)
       req(isTRUE(shared_data$variables_card_visible))
       dropdown_options <- lapply(colnames(shared_data$df), function(col) {
