@@ -167,11 +167,15 @@ server <- function(id, shared_data, visibility) {
     })
 
     observeEvent(input$acceptinputoptionbutton, {
-      add_in_option_val <- as.numeric(input$addINoption)
+      raw_val <- input$addINoption
+      add_in_option_val <- if (is.null(raw_val) || length(raw_val) == 0L) {
+        NA_real_
+      } else {
+        suppressWarnings(as.numeric(raw_val[[1L]]))
+      }
       if (
-        is.null(add_in_option_val) ||
-          is.na(add_in_option_val) ||
-          add_in_option_val == "" ||
+        is.na(add_in_option_val) ||
+          is.infinite(add_in_option_val) ||
           add_in_option_val < 1 ||
           (add_in_option_val %% 1 != 0)
       ) {

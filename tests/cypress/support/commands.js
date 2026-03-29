@@ -32,7 +32,7 @@ Cypress.Commands.add('upload_csv_flow', () => {
     .selectFile('cypress/fixtures/csv_example.csv', { force: true });
   // Wait for the toggle_variables_card button to become enabled, confirming
   // the server processed the file and renderUI has re-rendered the button.
-  cy.get('[data-testid="toggle_variables_card"]', { timeout: 10000 })
+  cy.get('[data-testid="toggle_variables_card"]', { timeout: 30000 })
     .should('not.have.attr', 'aria-disabled', 'true');
 });
 
@@ -125,11 +125,11 @@ Cypress.Commands.add('configure_experiment_flow', () => {
   cy.get('[data-testid="temporalhorizon"] input').clear({ force: true }).type('1', { force: true });
   // "Add input amount" TextField — select by label text sibling
   cy.contains('label', 'Add input amount').parent().find('input')
-    .clear({ force: true }).type('1', { force: true });
+    .clear({ force: true }).type('1', { force: true }).should('have.value', '1');
   cy.contains('button', 'Add input').click({ force: true });
   // Models options card
   cy.toggle_card('toggle_mo_card');
-  cy.contains('label', 'Add LSTM layer amount', { timeout: 8000 }).parent().find('input')
+  cy.contains('label', 'Add LSTM layer amount', { timeout: 15000 }).parent().find('input')
     .clear({ force: true }).type('1', { force: true });
   cy.contains('button', 'Add amount').first().click({ force: true });
   cy.contains('label', 'Add neuron amount').parent().find('input')

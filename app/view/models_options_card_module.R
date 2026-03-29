@@ -140,11 +140,15 @@ server <- function(id, shared_data, visibility) {
     })
 
     observeEvent(input$acceptLSTMamountbutton, {
-      add_lstm_amount_val <- as.numeric(input$addLSTMamount)
+      raw_val <- input$addLSTMamount
+      add_lstm_amount_val <- if (is.null(raw_val) || length(raw_val) == 0L) {
+        NA_real_
+      } else {
+        suppressWarnings(as.numeric(raw_val[[1L]]))
+      }
       if (
-        is.null(add_lstm_amount_val) ||
-          is.na(add_lstm_amount_val) ||
-          add_lstm_amount_val == "" ||
+        is.na(add_lstm_amount_val) ||
+          is.infinite(add_lstm_amount_val) ||
           add_lstm_amount_val < 1 ||
           (add_lstm_amount_val %% 1 != 0)
       ) {
@@ -203,11 +207,15 @@ server <- function(id, shared_data, visibility) {
     })
 
     observeEvent(input$acceptneuronamountbutton, {
-      addneuronsamount_val <- as.numeric(input$addneuronsamount)
+      raw_val <- input$addneuronsamount
+      addneuronsamount_val <- if (is.null(raw_val) || length(raw_val) == 0L) {
+        NA_real_
+      } else {
+        suppressWarnings(as.numeric(raw_val[[1L]]))
+      }
       if (
-        is.null(addneuronsamount_val) ||
-          is.na(addneuronsamount_val) ||
-          addneuronsamount_val == "" ||
+        is.na(addneuronsamount_val) ||
+          is.infinite(addneuronsamount_val) ||
           addneuronsamount_val < 1 ||
           (addneuronsamount_val %% 1 != 0)
       ) {
