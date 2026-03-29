@@ -50,11 +50,14 @@ Cypress.Commands.add('toggle_card', (testid) => {
 });
 
 // Open a FluentUI Dropdown and click one or more option indices.
+// calloutProps forwards data-testid to the callout root div so the selector
+// targets precisely this dropdown's listbox (avoids stale portals from other
+// dropdowns that may still be present in document.body).
 Cypress.Commands.add('select_dropdown', (inputTestid, indices) => {
   cy.get(`[data-testid="${inputTestid}"]`).click({ force: true });
   const idxArray = Array.isArray(indices) ? indices : [indices];
   idxArray.forEach((index) => {
-    cy.get('[role="listbox"]', { timeout: 10000 })
+    cy.get(`[data-testid="${inputTestid}-callout"]`, { timeout: 10000 })
       .find(`[data-index="${index}"]`)
       .click({ force: true });
   });
@@ -116,7 +119,11 @@ Cypress.Commands.add('add_train_set_flow', () => {
 // Uses minimal values so the CI training job finishes quickly (1 model total).
 Cypress.Commands.add('configure_experiment_flow', () => {
   // Transformations card (open by default): deselect all then re-select only index 0
-  cy.get('[data-testid="selectimeseries"]', { timeout: 10000 }).should('be.visible');
+  // Wait for React to finish mounting the dropdown — check for text content that only
+  // appears once the FluentUI component has fully initialised after the tab switch.
+  cy.get('[data-testid="selectimeseries"]', { timeout: 10000 })
+    .should('be.visible')
+    .should('contain.text', 'Original');
   // Click the dropdown and deselect indices 1 ("first") and 2 ("second")
   cy.select_dropdown('selectimeseries', [1, 2]);
   // Deselect scales indices 1 (zero_one) and 2 (minus_plus) — keep only "exact" (index 0)
