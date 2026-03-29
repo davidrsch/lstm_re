@@ -141,12 +141,13 @@ server <- function(id, shared_data) {
       ignoreInit = TRUE
     )
 
-    # Guard on variables_card_visible so renderUI only fires after shinyjs::toggle
-    # makes the container visible — then calloutProps forwards the data-testid
-    # to the FluentUI callout so select_dropdown can target it precisely.
+    # Render the date dropdown via renderUI so [data-testid="datevariable"]
+    # only exists in DOM once df (and options) are ready. This eliminates the
+    # async shiny.react reconciliation window between "element visible" and
+    # "options applied to React state" that existed with updateDropdown.shinyInput.
+    # The card is always closed when df first changes, so no toggle-race applies.
     output$datevariable_ui <- renderUI({
       req(shared_data$df)
-      req(isTRUE(shared_data$variables_card_visible))
       dropdown_options <- lapply(colnames(shared_data$df), function(col) {
         list(key = col, text = col)
       })
@@ -156,8 +157,7 @@ server <- function(id, shared_data) {
         label = "Date-sequence variable",
         options = dropdown_options,
         value = if (!is.null(current_val) && current_val != "") current_val else NULL,
-        `data-testid` = "datevariable",
-        calloutProps = list(`data-testid` = "datevariable-callout")
+        `data-testid` = "datevariable"
       )
     })
 

@@ -49,14 +49,12 @@ Cypress.Commands.add('toggle_card', (testid) => {
   cy.wait(1000);
 });
 
-// Open a FluentUI multi-select Dropdown and click one or more option indices.
-// calloutProps data-testid IS forwarded to the callout root div via
-// FluentUI's getNativeProps divProperties whitelist (matches data-*).
+// Open a FluentUI Dropdown and click one or more option indices.
 Cypress.Commands.add('select_dropdown', (inputTestid, indices) => {
   cy.get(`[data-testid="${inputTestid}"]`).click({ force: true });
   const idxArray = Array.isArray(indices) ? indices : [indices];
   idxArray.forEach((index) => {
-    cy.get(`[data-testid="${inputTestid}-callout"]`, { timeout: 10000 })
+    cy.get('[role="listbox"]', { timeout: 10000 })
       .find(`[data-index="${index}"]`)
       .click({ force: true });
   });
