@@ -157,8 +157,7 @@ server <- function(id, shared_data) {
         label = "Date-sequence variable",
         options = dropdown_options,
         value = if (!is.null(current_val) && current_val != "") current_val else NULL,
-        `data-testid` = "datevariable",
-        calloutProps = list(`data-testid` = "datevariable-callout")
+        `data-testid` = "datevariable"
       )
     })
 

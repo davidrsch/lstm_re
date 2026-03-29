@@ -103,8 +103,7 @@ server <- function(id, shared_data, visibility) {
           shared_data$transf
         },
         multiSelect = TRUE,
-        `data-testid` = "selectimeseries",
-        calloutProps = list(`data-testid` = "selectimeseries-callout")
+        `data-testid` = "selectimeseries"
       )
     })
 
@@ -119,8 +118,7 @@ server <- function(id, shared_data, visibility) {
           shared_data$scales
         },
         multiSelect = TRUE,
-        `data-testid` = "selectimeseriescales",
-        calloutProps = list(`data-testid` = "selectimeseriescales-callout")
+        `data-testid` = "selectimeseriescales"
       )
     })
 
