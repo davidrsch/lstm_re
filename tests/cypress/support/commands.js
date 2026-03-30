@@ -128,29 +128,32 @@ Cypress.Commands.add('configure_experiment_flow', () => {
   cy.toggle_card('toggle_tv_card');
   cy.get('[data-testid="temporalhorizon"]', { timeout: 8000 }).should('be.visible');
   cy.get('[data-testid="temporalhorizon"] input', { timeout: 8000 })
-    .clear({ force: true }).type('1', { force: true }).should('have.value', '1');
+    .clear({ force: true }).type('1', { force: true }).blur();
   // "Add input amount" TextField — select by label text sibling
   cy.contains('label', 'Add input amount').parent().find('input')
-    .clear({ force: true }).type('1', { force: true }).should('have.value', '1');
+    .clear({ force: true }).type('1', { force: true }).blur();
   cy.contains('button', 'Add input').click({ force: true });
-  // Wait for server to process: the "Select the amounts of inputs" dropdown appears
-  cy.contains('label', 'Select the amounts of inputs', { timeout: 10000 }).should('be.visible');
+  // Wait for server to process: the "Select the amounts of inputs" dropdown appears and gets updated
+  cy.contains('label', 'Select the amounts of inputs', { timeout: 15000 })
+    .parent().should('contain', '1');
   // Models options card
   cy.toggle_card('toggle_mo_card');
   cy.contains('label', 'Add LSTM layer amount', { timeout: 15000 }).parent().find('input')
-    .clear({ force: true }).type('1', { force: true }).should('have.value', '1');
+    .clear({ force: true }).type('1', { force: true }).blur();
   cy.get('[data-testid="add_lstm_amount_btn"]').click({ force: true });
-  // Wait for server to process: the "Select the amounts of LSTM" dropdown appears
-  cy.contains('label', 'Select the amounts of LSTM', { timeout: 10000 }).should('be.visible');
+  // Wait for server to process: the "Select the amounts of LSTM" dropdown appears and gets updated
+  cy.contains('label', 'Select the amounts of LSTM', { timeout: 15000 })
+    .parent().should('contain', '1');
   cy.contains('label', 'Add neuron amount').parent().find('input')
-    .clear({ force: true }).type('4', { force: true }).should('have.value', '4');
+    .clear({ force: true }).type('4', { force: true }).blur();
   cy.get('[data-testid="add_neuron_amount_btn"]').click({ force: true });
-  // Wait for server to process: the "Select the amounts of neurons" dropdown appears
-  cy.contains('label', 'Select the amounts of neurons', { timeout: 10000 }).should('be.visible');
+  // Wait for server to process: the "Select the amounts of neurons" dropdown appears and gets updated
+  cy.contains('label', 'Select the amounts of neurons', { timeout: 15000 })
+    .parent().should('contain', '4');
   // Training options card
   cy.toggle_card('toggle_to_card');
   cy.contains('label', 'Epoch', { timeout: 8000 }).parent().find('input')
-    .clear({ force: true }).type('1', { force: true }).should('have.value', '1');
+    .clear({ force: true }).type('1', { force: true }).blur();
 });
 
 // Click Start, confirm the experiment modal, and click OK to launch training.
