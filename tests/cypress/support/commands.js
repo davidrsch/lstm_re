@@ -122,7 +122,8 @@ Cypress.Commands.add('configure_experiment_flow', () => {
   // Training vectors card
   cy.toggle_card('toggle_tv_card');
   cy.get('[data-testid="temporalhorizon"]', { timeout: 8000 }).should('be.visible');
-  cy.get('[data-testid="temporalhorizon"] input').clear({ force: true }).type('1', { force: true });
+  cy.get('[data-testid="temporalhorizon"] input', { timeout: 8000 })
+    .clear({ force: true }).type('1', { force: true }).should('have.value', '1');
   // "Add input amount" TextField — select by label text sibling
   cy.contains('label', 'Add input amount').parent().find('input')
     .clear({ force: true }).type('1', { force: true }).should('have.value', '1');
@@ -138,7 +139,7 @@ Cypress.Commands.add('configure_experiment_flow', () => {
   // Training options card
   cy.toggle_card('toggle_to_card');
   cy.contains('label', 'Epoch', { timeout: 8000 }).parent().find('input')
-    .clear({ force: true }).type('1', { force: true });
+    .clear({ force: true }).type('1', { force: true }).should('have.value', '1');
 });
 
 // Click Start, confirm the experiment modal, and click OK to launch training.
