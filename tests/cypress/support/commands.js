@@ -89,16 +89,6 @@ Cypress.Commands.add('select_io_variables_flow', () => {
   // Wait for the data-amount toggle to become enabled.
   cy.get('[data-testid="toggle_data_amount_card"]', { timeout: 30000 })
     .should('not.have.attr', 'aria-disabled', 'true');
-  // Pre-close the variables card so the mutual-exclusion observer does NOT
-  // fire when add_train_set_flow later opens the data-amount card.  The
-  // FluentUI Dropdown can emit an empty-string value when CSS-hidden, which
-  // would otherwise reset selected_date_variable and cascade-reset the I/O
-  // grid to all-FALSE (causing OK validation to fail).
-  // The DOM assertion below confirms the server's shinyjs::hide() round-trip
-  // completed before this command returns, avoiding the timing window in
-  // which a slow R worker could process the close after the next toggle.
-  cy.toggle_card('toggle_variables_card');
-  cy.get('[data-testid="io_gridtable"]', { timeout: 10000 }).should('not.be.visible');
 });
 
 // Open the data-amount card, keep the default test dates, and click OK to add
