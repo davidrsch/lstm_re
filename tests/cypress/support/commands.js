@@ -87,13 +87,18 @@ Cypress.Commands.add('select_io_variables_flow', () => {
   cy.contains('button', 'Inputs').first().click({ force: true });
   cy.contains('button', 'Outputs').first().click({ force: true });
   // Wait for the data-amount toggle to become enabled.
-  // The R observeEvent(input$datevariable) guard (ignoring empty string) means
-  // we no longer need to pre-close the variables card: when add_train_set_flow
-  // opens the data-amount card the mutual-exclusion observer hides the variables
-  // card, the FluentUI Dropdown emits "" which is silently ignored, and the I/O
-  // grid is preserved so OK validation passes.
   cy.get('[data-testid="toggle_data_amount_card"]', { timeout: 30000 })
     .should('not.have.attr', 'aria-disabled', 'true');
+  // Pre-close the variables card so the mutual-exclusion observer does NOT
+  // fire when add_train_set_flow later opens the data-amount card.  The
+  // FluentUI Dropdown can emit an empty-string value when CSS-hidden, which
+  // would otherwise reset selected_date_variable and cascade-reset the I/O
+  // grid to all-FALSE (causing OK validation to fail).
+  // The DOM assertion below confirms the server's shinyjs::hide() round-trip
+  // completed before this command returns, avoiding the timing window in
+  // which a slow R worker could process the close after the next toggle.
+  cy.toggle_card('toggle_variables_card');
+  cy.get('[data-testid="io_gridtable"]', { timeout: 10000 }).should('not.be.visible');
 });
 
 // Open the data-amount card, keep the default test dates, and click OK to add
