@@ -50,6 +50,8 @@ server <- function(id) {
       data_amount_card_visible = FALSE,
       transf = c("original", "first", "second"),
       scales = c("exact", "zero_one", "minus_plus"),
+      temporalhorizon = 1L,
+      epoch = 1L,
       input_amounts = NULL,
       std_input_amounts = NULL,
       lstm_amounts = NULL,
