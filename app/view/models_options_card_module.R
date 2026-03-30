@@ -48,13 +48,15 @@ ui <- function(id) {
             uiOutput(ns("addLSTMamount_ui")),
             DefaultButton.shinyInput(
               ns("acceptLSTMamountbutton"),
-              text = "Add amount"
+              text = "Add amount",
+              `data-testid` = "add_lstm_amount_btn"
             ),
             uiOutput(ns("selectLSTMsoptions_ui")),
             uiOutput(ns("addneuronsamount_ui")),
             DefaultButton.shinyInput(
               ns("acceptneuronamountbutton"),
-              text = "Add amount"
+              text = "Add amount",
+              `data-testid` = "add_neuron_amount_btn"
             ),
             uiOutput(ns("selectneuronsoptions_ui"))
           )

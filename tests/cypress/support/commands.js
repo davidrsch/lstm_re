@@ -96,10 +96,15 @@ Cypress.Commands.add('select_io_variables_flow', () => {
 Cypress.Commands.add('add_train_set_flow', () => {
   cy.toggle_card('toggle_data_amount_card');
   cy.get('[data-testid="adtraintotest"]', { timeout: 10000 }).should('be.visible');
-  // Wait for the renderUI date dropdowns to settle before clicking OK.
-  // Without this, shiny.react may still be reconciling the Dropdown components
-  // and the PrimaryButton binding can be unstable under load.
+  // Wait for BOTH renderUI date dropdowns to finish rendering before clicking
+  // OK.  The "End" label only appears once the second Dropdown renderUI has
+  // fired, which guarantees that the Dropdown values have been flushed back to
+  // Shiny's input system on the next flush cycle.
   cy.contains('label', 'Start', { timeout: 10000 }).should('be.visible');
+  cy.contains('label', 'End', { timeout: 10000 }).should('be.visible');
+  // Small extra wait to let Shiny complete the round-trip so input$selecttest*
+  // values are available on the server when the OK handler fires.
+  cy.wait(500);
   cy.get('[data-testid="adtraintotest"]').click({ force: true });
   // Assert on a real data cell (not the DataTables "No data available"
   // placeholder) to confirm the server processed the click.
@@ -134,12 +139,12 @@ Cypress.Commands.add('configure_experiment_flow', () => {
   cy.toggle_card('toggle_mo_card');
   cy.contains('label', 'Add LSTM layer amount', { timeout: 15000 }).parent().find('input')
     .clear({ force: true }).type('1', { force: true }).should('have.value', '1');
-  cy.contains('button', 'Add amount').first().click({ force: true });
+  cy.get('[data-testid="add_lstm_amount_btn"]').click({ force: true });
   // Wait for server to process: the "Select the amounts of LSTM" dropdown appears
   cy.contains('label', 'Select the amounts of LSTM', { timeout: 10000 }).should('be.visible');
   cy.contains('label', 'Add neuron amount').parent().find('input')
     .clear({ force: true }).type('4', { force: true }).should('have.value', '4');
-  cy.contains('button', 'Add amount').eq(1).click({ force: true });
+  cy.get('[data-testid="add_neuron_amount_btn"]').click({ force: true });
   // Wait for server to process: the "Select the amounts of neurons" dropdown appears
   cy.contains('label', 'Select the amounts of neurons', { timeout: 10000 }).should('be.visible');
   // Training options card
