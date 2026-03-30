@@ -162,7 +162,12 @@ server <- function(id, shared_data) {
     })
 
     observeEvent(input$datevariable, {
-      shared_data$selected_date_variable <- input$datevariable
+      # Guard against empty-string events emitted by the FluentUI Dropdown
+      # when its containing card is CSS-hidden (shinyjs::hide). An empty
+      # string would reset selected_date_variable and cascade-reset the grid.
+      val <- input$datevariable
+      if (is.null(val) || nchar(val) == 0L) return()
+      shared_data$selected_date_variable <- val
     })
 
     # 06-Creating input-output grid----

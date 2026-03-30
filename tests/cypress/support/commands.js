@@ -86,8 +86,13 @@ Cypress.Commands.add('select_io_variables_flow', () => {
   // Use server-rendered "Select All" buttons — more reliable than handsontable cell clicks
   cy.contains('button', 'Inputs').first().click({ force: true });
   cy.contains('button', 'Outputs').first().click({ force: true });
-  // Wait for the data-amount toggle to become enabled
-  cy.get('[data-testid="toggle_data_amount_card"]', { timeout: 10000 })
+  // Wait for the data-amount toggle to become enabled.
+  // The R observeEvent(input$datevariable) guard (ignoring empty string) means
+  // we no longer need to pre-close the variables card: when add_train_set_flow
+  // opens the data-amount card the mutual-exclusion observer hides the variables
+  // card, the FluentUI Dropdown emits "" which is silently ignored, and the I/O
+  // grid is preserved so OK validation passes.
+  cy.get('[data-testid="toggle_data_amount_card"]', { timeout: 30000 })
     .should('not.have.attr', 'aria-disabled', 'true');
 });
 
@@ -130,10 +135,10 @@ Cypress.Commands.add('configure_experiment_flow', () => {
   // Models options card
   cy.toggle_card('toggle_mo_card');
   cy.contains('label', 'Add LSTM layer amount', { timeout: 15000 }).parent().find('input')
-    .clear({ force: true }).type('1', { force: true });
+    .clear({ force: true }).type('1', { force: true }).should('have.value', '1');
   cy.contains('button', 'Add amount').first().click({ force: true });
   cy.contains('label', 'Add neuron amount').parent().find('input')
-    .clear({ force: true }).type('4', { force: true });
+    .clear({ force: true }).type('4', { force: true }).should('have.value', '4');
   cy.contains('button', 'Add amount').eq(1).click({ force: true });
   // Training options card
   cy.toggle_card('toggle_to_card');
