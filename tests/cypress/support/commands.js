@@ -84,11 +84,15 @@ Cypress.Commands.add('select_io_variables_flow', () => {
   // Set the date variable so the date column is excluded from I/O features
   cy.select_dropdown('datevariable', [0]);
   // Use server-rendered "Select All" buttons — more reliable than handsontable cell clicks
+  // We MUST space out these clicks. RHandsontable is extremely prone to sending a stale 
+  // state payload back to Shiny if we trigger two full-table re-renders within milliseconds.
   cy.contains('button', 'Inputs').first().click({ force: true });
+  cy.wait(1000); // Let the first re-render and any feedback loops settle
   cy.contains('button', 'Outputs').first().click({ force: true });
   // Wait for the data-amount toggle to become enabled.
   cy.get('[data-testid="toggle_data_amount_card"]', { timeout: 30000 })
     .should('not.have.attr', 'aria-disabled', 'true');
+  cy.wait(1000); // Allow final Handsontable stabilization before the test proceeds
 });
 
 // Open the data-amount card, keep the default test dates, and click OK to add
