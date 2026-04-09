@@ -5,12 +5,13 @@ box::use(
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack, Text],
   shiny.fluent[PrimaryButton.shinyInput, updateDefaultButton.shinyInput],
   shiny[div, isolate, moduleServer, NS, renderUI, uiOutput],
-  shiny[observeEvent, req, tagList, reactiveVal],
-  shinyjs[hidden, hide, runjs, toggle],
+  shiny[observeEvent, reactiveVal, req, tagList],
+  shinyjs[hidden, runjs, toggle],
 )
 
 box::use(
   app / logic / make_card[make_card],
+  app / logic / ui_helpers[collapse_on_sibling_open],
 )
 
 #' @export
@@ -85,7 +86,9 @@ server <- function(id, shared_data) {
     observeEvent(shared_data$df, {
       disabled <- is.null(shared_data$df) || nrow(shared_data$df) == 0
       updateDefaultButton.shinyInput(
-        session, "toggle_variables_card", disabled = disabled
+        session,
+        "toggle_variables_card",
+        disabled = disabled
       )
     })
 
@@ -93,9 +96,14 @@ server <- function(id, shared_data) {
       shared_data$variables_card_visible <- !shared_data$variables_card_visible
       toggle("variables_card_content")
       updateDefaultButton.shinyInput(
-        session, "toggle_variables_card",
+        session,
+        "toggle_variables_card",
         iconProps = list(
-          iconName = if (shared_data$variables_card_visible) "ChevronUp" else "ChevronDown"
+          iconName = if (shared_data$variables_card_visible) {
+            "ChevronUp"
+          } else {
+            "ChevronDown"
+          }
         )
       )
       if (shared_data$variables_card_visible) {
@@ -107,7 +115,6 @@ server <- function(id, shared_data) {
       }
     })
 
-    box::use(app / logic / ui_helpers[collapse_on_sibling_open])
     collapse_on_sibling_open(
       "upload_card_visible",
       "variables_card_visible",
@@ -141,7 +148,11 @@ server <- function(id, shared_data) {
         ns("datevariable"),
         label = "Date-sequence variable",
         options = dropdown_options,
-        value = if (!is.null(current_val) && current_val != "") current_val else NULL,
+        value = if (!is.null(current_val) && current_val != "") {
+          current_val
+        } else {
+          NULL
+        },
         `data-testid` = "datevariable"
       )
     })
@@ -151,7 +162,9 @@ server <- function(id, shared_data) {
       # when its containing card is CSS-hidden (shinyjs::hide). An empty
       # string would reset selected_date_variable and cascade-reset the grid.
       val <- input$datevariable
-      if (is.null(val) || nchar(val) == 0L) return()
+      if (is.null(val) || nchar(val) == 0L) {
+        return()
+      }
       shared_data$selected_date_variable <- val
     })
 
@@ -192,20 +205,20 @@ server <- function(id, shared_data) {
     observeEvent(input$io_gridtable, {
       grid_input_debounced(input$io_gridtable)
     })
-    
+
     grid_input_effective <- shiny::debounce(grid_input_debounced, 500)
 
     observeEvent(grid_input_effective(), {
       req(grid_input_effective()$changes$changes)
-      
+
       current_grid <- hot_to_r(grid_input_effective())
       shared_data$grid <- current_grid
-      
+
       if (any(current_grid == 1)) {
         if (shared_data$show_eda < 2) {
           shared_data$show_eda <- shared_data$show_eda + 1
         }
-        
+
         inp <- current_grid |> filter(Inputs == 1) |> select(Variables)
         out <- current_grid |> filter(Outputs == 1) |> select(Variables)
         variables <- merge(inp, out, all = TRUE)[[1]]

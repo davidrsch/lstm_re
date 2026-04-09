@@ -14,7 +14,6 @@ box::use(
   shiny[
     div,
     fileInput,
-    isolate,
     moduleServer,
     NS,
     observeEvent,
@@ -22,7 +21,7 @@ box::use(
     renderUI
   ],
   shiny[req, tagAppendAttributes, tagList, uiOutput],
-  shinyjs[click, delay, hidden, hide, runjs, toggle],
+  shinyjs[click, hidden, hide, runjs, toggle],
   stats[na.omit],
   stringr[str_split_i],
   tools[file_ext],
