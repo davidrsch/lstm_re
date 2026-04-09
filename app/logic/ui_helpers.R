@@ -212,17 +212,19 @@ collapse_on_sibling_open <- function(
   sibling_flag,
   this_flag,
   visibility,
-  session
+  session,
+  content_id = "card_content",
+  button_id = "toggle_card"
 ) {
   observeEvent(
     visibility[[sibling_flag]],
     {
       if (visibility[[sibling_flag]] && visibility[[this_flag]]) {
         visibility[[this_flag]] <- FALSE
-        hide("card_content")
+        hide(content_id)
         updateDefaultButton.shinyInput(
           session,
-          "toggle_card",
+          button_id,
           iconProps = list(iconName = "ChevronDown")
         )
       }

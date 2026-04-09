@@ -183,23 +183,7 @@ server <- function(id, shared_data) {
       ignoreInit = TRUE
     )
 
-    delay(0, {
-      updateCheckbox.shinyInput(
-        session,
-        "header",
-        value = isolate(shared_data$header)
-      )
-      updateTextField.shinyInput(
-        session,
-        "delimiter",
-        value = isolate(shared_data$delimiter)
-      )
-      updateTextField.shinyInput(
-        session,
-        "decimal_point",
-        value = isolate(shared_data$decimal_point)
-      )
-    })
+    # delay removed as it tries to update unmounted inputs
     observeEvent(input$file, {
       click("upload_file")
     })

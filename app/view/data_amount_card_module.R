@@ -113,15 +113,22 @@ server <- function(id, shared_data) {
 
     # Enable the toggle button once I/O variables are selected.
     observeEvent(shared_data$grid, {
+      req(!is.null(shared_data$grid))
       has_in <- FALSE
       has_out <- FALSE
-      if (!is.null(shared_data$grid) && "Inputs" %in% names(shared_data$grid)) {
-        has_in <- nrow(filter(shared_data$grid, Inputs == TRUE)) > 0
-        has_out <- nrow(filter(shared_data$grid, Outputs == TRUE)) > 0
+      if ("Inputs" %in% names(shared_data$grid)) {
+        has_in <- any(shared_data$grid$Inputs == TRUE)
+        has_out <- any(shared_data$grid$Outputs == TRUE)
       }
-      updateDefaultButton.shinyInput(
-        session, "toggle_data_amount_card", disabled = !(has_in && has_out)
-      )
+      
+      # Use tryCatch to prevent "non-existent React input" errors if the card is unmounted
+      tryCatch({
+        updateDefaultButton.shinyInput(
+          session, "toggle_data_amount_card", disabled = !(has_in && has_out)
+        )
+      }, error = function(e) {
+        # Silently fail if the component is missing; this happens during tab switches
+      })
     })
 
     observeEvent(input$toggle_data_amount_card, {

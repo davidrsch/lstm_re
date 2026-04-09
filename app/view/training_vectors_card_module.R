@@ -129,7 +129,7 @@ server <- function(id, shared_data, visibility) {
         label = "Temporal horizon",
         type = "number",
         min = 1,
-        value = shared_data$temporalhorizon
+        value = if (is.null(shared_data$temporalhorizon)) "" else as.character(shared_data$temporalhorizon)
       )
     })
 
@@ -143,7 +143,7 @@ server <- function(id, shared_data, visibility) {
         label = "Add input amount",
         type = "number",
         min = 1,
-        value = shared_data$addINoption
+        value = if (is.null(shared_data$addINoption)) "" else as.character(shared_data$addINoption)
       )
     })
 
@@ -167,6 +167,7 @@ server <- function(id, shared_data, visibility) {
     })
 
     observeEvent(input$acceptinputoptionbutton, {
+      shiny::freezeReactiveValue(input, "selectinputoptions")
       raw_val <- input$addINoption
       add_in_option_val <- if (is.null(raw_val) || length(raw_val) == 0L) {
         NA_real_
@@ -186,36 +187,54 @@ server <- function(id, shared_data, visibility) {
       } else {
         if (is.null(shared_data$input_amounts)) {
           shared_data$input_amounts <- add_in_option_val
-          shared_data$std_input_amounts <- add_in_option_val
+          shared_data$std_input_amounts <- as.character(add_in_option_val)
         } else {
           if (!is.element(add_in_option_val, shared_data$input_amounts)) {
-            shared_data$input_amounts <- c(
+            shared_data$input_amounts <- sort(c(
               shared_data$input_amounts,
               add_in_option_val
-            )
-            shared_data$std_input_amounts <- c(
-              shared_data$std_input_amounts,
+            ))
+            shared_data$std_input_amounts <- as.character(c(
+              unlist(shared_data$std_input_amounts),
               add_in_option_val
-            )
+            ))
           }
         }
       }
     })
 
     output$selectinputoptions_ui <- renderUI({
+      value <- as.list(as.character(unlist(shared_data$std_input_amounts)))
+      options <- lapply(shared_data$input_amounts, function(x) {
+        list(key = as.character(x), text = as.character(x))
+      })
+      # The key must be unique to the state to force a clean React re-mount
+      dropdown_key <- paste0(
+        "in_dropdown_", 
+        length(options), 
+        "_", 
+        paste(value, collapse = "-")
+      )
+      
       Dropdown.shinyInput(
         session$ns("selectinputoptions"),
         label = "Select the amounts of inputs",
         multiSelect = TRUE,
-        value = shared_data$std_input_amounts,
-        options = lapply(shared_data$input_amounts, function(x) {
-          list(key = x, text = x)
-        })
+        value = value,
+        options = options,
+        key = dropdown_key,
+        `data-testid` = "selectinputoptions"
       )
     })
 
     observeEvent(input$selectinputoptions, {
-      shared_data$std_input_amounts <- input$selectinputoptions
-    })
+      val <- input$selectinputoptions
+      # Only update if there's an actual selection. Programmatic additions 
+      # from the 'Add' button take precedence. This prevents 'renderUI' 
+      # reset loops where a new component flashes an empty value.
+      if (!is.null(val) && length(val) > 0) {
+        shared_data$std_input_amounts <- val
+      }
+    }, ignoreInit = TRUE)
   })
 }

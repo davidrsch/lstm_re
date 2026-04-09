@@ -6,14 +6,14 @@ output: html_document
 
 ```{r, echo = F, message=FALSE}
 box::use(
-  jsonlite[fromJSON],
-  shiny[actionButton, div, HTML, icon, mainPanel, sidebarLayout, sidebarPanel],
+  jsonlite[fromJSON, toJSON],
+  shiny[actionButton, div, HTML, icon, mainPanel, sidebarLayout, sidebarPanel, tags],
   shiny[wellPanel],
   shinyWidgets[materialSwitch, pickerInput, pickerOptions],
 )
 
-modelchart <- fromJSON("www/modelcharact.json")
-modelchart_t <- fromJSON(modelchart)
+modelchart_t <- fromJSON("www/modelcharact.json")
+modelchart <- toJSON(modelchart_t)
 structurechoices <- unique(modelchart_t$Structure)
 neuronschoices <- unique(modelchart_t$Neurons)
 inputschoices <- unique(modelchart_t$Inputs)
@@ -21,12 +21,13 @@ scalechoices <- unique(modelchart_t$Scale)
 transchoices <- unique(modelchart_t$Transformation)
 setchoices <- unique(modelchart_t$Set)
 modelchoices <- unique(modelchart_t$Model)
-modelslosesdir <- fromJSON("www/modelsloss.json")
-modelsloses <- fromJSON(modelslosesdir)
+modelsloses <- fromJSON("www/modelsloss.json")
+modelslosesdir <- toJSON(modelsloses)
 optimalmodel <- which(modelsloses["RMSE", ] == min(modelsloses["RMSE", ]))
 optimalmodel <- names(modelsloses[, optimalmodel, drop = FALSE])
 optimalmodel <- gsub("model", "", optimalmodel)
 predtrueval <- fromJSON("www/realvalues.json")
+predtrueval <- toJSON(predtrueval)
 
 HTML(
   "

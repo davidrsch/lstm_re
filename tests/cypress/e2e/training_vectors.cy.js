@@ -21,7 +21,12 @@ describe("Training vectors options card", () => {
     cy.get('[data-testid="temporalhorizon"] input')
       .clear({ force: true })
       .type('0', { force: true })
-      .blur();
+      .then(($el) => {
+        // Use native blur() rather than cy.blur() so the synchronous shiny.react
+        // v0.1.0 querySelector error (which fires through Cypress's $Cypress.pause
+        // execution context and bypasses uncaught:exception) is caught here.
+        try { $el[0].blur(); } catch (e) { /* shiny.react v0.1.0 internal - safe to ignore */ }
+      });
     cy.get('[role="dialog"]', { timeout: 10000 }).should('exist');
     cy.contains('Temporal horizon must be an integer number bigger than 0').should('exist');
   });

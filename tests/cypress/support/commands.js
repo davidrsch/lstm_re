@@ -126,34 +126,42 @@ Cypress.Commands.add('add_train_set_flow', () => {
 // those renderUI dropdowns after a Pivot tab switch is unreliable in headless
 // Electron because React re-hydration may not have completed before the click.
 Cypress.Commands.add('configure_experiment_flow', () => {
+  // Give the server a moment to settle after the tab switch before starting config
+  cy.wait(3000);
   // Transformations card is open by default — wait for it to be stable.
-  cy.get('[data-testid="selectimeseries"]', { timeout: 10000 }).should('be.visible');
-  // Training vectors card
+  cy.get('[data-testid="selectimeseries"]', { timeout: 15000 }).should('be.visible');
+  // Training vectors options card
   cy.toggle_card('toggle_tv_card');
-  cy.get('[data-testid="temporalhorizon"]', { timeout: 8000 }).should('be.visible');
-  cy.get('[data-testid="temporalhorizon"] input', { timeout: 8000 })
-    .clear({ force: true }).type('1', { force: true }).blur();
-  // "Add input amount" TextField — select by label text sibling
+  cy.get('[data-testid="temporalhorizon"]', { timeout: 10000 }).should('be.visible');
+  cy.get('[data-testid="temporalhorizon"] input')
+    .clear().type('1').blur();
+  // Wait to allow debounced TextField.shinyInput to send state over websocket
+  cy.wait(500);
+  
+  // "Add input amount" TextField
   cy.contains('label', 'Add input amount').parent().find('input')
-    .clear({ force: true }).type('1', { force: true }).blur();
+    .clear().type('1').blur();
+  cy.wait(500);
   cy.contains('button', 'Add input').click({ force: true });
-  // Wait for server to process: the "Select the amounts of inputs" dropdown appears and gets updated
-  cy.contains('label', 'Select the amounts of inputs', { timeout: 15000 })
-    .parent().should('contain', '1');
+  // Wait for the dropdown to contain the selected value.
+  cy.get('[data-testid="selectinputoptions"]', { timeout: 15000 })
+    .should('contain', '1');
   // Models options card
   cy.toggle_card('toggle_mo_card');
   cy.contains('label', 'Add LSTM layer amount', { timeout: 15000 }).parent().find('input')
     .clear({ force: true }).type('1', { force: true }).blur();
+  cy.wait(500);
   cy.get('[data-testid="add_lstm_amount_btn"]').click({ force: true });
-  // Wait for server to process: the "Select the amounts of LSTM" dropdown appears and gets updated
-  cy.contains('label', 'Select the amounts of LSTM', { timeout: 15000 })
-    .parent().should('contain', '1');
+  // Wait for selected value in dropdown
+  cy.get('[data-testid="selectLSTMsoptions"]', { timeout: 15000 })
+    .should('contain', '1');
   cy.contains('label', 'Add neuron amount').parent().find('input')
     .clear({ force: true }).type('4', { force: true }).blur();
+  cy.wait(500);
   cy.get('[data-testid="add_neuron_amount_btn"]').click({ force: true });
-  // Wait for server to process: the "Select the amounts of neurons" dropdown appears and gets updated
-  cy.contains('label', 'Select the amounts of neurons', { timeout: 15000 })
-    .parent().should('contain', '4');
+  // Wait for selected value in dropdown
+  cy.get('[data-testid="selectneuronsoptions"]', { timeout: 15000 })
+    .should('contain', '4');
   // Training options card
   cy.toggle_card('toggle_to_card');
   cy.contains('label', 'Epoch', { timeout: 8000 }).parent().find('input')

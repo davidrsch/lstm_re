@@ -133,7 +133,7 @@ server <- function(id, shared_data, visibility) {
         label = "Add LSTM layer amount",
         type = "number",
         min = 1,
-        value = shared_data$addLSTMamount
+        value = if (is.null(shared_data$addLSTMamount)) "" else as.character(shared_data$addLSTMamount)
       )
     })
 
@@ -142,6 +142,7 @@ server <- function(id, shared_data, visibility) {
     })
 
     observeEvent(input$acceptLSTMamountbutton, {
+      shiny::freezeReactiveValue(input, "selectLSTMsoptions")
       raw_val <- input$addLSTMamount
       add_lstm_amount_val <- if (is.null(raw_val) || length(raw_val) == 0L) {
         NA_real_
@@ -179,20 +180,34 @@ server <- function(id, shared_data, visibility) {
     })
 
     output$selectLSTMsoptions_ui <- renderUI({
+      value <- as.list(as.character(unlist(shared_data$std_lstm_amounts)))
+      options <- lapply(shared_data$lstm_amounts, function(x) {
+        list(key = as.character(x), text = as.character(x))
+      })
+      dropdown_key <- paste0(
+        "lstm_dropdown_", 
+        length(options), 
+        "_", 
+        paste(value, collapse = "-")
+      )
+      
       Dropdown.shinyInput(
         session$ns("selectLSTMsoptions"),
         label = "Select the amounts of LSTM",
         multiSelect = TRUE,
-        value = shared_data$std_lstm_amounts,
-        options = lapply(shared_data$lstm_amounts, function(x) {
-          list(key = x, text = x)
-        })
+        value = value,
+        options = options,
+        key = dropdown_key,
+        `data-testid` = "selectLSTMsoptions"
       )
     })
 
     observeEvent(input$selectLSTMsoptions, {
-      shared_data$std_lstm_amounts <- input$selectLSTMsoptions
-    })
+      val <- input$selectLSTMsoptions
+      if (!is.null(val) && length(val) > 0) {
+        shared_data$std_lstm_amounts <- val
+      }
+    }, ignoreInit = TRUE)
 
     output$addneuronsamount_ui <- renderUI({
       TextField.shinyInput(
@@ -200,7 +215,7 @@ server <- function(id, shared_data, visibility) {
         label = "Add neuron amount",
         type = "number",
         min = 1,
-        value = shared_data$addneuronsamount
+        value = if (is.null(shared_data$addneuronsamount)) "" else as.character(shared_data$addneuronsamount)
       )
     })
 
@@ -209,6 +224,7 @@ server <- function(id, shared_data, visibility) {
     })
 
     observeEvent(input$acceptneuronamountbutton, {
+      shiny::freezeReactiveValue(input, "selectneuronsoptions")
       raw_val <- input$addneuronsamount
       addneuronsamount_val <- if (is.null(raw_val) || length(raw_val) == 0L) {
         NA_real_
@@ -246,19 +262,33 @@ server <- function(id, shared_data, visibility) {
     })
 
     output$selectneuronsoptions_ui <- renderUI({
+      value <- as.list(as.character(unlist(shared_data$std_neuron_amounts)))
+      options <- lapply(shared_data$neuron_amounts, function(x) {
+        list(key = as.character(x), text = as.character(x))
+      })
+      dropdown_key <- paste0(
+        "neuron_dropdown_", 
+        length(options), 
+        "_", 
+        paste(value, collapse = "-")
+      )
+      
       Dropdown.shinyInput(
         session$ns("selectneuronsoptions"),
         label = "Select the amounts of neurons",
         multiSelect = TRUE,
-        value = shared_data$std_neuron_amounts,
-        options = lapply(shared_data$neuron_amounts, function(x) {
-          list(key = x, text = x)
-        })
+        value = value,
+        options = options,
+        key = dropdown_key,
+        `data-testid` = "selectneuronsoptions"
       )
     })
 
     observeEvent(input$selectneuronsoptions, {
-      shared_data$std_neuron_amounts <- input$selectneuronsoptions
-    })
+      val <- input$selectneuronsoptions
+      if (!is.null(val) && length(val) > 0) {
+        shared_data$std_neuron_amounts <- val
+      }
+    }, ignoreInit = TRUE)
   })
 }

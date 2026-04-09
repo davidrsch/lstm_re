@@ -126,7 +126,7 @@ server <- function(id, shared_data, visibility) {
         label = "Epoch",
         type = "number",
         min = 1,
-        value = shared_data$epoch
+        value = if (is.null(shared_data$epoch)) "" else as.character(shared_data$epoch)
       )
     })
 
@@ -145,7 +145,7 @@ server <- function(id, shared_data, visibility) {
       } else {
         shared_data$epoch <- as.integer(selectepochamount_val)
       }
-    })
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
     output$seed_ui <- renderUI({
       TextField.shinyInput(

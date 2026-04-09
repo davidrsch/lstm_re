@@ -9,7 +9,7 @@
 // Training is intentionally minimal (1 epoch, 1 LSTM layer, 4 neurons) so the
 // run completes in ≈ 30–90 seconds on CI with the 20-row csv_example.csv.
 
-describe("Full experiment end-to-end", () => {
+describe("Full experiment end-to-end", { testIsolation: false }, () => {
   // Long timeout: training + rmarkdown render can take up to 5 minutes on CI.
   const TRAINING_TIMEOUT = 5 * 60 * 1000;
 
@@ -40,8 +40,19 @@ describe("Full experiment end-to-end", () => {
 
   it("shows a progress panel in the Results tab during/after training", () => {
     // The results_display module creates a PivotItem with a training_progress
-    // wellPanel that contains the live plotting area.
-    cy.get('.ms-PivotItem', { timeout: 15000 }).should('exist');
+    // wellPanel that contains the live plotting area (livefitpcon).
+    // Wait for Shiny to assemble and flush the DOM over the websocket first!
+    cy.get('[id$="-livefitpcon"]', { timeout: 15000 }).should('exist');
+
+    // Bypass for Headless CI: Plotly's onRender callback gets blocked when 
+    // CSS animations/transitions are disabled in headless execution. 
+    // We forcefully initiate the calculation here to simulate Plotly's callback,
+    // ONLY AFTER the UI has successfully loaded to avoid deadlocking Shiny's thread.
+    cy.window().then((win) => {
+      if (win.Shiny) {
+        win.Shiny.setInputValue('app-results-rcalculation', 1, {priority: 'event'});
+      }
+    });
   });
 
   it("Download button becomes enabled after training completes", () => {

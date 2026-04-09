@@ -5,7 +5,7 @@ box::use(
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack, Text],
   shiny.fluent[PrimaryButton.shinyInput, updateDefaultButton.shinyInput],
   shiny[div, isolate, moduleServer, NS, renderUI, uiOutput],
-  shiny[observeEvent, req, tagList],
+  shiny[observeEvent, req, tagList, reactiveVal],
   shinyjs[hidden, hide, runjs, toggle],
 )
 
@@ -79,6 +79,7 @@ ui <- function(id) {
 server <- function(id, shared_data) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
+    grid_trigger <- reactiveVal(0)
 
     # Enable the toggle button once data is loaded.
     observeEvent(shared_data$df, {
@@ -106,39 +107,23 @@ server <- function(id, shared_data) {
       }
     })
 
-    observeEvent(
-      shared_data$upload_card_visible,
-      {
-        if (
-          shared_data$upload_card_visible && shared_data$variables_card_visible
-        ) {
-          shared_data$variables_card_visible <- FALSE
-          hide("variables_card_content")
-          updateDefaultButton.shinyInput(
-            session, "toggle_variables_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      },
-      ignoreInit = TRUE
+    box::use(app / logic / ui_helpers[collapse_on_sibling_open])
+    collapse_on_sibling_open(
+      "upload_card_visible",
+      "variables_card_visible",
+      shared_data,
+      session,
+      "variables_card_content",
+      "toggle_variables_card"
     )
 
-    observeEvent(
-      shared_data$data_amount_card_visible,
-      {
-        if (
-          shared_data$data_amount_card_visible &&
-            shared_data$variables_card_visible
-        ) {
-          shared_data$variables_card_visible <- FALSE
-          hide("variables_card_content")
-          updateDefaultButton.shinyInput(
-            session, "toggle_variables_card",
-            iconProps = list(iconName = "ChevronDown")
-          )
-        }
-      },
-      ignoreInit = TRUE
+    collapse_on_sibling_open(
+      "data_amount_card_visible",
+      "variables_card_visible",
+      shared_data,
+      session,
+      "variables_card_content",
+      "toggle_variables_card"
     )
 
     # Render the date dropdown via renderUI so [data-testid="datevariable"]
@@ -187,12 +172,14 @@ server <- function(id, shared_data) {
         Outputs = rep(FALSE, colamount),
         Variables = variables
       )
+      grid_trigger(grid_trigger() + 1)
     })
 
     output$io_gridtable <- renderRHandsontable({
-      req("Variables" %in% names(shared_data$grid))
+      grid_trigger() # take dependency
+      req("Variables" %in% names(isolate(shared_data$grid)))
       rhandsontable(
-        shared_data$grid,
+        isolate(shared_data$grid),
         disableVisualSelection = TRUE,
         width = "100%",
       ) |>
@@ -200,16 +187,27 @@ server <- function(id, shared_data) {
     })
 
     # 07-EDA ----
+    # Debounce the grid input to prevent rapid feedback loops
+    grid_input_debounced <- reactiveVal()
     observeEvent(input$io_gridtable, {
-      if (any(hot_to_r(input$io_gridtable) == 1)) {
+      grid_input_debounced(input$io_gridtable)
+    })
+    
+    grid_input_effective <- shiny::debounce(grid_input_debounced, 500)
+
+    observeEvent(grid_input_effective(), {
+      req(grid_input_effective()$changes$changes)
+      
+      current_grid <- hot_to_r(grid_input_effective())
+      shared_data$grid <- current_grid
+      
+      if (any(current_grid == 1)) {
         if (shared_data$show_eda < 2) {
           shared_data$show_eda <- shared_data$show_eda + 1
         }
-        # Update shared_data$grid with the latest state from the handsontable
-        shared_data$grid <- hot_to_r(input$io_gridtable)
-
-        inp <- shared_data$grid |> filter(Inputs == 1) |> select(Variables)
-        out <- shared_data$grid |> filter(Outputs == 1) |> select(Variables)
+        
+        inp <- current_grid |> filter(Inputs == 1) |> select(Variables)
+        out <- current_grid |> filter(Outputs == 1) |> select(Variables)
         variables <- merge(inp, out, all = TRUE)[[1]]
         data <- shared_data$df[variables]
         if (!identical(data, shared_data$previousEDA)) {
@@ -222,6 +220,9 @@ server <- function(id, shared_data) {
             ))
           }
         }
+      } else {
+        # If nothing is selected, clear EDA
+        shared_data$EDA <- data.frame()
       }
     })
 
@@ -234,6 +235,7 @@ server <- function(id, shared_data) {
       if (length(variables) > 0) {
         shared_data$EDA <- shared_data$df[variables]
       }
+      grid_trigger(grid_trigger() + 1)
     })
 
     observeEvent(input$select_all_outputs, {
@@ -244,14 +246,17 @@ server <- function(id, shared_data) {
       if (length(variables) > 0) {
         shared_data$EDA <- shared_data$df[variables]
       }
+      grid_trigger(grid_trigger() + 1)
     })
 
     observeEvent(input$deselect_all_inputs, {
       shared_data$grid$Inputs <- FALSE
+      grid_trigger(grid_trigger() + 1)
     })
 
     observeEvent(input$deselect_all_outputs, {
       shared_data$grid$Outputs <- FALSE
+      grid_trigger(grid_trigger() + 1)
     })
   })
 }

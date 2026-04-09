@@ -116,9 +116,13 @@ server <- function(id, shared_data) {
     })
 
     output$pivot_placeholder <- renderUI({
+      items <- pivot_items()
+      if (length(items) == 0) {
+        return(NULL)
+      }
       do.call(
         Pivot,
-        c(list(selectedKey = selected_key()), pivot_items())
+        c(list(selectedKey = selected_key()), items)
       )
     })
 
@@ -183,7 +187,7 @@ server <- function(id, shared_data) {
     dir.create(path_of_directorio, showWarnings = FALSE)
 
     observeEvent(input$rcalculation, {
-      if (input$rcalculation == 1) {
+      if (input$rcalculation == 1 && !experiment_done()) {
         exp_directory <- paste0(r$path_of_directorio, "/", r$tabname)
         exp_models <- paste0(exp_directory, "/models")
         exp_dashdirect <- paste0(exp_directory, "/dashboard")
@@ -251,7 +255,7 @@ server <- function(id, shared_data) {
                   tstv <- ts
                 }
                 vector <- create_3d_vector(
-                  tstv[, , drop = FALSE],
+                  tstv[,, drop = FALSE],
                   steps,
                   c(1, dim(tstv)[1])
                 )
@@ -500,7 +504,7 @@ server <- function(id, shared_data) {
                     modelbuilding,
                     ".hdf5"
                   )
-                  model |> save_model(model_directorio)
+                  model |> save_model(model_directorio, overwrite = TRUE)
                   output_with_date <- abind(
                     date3dtest,
                     predictions,
@@ -516,7 +520,7 @@ server <- function(id, shared_data) {
                     output_with_date_x,
                     as.is = TRUE
                   )
-                  date2d <- unique(as.matrix(output_with_date[, , 1]))
+                  date2d <- unique(as.matrix(output_with_date[,, 1]))
                   mmmpred <- create_plot_pred_df(
                     threddata = output_with_date,
                     xdata = date2d,

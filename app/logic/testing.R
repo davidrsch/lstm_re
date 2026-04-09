@@ -38,7 +38,27 @@ diff_inverse_3d <- function(data3d, difference, lastknow3d) {
         drop = FALSE
       ]
       lastknow <- as.matrix(lastknow)
-      invert2d <- diffinv(data, differences = difference, xi = lastknow)
+      # Pad xi to `difference` rows if not enough historical values are available.
+      if (nrow(lastknow) < difference) {
+        pad <- matrix(
+          rep(lastknow[1L, ], difference - nrow(lastknow)),
+          nrow = difference - nrow(lastknow),
+          ncol = ncol(lastknow)
+        )
+        lastknow <- rbind(pad, lastknow)
+      }
+      # Apply diffinv column-by-column: diffinv() only handles univariate
+      # series (vectors/ts), not matrices with multiple output features.
+      n_cols <- ncol(data)
+      n_rows_out <- nrow(data) + difference
+      invert2d <- matrix(0, nrow = n_rows_out, ncol = n_cols)
+      for (col in seq_len(n_cols)) {
+        invert2d[, col] <- diffinv(
+          as.numeric(data[, col]),
+          differences = difference,
+          xi = as.numeric(lastknow[, col])
+        )
+      }
       invert3d <- invert2d
       dim(invert3d) <- c(1, dim(invert2d)[1], dim(invert2d)[2])
       invert3d
@@ -115,7 +135,7 @@ get_metrics <- function(actual, predicted) {
 # variable.
 #' @export
 create_plot_pred_df <- function(threddata, xdata, colnames) {
-  date_slice <- as.data.frame(as.matrix(threddata[, , 1]))
+  date_slice <- as.data.frame(as.matrix(threddata[,, 1]))
 
   map_dfc(seq_along(colnames), function(col) {
     predictions_list <- map(seq_along(xdata), function(date) {
