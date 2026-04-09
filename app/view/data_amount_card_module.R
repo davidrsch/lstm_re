@@ -122,22 +122,32 @@ server <- function(id, shared_data) {
       }
 
       # Use tryCatch to prevent "non-existent React input" errors if the card is unmounted
-      tryCatch({
-        updateDefaultButton.shinyInput(
-          session, "toggle_data_amount_card", disabled = !(has_in && has_out)
-        )
-      }, error = function(e) {
-        # Silently fail if the component is missing; this happens during tab switches
-      })
+      tryCatch(
+        {
+          updateDefaultButton.shinyInput(
+            session,
+            "toggle_data_amount_card",
+            disabled = !(has_in && has_out)
+          )
+        },
+        error = function(e) {
+          # Silently fail if the component is missing; this happens during tab switches
+        }
+      )
     })
 
     observeEvent(input$toggle_data_amount_card, {
       shared_data$data_amount_card_visible <- !shared_data$data_amount_card_visible
       toggle("data_amount_card_content")
       updateDefaultButton.shinyInput(
-        session, "toggle_data_amount_card",
+        session,
+        "toggle_data_amount_card",
         iconProps = list(
-          iconName = if (shared_data$data_amount_card_visible) "ChevronUp" else "ChevronDown"
+          iconName = if (shared_data$data_amount_card_visible) {
+            "ChevronUp"
+          } else {
+            "ChevronDown"
+          }
         )
       )
       if (shared_data$data_amount_card_visible) {
@@ -159,7 +169,8 @@ server <- function(id, shared_data) {
           shared_data$data_amount_card_visible <- FALSE
           hide("data_amount_card_content")
           updateDefaultButton.shinyInput(
-            session, "toggle_data_amount_card",
+            session,
+            "toggle_data_amount_card",
             iconProps = list(iconName = "ChevronDown")
           )
         }
@@ -177,7 +188,8 @@ server <- function(id, shared_data) {
           shared_data$data_amount_card_visible <- FALSE
           hide("data_amount_card_content")
           updateDefaultButton.shinyInput(
-            session, "toggle_data_amount_card",
+            session,
+            "toggle_data_amount_card",
             iconProps = list(iconName = "ChevronDown")
           )
         }

@@ -133,8 +133,11 @@ server <- function(id, shared_data, visibility) {
         label = "Add LSTM layer amount",
         type = "number",
         min = 1,
-        value = if (is.null(shared_data$addLSTMamount)) "" else
+        value = if (is.null(shared_data$addLSTMamount)) {
+          ""
+        } else {
           as.character(shared_data$addLSTMamount)
+        }
       )
     })
 
@@ -203,12 +206,16 @@ server <- function(id, shared_data, visibility) {
       )
     })
 
-    observeEvent(input$selectLSTMsoptions, {
-      val <- input$selectLSTMsoptions
-      if (!is.null(val) && length(val) > 0) {
-        shared_data$std_lstm_amounts <- val
-      }
-    }, ignoreInit = TRUE)
+    observeEvent(
+      input$selectLSTMsoptions,
+      {
+        val <- input$selectLSTMsoptions
+        if (!is.null(val) && length(val) > 0) {
+          shared_data$std_lstm_amounts <- val
+        }
+      },
+      ignoreInit = TRUE
+    )
 
     output$addneuronsamount_ui <- renderUI({
       TextField.shinyInput(
@@ -216,8 +223,11 @@ server <- function(id, shared_data, visibility) {
         label = "Add neuron amount",
         type = "number",
         min = 1,
-        value = if (is.null(shared_data$addneuronsamount)) "" else
+        value = if (is.null(shared_data$addneuronsamount)) {
+          ""
+        } else {
           as.character(shared_data$addneuronsamount)
+        }
       )
     })
 
@@ -286,11 +296,15 @@ server <- function(id, shared_data, visibility) {
       )
     })
 
-    observeEvent(input$selectneuronsoptions, {
-      val <- input$selectneuronsoptions
-      if (!is.null(val) && length(val) > 0) {
-        shared_data$std_neuron_amounts <- val
-      }
-    }, ignoreInit = TRUE)
+    observeEvent(
+      input$selectneuronsoptions,
+      {
+        val <- input$selectneuronsoptions
+        if (!is.null(val) && length(val) > 0) {
+          shared_data$std_neuron_amounts <- val
+        }
+      },
+      ignoreInit = TRUE
+    )
   })
 }

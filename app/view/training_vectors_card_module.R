@@ -129,7 +129,11 @@ server <- function(id, shared_data, visibility) {
         label = "Temporal horizon",
         type = "number",
         min = 1,
-        value = if (is.null(shared_data$temporalhorizon)) "" else as.character(shared_data$temporalhorizon)
+        value = if (is.null(shared_data$temporalhorizon)) {
+          ""
+        } else {
+          as.character(shared_data$temporalhorizon)
+        }
       )
     })
 
@@ -143,7 +147,11 @@ server <- function(id, shared_data, visibility) {
         label = "Add input amount",
         type = "number",
         min = 1,
-        value = if (is.null(shared_data$addINoption)) "" else as.character(shared_data$addINoption)
+        value = if (is.null(shared_data$addINoption)) {
+          ""
+        } else {
+          as.character(shared_data$addINoption)
+        }
       )
     })
 
@@ -227,14 +235,18 @@ server <- function(id, shared_data, visibility) {
       )
     })
 
-    observeEvent(input$selectinputoptions, {
-      val <- input$selectinputoptions
-      # Only update if there's an actual selection. Programmatic additions 
-      # from the 'Add' button take precedence. This prevents 'renderUI' 
-      # reset loops where a new component flashes an empty value.
-      if (!is.null(val) && length(val) > 0) {
-        shared_data$std_input_amounts <- val
-      }
-    }, ignoreInit = TRUE)
+    observeEvent(
+      input$selectinputoptions,
+      {
+        val <- input$selectinputoptions
+        # Only update if there's an actual selection. Programmatic additions
+        # from the 'Add' button take precedence. This prevents 'renderUI'
+        # reset loops where a new component flashes an empty value.
+        if (!is.null(val) && length(val) > 0) {
+          shared_data$std_input_amounts <- val
+        }
+      },
+      ignoreInit = TRUE
+    )
   })
 }
