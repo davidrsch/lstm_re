@@ -210,12 +210,12 @@ server <- function(id, shared_data, visibility) {
       })
       # The key must be unique to the state to force a clean React re-mount
       dropdown_key <- paste0(
-        "in_dropdown_", 
-        length(options), 
-        "_", 
+        "in_dropdown_",
+        length(options),
+        "_",
         paste(value, collapse = "-")
       )
-      
+
       Dropdown.shinyInput(
         session$ns("selectinputoptions"),
         label = "Select the amounts of inputs",

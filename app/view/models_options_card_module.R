@@ -133,7 +133,8 @@ server <- function(id, shared_data, visibility) {
         label = "Add LSTM layer amount",
         type = "number",
         min = 1,
-        value = if (is.null(shared_data$addLSTMamount)) "" else as.character(shared_data$addLSTMamount)
+        value = if (is.null(shared_data$addLSTMamount)) "" else
+          as.character(shared_data$addLSTMamount)
       )
     })
 
@@ -185,12 +186,12 @@ server <- function(id, shared_data, visibility) {
         list(key = as.character(x), text = as.character(x))
       })
       dropdown_key <- paste0(
-        "lstm_dropdown_", 
-        length(options), 
-        "_", 
+        "lstm_dropdown_",
+        length(options),
+        "_",
         paste(value, collapse = "-")
       )
-      
+
       Dropdown.shinyInput(
         session$ns("selectLSTMsoptions"),
         label = "Select the amounts of LSTM",
@@ -215,7 +216,8 @@ server <- function(id, shared_data, visibility) {
         label = "Add neuron amount",
         type = "number",
         min = 1,
-        value = if (is.null(shared_data$addneuronsamount)) "" else as.character(shared_data$addneuronsamount)
+        value = if (is.null(shared_data$addneuronsamount)) "" else
+          as.character(shared_data$addneuronsamount)
       )
     })
 
@@ -267,12 +269,12 @@ server <- function(id, shared_data, visibility) {
         list(key = as.character(x), text = as.character(x))
       })
       dropdown_key <- paste0(
-        "neuron_dropdown_", 
-        length(options), 
-        "_", 
+        "neuron_dropdown_",
+        length(options),
+        "_",
         paste(value, collapse = "-")
       )
-      
+
       Dropdown.shinyInput(
         session$ns("selectneuronsoptions"),
         label = "Select the amounts of neurons",

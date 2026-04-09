@@ -1,5 +1,5 @@
 box::use(
-  dplyr[arrange, filter, slice],
+  dplyr[arrange, slice],
   DT[datatable, DTOutput, renderDataTable],
   rlang[`%||%`],
   shiny.fluent[DefaultButton.shinyInput, Dropdown.shinyInput, Stack, Text],
@@ -120,7 +120,7 @@ server <- function(id, shared_data) {
         has_in <- any(shared_data$grid$Inputs == TRUE)
         has_out <- any(shared_data$grid$Outputs == TRUE)
       }
-      
+
       # Use tryCatch to prevent "non-existent React input" errors if the card is unmounted
       tryCatch({
         updateDefaultButton.shinyInput(
