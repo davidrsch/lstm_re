@@ -1,0 +1,3 @@
+# Quarto-rendered static help pages served by the Shiny app.
+# Exclude from language stats — these are generated output, not source code.
+app/static/qmds/*.html linguist-generated
